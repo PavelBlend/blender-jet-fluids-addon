@@ -61,6 +61,7 @@ class JetFluidBake(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
+        pyjet.Logging.mute()
         obj = context.scene.objects.active
         self.domain = obj
         domain_size_x = obj.bound_box[6][0] * obj.scale[0] - obj.bound_box[0][0] * obj.scale[0]
