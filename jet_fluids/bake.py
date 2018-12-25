@@ -7,6 +7,13 @@ import bpy
 from . import pyjet
 
 
+solvers = {
+    'APIC': pyjet.ApicSolver3,
+    'PIC': pyjet.PicSolver3,
+    'FLIP': pyjet.FlipSolver3
+}
+
+
 def get_triangle_mesh(context, source):
     selected_objects_name = [o.name for o in context.selected_objects]
     active_object_name = context.scene.objects.active.name
@@ -77,7 +84,7 @@ class JetFluidBake(bpy.types.Operator):
         resolution_x = int((domain_size_x / domain_max_size) * resolution)
         resolution_y = int((domain_size_y / domain_max_size) * resolution)
         resolution_z = int((domain_size_z / domain_max_size) * resolution)
-        solver = pyjet.PicSolver3(
+        solver = solvers[obj.jet_fluid.solver_type](
             resolution=(resolution_x, resolution_z, resolution_y),
             gridOrigin=(
                 obj.bound_box[0][0] * obj.scale[0] + obj.location[0],

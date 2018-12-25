@@ -5,9 +5,13 @@ import bpy
 class JetFluidsProperties(bpy.types.PropertyGroup):
     bpy_type = bpy.types.Object
     is_active = bpy.props.BoolProperty(default=False)
-    items = [('APIC', 'APIC', ''), ]
+    items = [
+        ('APIC', 'APIC', ''),
+        ('PIC', 'PIC', ''),
+        ('FLIP', 'FLIP', '')
+    ]
     solver_type = bpy.props.EnumProperty(
-        items=items, name='Fluid Solver', default='APIC'
+        items=items, name='Fluid Solver', default='PIC'
     )
     resolution = bpy.props.IntProperty(default=30, name='Resolution')
     particles_count = bpy.props.FloatProperty(default=2.0, name='Particles', min=1.0)
