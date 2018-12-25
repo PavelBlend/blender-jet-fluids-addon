@@ -13,6 +13,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     particles_count = bpy.props.FloatProperty(default=2.0, name='Particles', min=1.0)
     viscosity = bpy.props.FloatProperty(default=0.0, name='Viscosity')
     emitter = bpy.props.StringProperty(default='', name='Emitter')
+    velocity = bpy.props.FloatVectorProperty(default=(0, 0, 0), name='Velocity')
     one_shot = bpy.props.BoolProperty(default=False, name='One Shot')
     collider = bpy.props.StringProperty(default='', name='Collider')
     show_particles = bpy.props.BoolProperty(default=True, name='Show Particles')

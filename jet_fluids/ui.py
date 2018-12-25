@@ -23,6 +23,7 @@ class JetFluidPanel(bpy.types.Panel):
         self.layout.prop(obj_props, 'particles_count')
         self.layout.prop(obj_props, 'viscosity')
         self.layout.prop_search(obj_props, 'emitter', bpy.data, 'objects')
+        self.layout.prop(obj_props, 'velocity')
         self.layout.prop(obj_props, 'one_shot')
         self.layout.prop_search(obj_props, 'collider', bpy.data, 'objects')
         self.layout.prop(obj_props, 'cache_folder')

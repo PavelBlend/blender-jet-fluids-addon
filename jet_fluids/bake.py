@@ -94,7 +94,8 @@ class JetFluidBake(bpy.types.Operator):
         emitter = pyjet.VolumeParticleEmitter3(
             implicitSurface=triangle_mesh,
             spacing=domain_max_size / (resolution * obj.jet_fluid.particles_count),
-            isOneShot=obj.jet_fluid.one_shot
+            isOneShot=obj.jet_fluid.one_shot,
+            initialVel=[v for v in obj.jet_fluid.velocity]
         )
         solver.particleEmitter = emitter
         collider_name = obj.jet_fluid.collider
