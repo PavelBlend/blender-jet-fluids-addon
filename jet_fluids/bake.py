@@ -40,10 +40,8 @@ class JetFluidBake(bpy.types.Operator):
     bl_label = "Bake"
     bl_options = {'REGISTER'}
 
-    def modal(self, context, event):
-        if event.type == 'ESC':
-            return {'FINISHED'}
-        if self.frame.index <= self.frame_end:
+    def execute(self, context):
+        while self.frame.index <= self.frame_end:
             self.solver.update(self.frame)
             positions = numpy.array(self.solver.particleSystemData.positions, copy=False)
             velocities = numpy.array(self.solver.particleSystemData.velocities, copy=False)
@@ -60,9 +58,7 @@ class JetFluidBake(bpy.types.Operator):
             file.close()
             context.scene.frame_set(self.frame.index)
             self.frame.advance()
-            return {'RUNNING_MODAL'}
-        else:
-            return {'FINISHED'}
+        return {'FINISHED'}
 
     def invoke(self, context, event):
         obj = context.scene.objects.active
@@ -80,7 +76,7 @@ class JetFluidBake(bpy.types.Operator):
         resolution_x = int((domain_size_x / domain_max_size) * resolution)
         resolution_y = int((domain_size_y / domain_max_size) * resolution)
         resolution_z = int((domain_size_z / domain_max_size) * resolution)
-        solver = pyjet.ApicSolver3(
+        solver = pyjet.PicSolver3(
             resolution=(resolution_x, resolution_z, resolution_y),
             gridOrigin=(
                 obj.bound_box[0][0] * obj.scale[0] + obj.location[0],
@@ -108,7 +104,7 @@ class JetFluidBake(bpy.types.Operator):
         self.solver = solver
         self.frame = frame
         self.frame_end = context.scene.frame_end
-        context.window_manager.modal_handler_add(self)
+        self.execute(context)
         return {'RUNNING_MODAL'}
 
 
