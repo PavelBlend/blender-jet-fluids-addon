@@ -32,6 +32,7 @@ class JetFluidPanel(bpy.types.Panel):
         row.prop(obj_props, 'color_1', text='')
         row.prop(obj_props, 'color_2', text='')
         self.layout.prop(obj_props, 'max_velocity')
+        self.layout.prop(obj_props, 'color_type')
 
 
 def add_panel(self, context):
