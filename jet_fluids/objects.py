@@ -18,6 +18,9 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     collider = bpy.props.StringProperty(default='', name='Collider')
     show_particles = bpy.props.BoolProperty(default=True, name='Show Particles')
     cache_folder = bpy.props.StringProperty(default='', name='Cache Folder', subtype='DIR_PATH')
+    color_1 = bpy.props.FloatVectorProperty(default=(0.0, 0.0, 1.0), name='Color 1', subtype='COLOR', max=1.0, min=0.0)
+    color_2 = bpy.props.FloatVectorProperty(default=(0.0, 1.0, 1.0), name='Color 2', subtype='COLOR', max=1.0, min=0.0)
+    max_velocity = bpy.props.FloatProperty(default=10.0, name='Max Velocity', min=0.001)
 
 
 __CLASSES__ = [

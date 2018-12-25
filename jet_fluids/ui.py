@@ -28,6 +28,10 @@ class JetFluidPanel(bpy.types.Panel):
         self.layout.prop_search(obj_props, 'collider', bpy.data, 'objects')
         self.layout.prop(obj_props, 'cache_folder')
         self.layout.prop(obj_props, 'show_particles')
+        row = self.layout.row()
+        row.prop(obj_props, 'color_1', text='')
+        row.prop(obj_props, 'color_2', text='')
+        self.layout.prop(obj_props, 'max_velocity')
 
 
 def add_panel(self, context):

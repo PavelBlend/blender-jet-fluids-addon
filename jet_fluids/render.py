@@ -7,15 +7,12 @@ import bgl
 
 
 handle_3d = None
-minc = (0.0, 0.0, 1.0)
-maxc = (0.0, 1.0, 1.0)
-max_velocity = 10
 
 
-def generate_particle_color(factor):
-    r = minc[0] + factor * (maxc[0] - minc[0])
-    g = minc[1] + factor * (maxc[1] - minc[1])
-    b = minc[2] + factor * (maxc[2] - minc[2])
+def generate_particle_color(factor, jet_props):
+    r = jet_props.color_1[0] + factor * (jet_props.color_2[0] - jet_props.color_1[0])
+    g = jet_props.color_1[1] + factor * (jet_props.color_2[1] - jet_props.color_1[1])
+    b = jet_props.color_1[2] + factor * (jet_props.color_2[2] - jet_props.color_1[2])
     return (r, g, b)
 
 
@@ -43,8 +40,8 @@ def draw_particles(domain):
         p += 12
         vel = struct.unpack('3f', particles_data[p : p + 12])
         p += 12
-        color_factor = (vel[0]**2 + vel[1]**2 + vel[2]**2) ** (1/2) / max_velocity
-        color = generate_particle_color(color_factor)
+        color_factor = (vel[0]**2 + vel[1]**2 + vel[2]**2) ** (1/2) / domain.jet_fluid.max_velocity
+        color = generate_particle_color(color_factor, domain.jet_fluid)
         bgl.glColor4f(color[0], color[1], color[2], 1.0)
         bgl.glVertex3f(
             particle_position[0],
