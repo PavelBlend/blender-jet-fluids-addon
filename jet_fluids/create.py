@@ -6,15 +6,20 @@ import bpy
 
 
 def remove_par_object(domain):
-    par_object = bpy.data.objects[domain.jet_fluid.particles_object]
-    par_mesh = par_object.data
-    domain.jet_fluid.particles_object = ''
-    bpy.data.meshes.remove(par_mesh)
-    bpy.data.objects.remove(par_object)
+    if domain.jet_fluid.particles_object:
+        par_object = bpy.data.objects[domain.jet_fluid.particles_object]
+        par_mesh = par_object.data
+        domain.jet_fluid.particles_object = ''
+        bpy.data.objects.remove(par_object)
+        bpy.data.meshes.remove(par_mesh)
 
 
 def update_par_object(self, context):
-    for obj in bpy.data.objects:
+    obj_names = {obj.name for obj in bpy.data.objects}
+    for obj_name in obj_names:
+        obj = bpy.data.objects.get(obj_name)
+        if not obj:
+            continue
         if obj.jet_fluid.is_active:
             if obj.jet_fluid.create_particles:
                 create_particles(obj)
@@ -25,6 +30,7 @@ def update_par_object(self, context):
 def create_particles(domain):
     file_path = '{}{}.bin'.format(domain.jet_fluid.cache_folder, bpy.context.scene.frame_current)
     if not os.path.exists(file_path):
+        remove_par_object(domain)
         return
     particles_file = open(file_path, 'rb')
     particles_data = particles_file.read()
@@ -54,7 +60,11 @@ def create_particles(domain):
 
 @bpy.app.handlers.persistent
 def import_particles(scene):
-    for obj in bpy.data.objects:
+    obj_names = {obj.name for obj in bpy.data.objects}
+    for obj_name in obj_names:
+        obj = bpy.data.objects.get(obj_name)
+        if not obj:
+            continue
         if obj.jet_fluid.is_active:
             if obj.jet_fluid.create_particles:
                 create_particles(obj)
