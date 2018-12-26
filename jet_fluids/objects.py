@@ -16,6 +16,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         items=items, name='Fluid Solver', default='PIC'
     )
     resolution = bpy.props.IntProperty(default=30, name='Resolution')
+    resolution_mesh = bpy.props.IntProperty(default=30, name='Mesh Resolution')
     particles_count = bpy.props.FloatProperty(default=2.0, name='Particles', min=1.0)
     viscosity = bpy.props.FloatProperty(default=0.0, name='Viscosity')
     emitter = bpy.props.StringProperty(default='', name='Emitter')

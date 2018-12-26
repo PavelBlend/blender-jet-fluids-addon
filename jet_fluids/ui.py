@@ -20,6 +20,7 @@ class JetFluidPanel(bpy.types.Panel):
         self.layout.operator('jet_fluid.bake')
         self.layout.prop(obj_props, 'solver_type')
         self.layout.prop(obj_props, 'resolution')
+        self.layout.prop(obj_props, 'resolution_mesh')
         self.layout.prop(obj_props, 'particles_count')
         self.layout.prop(obj_props, 'viscosity')
         self.layout.prop_search(obj_props, 'emitter', bpy.data, 'objects')
