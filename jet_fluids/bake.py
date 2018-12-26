@@ -127,6 +127,7 @@ class JetFluidBake(bpy.types.Operator):
             ),
             domainSizeX=domain_size_x
         )
+        solver.useCompressedLinearSystem = True
         solver.viscosityCoefficient = obj.jet_fluid.viscosity
         triangle_mesh = get_triangle_mesh(context, bpy.data.objects[obj.jet_fluid.emitter], solver)
         emitter = pyjet.VolumeParticleEmitter3(
