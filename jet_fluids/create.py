@@ -5,6 +5,23 @@ import struct
 import bpy
 
 
+def remove_par_object(domain):
+    par_object = bpy.data.objects[domain.jet_fluid.particles_object]
+    par_mesh = par_object.data
+    domain.jet_fluid.particles_object = ''
+    bpy.data.meshes.remove(par_mesh)
+    bpy.data.objects.remove(par_object)
+
+
+def update_par_object(self, context):
+    for obj in bpy.data.objects:
+        if obj.jet_fluid.is_active:
+            if obj.jet_fluid.create_particles:
+                create_particles(obj)
+            else:
+                remove_par_object(obj)
+
+
 def create_particles(domain):
     file_path = '{}{}.bin'.format(domain.jet_fluid.cache_folder, bpy.context.scene.frame_current)
     if not os.path.exists(file_path):

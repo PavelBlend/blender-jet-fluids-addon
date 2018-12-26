@@ -1,6 +1,8 @@
 
 import bpy
 
+from . import create
+
 
 class JetFluidsProperties(bpy.types.PropertyGroup):
     bpy_type = bpy.types.Object
@@ -33,7 +35,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         items=items, name='Color', default='VELOCITY'
     )
     particles_object = bpy.props.StringProperty(default='', name='Particles')
-    create_particles = bpy.props.BoolProperty(default=False, name='Create Particles')
+    create_particles = bpy.props.BoolProperty(default=False, name='Create Particles', update=create.update_par_object)
 
 
 __CLASSES__ = [
