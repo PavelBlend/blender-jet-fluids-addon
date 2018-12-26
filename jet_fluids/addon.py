@@ -4,6 +4,7 @@ from . import objects
 from . import operators
 from . import ui
 from . import render
+from . import create
 
 
 modules = [
@@ -11,7 +12,8 @@ modules = [
     operators,
     bake,
     ui,
-    render
+    render,
+    create
 ]
 
 def register():
