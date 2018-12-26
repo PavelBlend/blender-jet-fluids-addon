@@ -153,7 +153,7 @@ class JetFluidBake(bpy.types.Operator):
         solver.particleEmitter = emitter
         collider_name = obj.jet_fluid.collider
         if collider_name:
-            triangle_mesh = get_triangle_mesh(context, bpy.data.objects[obj.jet_fluid.collider])
+            triangle_mesh = get_triangle_mesh(context, bpy.data.objects[obj.jet_fluid.collider], solver)
             collider = pyjet.RigidBodyCollider3(surface=triangle_mesh)
             solver.collider = collider
 
