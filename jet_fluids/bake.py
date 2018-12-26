@@ -49,6 +49,7 @@ class JetFluidBake(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def execute(self, context):
+        print('EXECUTE START')
         solv = self.solver
         resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, grid_spacing = self.calc_res(self.domain, type='MESH')
         grid = pyjet.CellCenteredScalarGrid3(
@@ -56,21 +57,29 @@ class JetFluidBake(bpy.types.Operator):
             gridOrigin=(origin_x, origin_z, origin_y),
             domainSizeX=self.domain_size_x
         )
+        print('grid')
         while self.frame.index <= self.frame_end:
+            print('frame start', self.frame.index)
+            print('solver update start')
             solv.update(self.frame)
+            print('solver update end')
+            print('start save particles')
             positions = numpy.array(solv.particleSystemData.positions, copy=False)
             velocities = numpy.array(solv.particleSystemData.velocities, copy=False)
-            bin_data = b''
-            bin_data += struct.pack('I', len(positions))
-            for position, velocity in zip(positions, velocities):
-                bin_position = struct.pack('3f', *position)
-                bin_data += bin_position
-                bin_velocity = struct.pack('3f', *velocity)
-                bin_data += bin_velocity
+            print('numpy convert')
+            bin_data = bytearray()
+            vertices_count = len(positions)
+            bin_data += struct.pack('I', vertices_count)
+            print('start save position and velocity')
+            for vert_index in range(vertices_count):
+                bin_data.extend(struct.pack('3f', *positions[vert_index]))
+                bin_data.extend(struct.pack('3f', *velocities[vert_index]))
             file_path = '{}particles_{}.bin'.format(self.domain.jet_fluid.cache_folder, self.frame.index)
             file = open(file_path, 'wb')
             file.write(bin_data)
             file.close()
+            print('end save particles')
+            print('converter')
             converter = pyjet.SphPointsToImplicit3(2.0 * solv.gridSpacing.x, 0.5)
             converter.convert(positions.tolist(), grid)
             surface_mesh = pyjet.marchingCubes(
@@ -80,25 +89,31 @@ class JetFluidBake(bpy.types.Operator):
                 0.0,
                 pyjet.DIRECTION_ALL
             )
+            print('generate mesh')
 
+            print('start save mesh')
             coef = self.domain.jet_fluid.resolution / self.domain.jet_fluid.resolution_mesh
-            bin_mesh_data = b''
+            bin_mesh_data = bytearray()
             points_count = surface_mesh.numberOfPoints()
-            bin_mesh_data += struct.pack('I', points_count)
+            bin_mesh_data.extend(struct.pack('I', points_count))
+            print('save verts')
             for point_index in range(points_count):
                 point = surface_mesh.point(point_index)
-                bin_mesh_data += struct.pack('3f', point.x * coef, point.y * coef, point.z * coef)
+                bin_mesh_data.extend(struct.pack('3f', point.x * coef, point.y * coef, point.z * coef))
 
+            print('save tris')
             triangles_count = surface_mesh.numberOfTriangles()
-            bin_mesh_data += struct.pack('I', triangles_count)
+            bin_mesh_data.extend(struct.pack('I', triangles_count))
             for triangle_index in range(triangles_count):
                 tris = surface_mesh.pointIndex(triangle_index)
-                bin_mesh_data += struct.pack('3I', tris.x, tris.y, tris.z)
+                bin_mesh_data.extend(struct.pack('3I', tris.x, tris.y, tris.z))
 
+            print('write file')
             file_path = '{}mesh_{}.bin'.format(self.domain.jet_fluid.cache_folder, self.frame.index)
             file = open(file_path, 'wb')
             file.write(bin_mesh_data)
             file.close()
+            print('save mesh end')
             self.frame.advance()
         return {'FINISHED'}
 
@@ -133,6 +148,7 @@ class JetFluidBake(bpy.types.Operator):
         return resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, grid_spacing
 
     def invoke(self, context, event):
+        print('INVOKE START')
         pyjet.Logging.mute()
         obj = context.scene.objects.active
         resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, _ = self.calc_res(obj)
@@ -161,6 +177,7 @@ class JetFluidBake(bpy.types.Operator):
         self.solver = solver
         self.frame = frame
         self.frame_end = context.scene.frame_end
+        print('INVOKE END')
         self.execute(context)
         return {'RUNNING_MODAL'}
 
