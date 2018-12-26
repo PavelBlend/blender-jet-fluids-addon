@@ -14,6 +14,15 @@ def remove_par_object(domain):
         bpy.data.meshes.remove(par_mesh)
 
 
+def remove_mesh_object(domain):
+    if domain.jet_fluid.mesh_object:
+        mesh_object = bpy.data.objects[domain.jet_fluid.mesh_object]
+        mesh = mesh_object.data
+        domain.jet_fluid.mesh_object = ''
+        bpy.data.objects.remove(mesh_object)
+        bpy.data.meshes.remove(mesh)
+
+
 def update_par_object(self, context):
     obj_names = {obj.name for obj in bpy.data.objects}
     for obj_name in obj_names:
@@ -28,7 +37,7 @@ def update_par_object(self, context):
 
 
 def create_particles(domain):
-    file_path = '{}{}.bin'.format(domain.jet_fluid.cache_folder, bpy.context.scene.frame_current)
+    file_path = '{}particles_{}.bin'.format(domain.jet_fluid.cache_folder, bpy.context.scene.frame_current)
     if not os.path.exists(file_path):
         remove_par_object(domain)
         return
@@ -58,8 +67,54 @@ def create_particles(domain):
     par_mesh.name = 'jet_fluid_particles'
 
 
+def create_mesh(domain):
+    file_path = '{}mesh_{}.bin'.format(domain.jet_fluid.cache_folder, bpy.context.scene.frame_current)
+    if not os.path.exists(file_path):
+        remove_mesh_object(domain)
+        return
+    mesh_file = open(file_path, 'rb')
+    mesh_data = mesh_file.read()
+    mesh_file.close()
+    p = 0
+    vertices_count = struct.unpack('I', mesh_data[p : p + 4])[0]
+    p += 4
+    vertices = []
+    for vertex_index in range(vertices_count):
+        pos = struct.unpack('3f', mesh_data[p : p + 12])
+        p += 12
+        vertices.append((pos[0], pos[2], pos[1]))
+
+    triangles_count = struct.unpack('I', mesh_data[p : p + 4])[0]
+    p += 4
+    triangles = []
+    for tris_index in range(triangles_count):
+        tris = struct.unpack('3I', mesh_data[p : p + 12])
+        p += 12
+        triangles.append((tris[0], tris[2], tris[1]))
+
+    mesh = bpy.data.meshes.new('temp_name')
+    if not domain.jet_fluid.mesh_object:
+        mesh_object = bpy.data.objects.new('jet_fluid_mesh', mesh)
+        domain.jet_fluid.mesh_object = mesh_object.name
+        bpy.context.scene.objects.link(mesh_object)
+    else:
+        mesh_object = bpy.data.objects[domain.jet_fluid.mesh_object]
+        old_mesh = mesh_object.data
+        mesh_object.data = mesh
+        bpy.data.meshes.remove(old_mesh)
+    mesh.from_pydata(vertices, (), triangles)
+    for polygon in mesh.polygons:
+        polygon.use_smooth = True
+    mesh.name = 'jet_fluid_mesh'
+    mesh_object.location = (
+        domain.bound_box[0][0] * domain.scale[0] + domain.location[0],
+        domain.bound_box[0][1] * domain.scale[1] + domain.location[1],
+        domain.bound_box[0][2] * domain.scale[2] + domain.location[2]
+    )
+
+
 @bpy.app.handlers.persistent
-def import_particles(scene):
+def import_geometry(scene):
     obj_names = {obj.name for obj in bpy.data.objects}
     for obj_name in obj_names:
         obj = bpy.data.objects.get(obj_name)
@@ -68,11 +123,12 @@ def import_particles(scene):
         if obj.jet_fluid.is_active:
             if obj.jet_fluid.create_particles:
                 create_particles(obj)
+            create_mesh(obj)
 
 
 def register():
-    bpy.app.handlers.frame_change_pre.append(import_particles)
+    bpy.app.handlers.frame_change_pre.append(import_geometry)
 
 
 def unregister():
-    bpy.app.handlers.frame_change_pre.remove(import_particles)
+    bpy.app.handlers.frame_change_pre.remove(import_geometry)

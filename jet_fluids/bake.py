@@ -14,7 +14,7 @@ solvers = {
 }
 
 
-def get_triangle_mesh(context, source):
+def get_triangle_mesh(context, source, solver):
     selected_objects_name = [o.name for o in context.selected_objects]
     active_object_name = context.scene.objects.active.name
     bpy.ops.object.select_all(action='DESELECT')
@@ -34,12 +34,13 @@ def get_triangle_mesh(context, source):
         points=[[v.co.x, v.co.z, v.co.y] for v in mesh.vertices],
         pointIndices=[[p.vertices[0], p.vertices[2], p.vertices[1]] for p in mesh.polygons]
     )
+    imp_triangle_mesh = pyjet.ImplicitTriangleMesh3(mesh=triangle_mesh, resolutionX=solver.resolution.x, margin=0)
     bpy.data.objects.remove(obj)
     bpy.data.meshes.remove(mesh)
     for obj_name in selected_objects_name:
         bpy.data.objects[obj_name].select = True
     bpy.context.scene.objects.active = bpy.data.objects[active_object_name]
-    return triangle_mesh
+    return imp_triangle_mesh
 
 
 class JetFluidBake(bpy.types.Operator):
@@ -48,10 +49,16 @@ class JetFluidBake(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def execute(self, context):
+        solv = self.solver
+        grid = pyjet.CellCenteredScalarGrid3(
+            (solv.resolution.x, solv.resolution.y, solv.resolution.z),
+            (solv.gridSpacing.x, solv.gridSpacing.y, solv.gridSpacing.z),
+            (solv.gridOrigin.x, solv.gridOrigin.y, solv.gridOrigin.z),
+        )
         while self.frame.index <= self.frame_end:
-            self.solver.update(self.frame)
-            positions = numpy.array(self.solver.particleSystemData.positions, copy=False)
-            velocities = numpy.array(self.solver.particleSystemData.velocities, copy=False)
+            solv.update(self.frame)
+            positions = numpy.array(solv.particleSystemData.positions, copy=False)
+            velocities = numpy.array(solv.particleSystemData.velocities, copy=False)
             bin_data = b''
             bin_data += struct.pack('I', len(positions))
             for position, velocity in zip(positions, velocities):
@@ -59,11 +66,37 @@ class JetFluidBake(bpy.types.Operator):
                 bin_data += bin_position
                 bin_velocity = struct.pack('3f', *velocity)
                 bin_data += bin_velocity
-            file_path = '{}{}.bin'.format(self.domain.jet_fluid.cache_folder, self.frame.index)
+            file_path = '{}particles_{}.bin'.format(self.domain.jet_fluid.cache_folder, self.frame.index)
             file = open(file_path, 'wb')
             file.write(bin_data)
             file.close()
-            context.scene.frame_set(self.frame.index)
+            converter = pyjet.SphPointsToImplicit3(2.0 * solv.gridSpacing.x, 0.5)
+            converter.convert(positions.tolist(), grid)
+            surface_mesh = pyjet.marchingCubes(
+                grid,
+                (solv.gridSpacing.x, solv.gridSpacing.y, solv.gridSpacing.z),
+                (0, 0, 0),
+                0.0,
+                pyjet.DIRECTION_ALL
+            )
+
+            bin_mesh_data = b''
+            points_count = surface_mesh.numberOfPoints()
+            bin_mesh_data += struct.pack('I', points_count)
+            for point_index in range(points_count):
+                point = surface_mesh.point(point_index)
+                bin_mesh_data += struct.pack('3f', *point)
+
+            triangles_count = surface_mesh.numberOfTriangles()
+            bin_mesh_data += struct.pack('I', triangles_count)
+            for triangle_index in range(triangles_count):
+                tris = surface_mesh.pointIndex(triangle_index)
+                bin_mesh_data += struct.pack('3I', tris.x, tris.y, tris.z)
+
+            file_path = '{}mesh_{}.bin'.format(self.domain.jet_fluid.cache_folder, self.frame.index)
+            file = open(file_path, 'wb')
+            file.write(bin_mesh_data)
+            file.close()
             self.frame.advance()
         return {'FINISHED'}
 
@@ -79,6 +112,7 @@ class JetFluidBake(bpy.types.Operator):
             domain_size_y,
             domain_size_z
         ]
+        self.domain_size_x = domain_size_x
         resolution = obj.jet_fluid.resolution
         domain_max_size = max(domain_sizes)
         resolution_x = int((domain_size_x / domain_max_size) * resolution)
@@ -94,7 +128,7 @@ class JetFluidBake(bpy.types.Operator):
             domainSizeX=domain_size_x
         )
         solver.viscosityCoefficient = obj.jet_fluid.viscosity
-        triangle_mesh = get_triangle_mesh(context, bpy.data.objects[obj.jet_fluid.emitter])
+        triangle_mesh = get_triangle_mesh(context, bpy.data.objects[obj.jet_fluid.emitter], solver)
         emitter = pyjet.VolumeParticleEmitter3(
             implicitSurface=triangle_mesh,
             spacing=domain_max_size / (resolution * obj.jet_fluid.particles_count),
