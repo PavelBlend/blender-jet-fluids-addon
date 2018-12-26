@@ -8,19 +8,27 @@ import bpy
 def remove_par_object(domain):
     if domain.jet_fluid.particles_object:
         par_object = bpy.data.objects[domain.jet_fluid.particles_object]
-        par_mesh = par_object.data
-        domain.jet_fluid.particles_object = ''
-        bpy.data.objects.remove(par_object)
-        bpy.data.meshes.remove(par_mesh)
+        old_mesh = par_object.data
+        materials = [m for m in old_mesh.materials]
+        mesh = bpy.data.meshes.new('temp_name')
+        for mat in materials:
+            mesh.materials.append(mat)
+        par_object.data = mesh
+        bpy.data.meshes.remove(old_mesh)
+        mesh.name = 'jet_fluid_particles'
 
 
 def remove_mesh_object(domain):
     if domain.jet_fluid.mesh_object:
         mesh_object = bpy.data.objects[domain.jet_fluid.mesh_object]
-        mesh = mesh_object.data
-        domain.jet_fluid.mesh_object = ''
-        bpy.data.objects.remove(mesh_object)
-        bpy.data.meshes.remove(mesh)
+        old_mesh = mesh_object.data
+        materials = [m for m in old_mesh.materials]
+        mesh = bpy.data.meshes.new('temp_name')
+        for mat in materials:
+            mesh.materials.append(mat)
+        mesh_object.data = mesh
+        bpy.data.meshes.remove(old_mesh)
+        mesh.name = 'jet_fluid_mesh'
 
 
 def update_par_object(self, context):
@@ -62,6 +70,9 @@ def create_particles(domain):
         par_object = bpy.data.objects[domain.jet_fluid.particles_object]
         old_par_mesh = par_object.data
         par_object.data = par_mesh
+        materials = [m for m in old_par_mesh.materials]
+        for mat in materials:
+            par_mesh.materials.append(mat)
         bpy.data.meshes.remove(old_par_mesh)
     par_mesh.from_pydata(vertices, (), ())
     par_mesh.name = 'jet_fluid_particles'
@@ -101,7 +112,11 @@ def create_mesh(domain):
         mesh_object = bpy.data.objects[domain.jet_fluid.mesh_object]
         old_mesh = mesh_object.data
         mesh_object.data = mesh
+        materials = [m for m in old_mesh.materials]
+        for mat in materials:
+            mesh.materials.append(mat)
         bpy.data.meshes.remove(old_mesh)
+
     mesh.from_pydata(vertices, (), triangles)
     for polygon in mesh.polygons:
         polygon.use_smooth = True
