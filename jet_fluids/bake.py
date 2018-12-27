@@ -98,13 +98,15 @@ class JetFluidBakeMesh(bpy.types.Operator):
         )
         frame_index = 0
         while frame_index <= scn.frame_end:
-            print(frame_index)
+            print('frame', frame_index)
             file_path = '{}particles_{}.bin'.format(domain.jet_fluid.cache_folder, frame_index)
             if not os.path.exists(file_path):
                 continue
+            print('open particles file')
             particles_file = open(file_path, 'rb')
             particles_data = particles_file.read()
             particles_file.close()
+            print('read particles')
             p = 0
             particles_count = struct.unpack('I', particles_data[p : p + 4])[0]
             p += 4
@@ -114,8 +116,11 @@ class JetFluidBakeMesh(bpy.types.Operator):
                 p += 24    # skip velocities
                 points.append(particle_position)
 
+            print('create converter')
             converter = pyjet.SphPointsToImplicit3(2.0 * solv.gridSpacing.x, 0.5)
+            print('convert')
             converter.convert(points, grid)
+            print('meshing')
             surface_mesh = pyjet.marchingCubes(
                 grid,
                 (solv.gridSpacing.x, solv.gridSpacing.y, solv.gridSpacing.z),
@@ -123,11 +128,11 @@ class JetFluidBakeMesh(bpy.types.Operator):
                 0.0,
                 pyjet.DIRECTION_ALL
             )
+            print('save verts')
             coef = self.domain.jet_fluid.resolution / self.domain.jet_fluid.resolution_mesh
             bin_mesh_data = bytearray()
             points_count = surface_mesh.numberOfPoints()
             bin_mesh_data.extend(struct.pack('I', points_count))
-            print('save verts')
             for point_index in range(points_count):
                 point = surface_mesh.point(point_index)
                 bin_mesh_data.extend(struct.pack('3f', point.x * coef, point.y * coef, point.z * coef))
