@@ -90,6 +90,7 @@ class JetFluidBakeMesh(bpy.types.Operator):
             gridOrigin=(origin_x, origin_z, origin_y),
             domainSizeX=domain_size_x
         )
+        resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, _ = calc_res(self, domain, type='MESH')
         grid = pyjet.CellCenteredScalarGrid3(
             resolution=(resolution_x, resolution_z, resolution_y),
             gridOrigin=(origin_x, origin_z, origin_y),
