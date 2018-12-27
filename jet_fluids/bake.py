@@ -1,5 +1,6 @@
 
 import struct
+import os
 import numpy
 
 import bpy
@@ -43,6 +44,110 @@ def get_triangle_mesh(context, source, solver):
     return imp_triangle_mesh
 
 
+def calc_res(self, obj, type='FLUID'):
+    self.domain = obj
+    domain_size_x = obj.bound_box[6][0] * obj.scale[0] - obj.bound_box[0][0] * obj.scale[0]
+    domain_size_y = obj.bound_box[6][1] * obj.scale[1] - obj.bound_box[0][1] * obj.scale[1]
+    domain_size_z = obj.bound_box[6][2] * obj.scale[2] - obj.bound_box[0][2] * obj.scale[2]
+    domain_sizes = [
+        domain_size_x,
+        domain_size_y,
+        domain_size_z
+    ]
+    self.domain_size_x = domain_size_x
+    if type == 'FLUID':
+        resolution = obj.jet_fluid.resolution
+        grid_spacing = (0, 0, 0)
+    elif type == 'MESH':
+        resolution = obj.jet_fluid.resolution_mesh
+        fluid_res = obj.jet_fluid.resolution
+        grid_spacing_x = resolution
+        grid_spacing_y = resolution
+        grid_spacing_z = resolution
+        grid_spacing = (grid_spacing_x, grid_spacing_z, grid_spacing_y)
+    self.domain_max_size = max(domain_sizes)
+    resolution_x = int((domain_size_x / self.domain_max_size) * resolution)
+    resolution_y = int((domain_size_y / self.domain_max_size) * resolution)
+    resolution_z = int((domain_size_z / self.domain_max_size) * resolution)
+    origin_x = obj.bound_box[0][0] * obj.scale[0] + obj.location[0]
+    origin_y = obj.bound_box[0][1] * obj.scale[1] + obj.location[1]
+    origin_z = obj.bound_box[0][2] * obj.scale[2] + obj.location[2]
+    return resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, grid_spacing
+
+
+class JetFluidBakeMesh(bpy.types.Operator):
+    bl_idname = "jet_fluid.bake_mesh"
+    bl_label = "Bake Mesh"
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+        pyjet.Logging.mute()
+        scn = context.scene
+        domain = context.object
+        resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, _ = calc_res(self, domain)
+        solv = solvers[domain.jet_fluid.solver_type](
+            resolution=(resolution_x, resolution_z, resolution_y),
+            gridOrigin=(origin_x, origin_z, origin_y),
+            domainSizeX=domain_size_x
+        )
+        grid = pyjet.CellCenteredScalarGrid3(
+            resolution=(resolution_x, resolution_z, resolution_y),
+            gridOrigin=(origin_x, origin_z, origin_y),
+            domainSizeX=self.domain_size_x
+        )
+        frame_index = 0
+        while frame_index <= scn.frame_end:
+            print(frame_index)
+            file_path = '{}particles_{}.bin'.format(domain.jet_fluid.cache_folder, frame_index)
+            if not os.path.exists(file_path):
+                continue
+            particles_file = open(file_path, 'rb')
+            particles_data = particles_file.read()
+            particles_file.close()
+            p = 0
+            particles_count = struct.unpack('I', particles_data[p : p + 4])[0]
+            p += 4
+            points = []
+            for particle_index in range(particles_count):
+                particle_position = struct.unpack('3f', particles_data[p : p + 12])
+                p += 24    # skip velocities
+                points.append(particle_position)
+
+            converter = pyjet.SphPointsToImplicit3(2.0 * solv.gridSpacing.x, 0.5)
+            converter.convert(points, grid)
+            surface_mesh = pyjet.marchingCubes(
+                grid,
+                (solv.gridSpacing.x, solv.gridSpacing.y, solv.gridSpacing.z),
+                (0, 0, 0),
+                0.0,
+                pyjet.DIRECTION_ALL
+            )
+            coef = self.domain.jet_fluid.resolution / self.domain.jet_fluid.resolution_mesh
+            bin_mesh_data = bytearray()
+            points_count = surface_mesh.numberOfPoints()
+            bin_mesh_data.extend(struct.pack('I', points_count))
+            print('save verts')
+            for point_index in range(points_count):
+                point = surface_mesh.point(point_index)
+                bin_mesh_data.extend(struct.pack('3f', point.x * coef, point.y * coef, point.z * coef))
+
+            print('save tris')
+            triangles_count = surface_mesh.numberOfTriangles()
+            bin_mesh_data.extend(struct.pack('I', triangles_count))
+            for triangle_index in range(triangles_count):
+                tris = surface_mesh.pointIndex(triangle_index)
+                bin_mesh_data.extend(struct.pack('3I', tris.x, tris.y, tris.z))
+
+            print('write file')
+            file_path = '{}mesh_{}.bin'.format(self.domain.jet_fluid.cache_folder, frame_index)
+            file = open(file_path, 'wb')
+            file.write(bin_mesh_data)
+            file.close()
+            print('save mesh end')
+            frame_index += 1
+        return {'FINISHED'}
+
+
 class JetFluidBake(bpy.types.Operator):
     bl_idname = "jet_fluid.bake"
     bl_label = "Bake"
@@ -51,12 +156,7 @@ class JetFluidBake(bpy.types.Operator):
     def execute(self, context):
         print('EXECUTE START')
         solv = self.solver
-        resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, grid_spacing = self.calc_res(self.domain, type='MESH')
-        grid = pyjet.CellCenteredScalarGrid3(
-            resolution=(resolution_x, resolution_z, resolution_y),
-            gridOrigin=(origin_x, origin_z, origin_y),
-            domainSizeX=self.domain_size_x
-        )
+        resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, grid_spacing = calc_res(self, self.domain, type='MESH')
         print('grid')
         while self.frame.index <= self.frame_end:
             print('frame start', self.frame.index)
@@ -79,79 +179,15 @@ class JetFluidBake(bpy.types.Operator):
             file.write(bin_data)
             file.close()
             print('end save particles')
-            print('converter')
-            converter = pyjet.SphPointsToImplicit3(2.0 * solv.gridSpacing.x, 0.5)
-            converter.convert(positions.tolist(), grid)
-            surface_mesh = pyjet.marchingCubes(
-                grid,
-                (solv.gridSpacing.x, solv.gridSpacing.y, solv.gridSpacing.z),
-                (0, 0, 0),
-                0.0,
-                pyjet.DIRECTION_ALL
-            )
-            print('generate mesh')
 
-            print('start save mesh')
-            coef = self.domain.jet_fluid.resolution / self.domain.jet_fluid.resolution_mesh
-            bin_mesh_data = bytearray()
-            points_count = surface_mesh.numberOfPoints()
-            bin_mesh_data.extend(struct.pack('I', points_count))
-            print('save verts')
-            for point_index in range(points_count):
-                point = surface_mesh.point(point_index)
-                bin_mesh_data.extend(struct.pack('3f', point.x * coef, point.y * coef, point.z * coef))
-
-            print('save tris')
-            triangles_count = surface_mesh.numberOfTriangles()
-            bin_mesh_data.extend(struct.pack('I', triangles_count))
-            for triangle_index in range(triangles_count):
-                tris = surface_mesh.pointIndex(triangle_index)
-                bin_mesh_data.extend(struct.pack('3I', tris.x, tris.y, tris.z))
-
-            print('write file')
-            file_path = '{}mesh_{}.bin'.format(self.domain.jet_fluid.cache_folder, self.frame.index)
-            file = open(file_path, 'wb')
-            file.write(bin_mesh_data)
-            file.close()
-            print('save mesh end')
             self.frame.advance()
         return {'FINISHED'}
-
-    def calc_res(self, obj, type='FLUID'):
-        self.domain = obj
-        domain_size_x = obj.bound_box[6][0] * obj.scale[0] - obj.bound_box[0][0] * obj.scale[0]
-        domain_size_y = obj.bound_box[6][1] * obj.scale[1] - obj.bound_box[0][1] * obj.scale[1]
-        domain_size_z = obj.bound_box[6][2] * obj.scale[2] - obj.bound_box[0][2] * obj.scale[2]
-        domain_sizes = [
-            domain_size_x,
-            domain_size_y,
-            domain_size_z
-        ]
-        self.domain_size_x = domain_size_x
-        if type == 'FLUID':
-            resolution = obj.jet_fluid.resolution
-            grid_spacing = (0, 0, 0)
-        elif type == 'MESH':
-            resolution = obj.jet_fluid.resolution_mesh
-            fluid_res = obj.jet_fluid.resolution
-            grid_spacing_x = resolution
-            grid_spacing_y = resolution
-            grid_spacing_z = resolution
-            grid_spacing = (grid_spacing_x, grid_spacing_z, grid_spacing_y)
-        self.domain_max_size = max(domain_sizes)
-        resolution_x = int((domain_size_x / self.domain_max_size) * resolution)
-        resolution_y = int((domain_size_y / self.domain_max_size) * resolution)
-        resolution_z = int((domain_size_z / self.domain_max_size) * resolution)
-        origin_x = obj.bound_box[0][0] * obj.scale[0] + obj.location[0]
-        origin_y = obj.bound_box[0][1] * obj.scale[1] + obj.location[1]
-        origin_z = obj.bound_box[0][2] * obj.scale[2] + obj.location[2]
-        return resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, grid_spacing
 
     def invoke(self, context, event):
         print('INVOKE START')
         pyjet.Logging.mute()
         obj = context.scene.objects.active
-        resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, _ = self.calc_res(obj)
+        resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, _ = calc_res(self, obj)
         solver = solvers[obj.jet_fluid.solver_type](
             resolution=(resolution_x, resolution_z, resolution_y),
             gridOrigin=(origin_x, origin_z, origin_y),
@@ -184,7 +220,9 @@ class JetFluidBake(bpy.types.Operator):
 
 def register():
     bpy.utils.register_class(JetFluidBake)
+    bpy.utils.register_class(JetFluidBakeMesh)
 
 
 def unregister():
+    bpy.utils.unregister_class(JetFluidBakeMesh)
     bpy.utils.unregister_class(JetFluidBake)

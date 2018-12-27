@@ -18,6 +18,7 @@ class JetFluidPanel(bpy.types.Panel):
         obj = context.scene.objects.active
         obj_props = obj.jet_fluid
         self.layout.operator('jet_fluid.bake')
+        self.layout.operator('jet_fluid.bake_mesh')
         self.layout.prop(obj_props, 'solver_type')
         self.layout.prop(obj_props, 'resolution')
         self.layout.prop(obj_props, 'resolution_mesh')
