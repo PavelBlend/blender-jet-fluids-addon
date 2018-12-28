@@ -96,7 +96,7 @@ class JetFluidBakeMesh(bpy.types.Operator):
             gridOrigin=(origin_x, origin_z, origin_y),
             domainSizeX=self.domain_size_x
         )
-        frame_index = 0
+        frame_index = scn.frame_start
         while frame_index <= scn.frame_end:
             print('frame', frame_index)
             file_path = '{}particles_{}.bin'.format(domain.jet_fluid.cache_folder, frame_index)
