@@ -104,6 +104,7 @@ class JetFluidBakeMesh(bpy.types.Operator):
                 frame_index
             )
             if not os.path.exists(file_path):
+                frame_index += 1
                 continue
             print('open particles file')
             particles_file = open(file_path, 'rb')
@@ -162,7 +163,7 @@ class JetFluidBakeMesh(bpy.types.Operator):
 
 class JetFluidBake(bpy.types.Operator):
     bl_idname = "jet_fluid.bake"
-    bl_label = "Bake"
+    bl_label = "Bake Particles"
     bl_options = {'REGISTER'}
 
     def execute(self, context):

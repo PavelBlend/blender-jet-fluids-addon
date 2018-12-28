@@ -17,8 +17,14 @@ class JetFluidPanel(bpy.types.Panel):
     def draw(self, context):
         obj = context.scene.objects.active
         obj_props = obj.jet_fluid
-        self.layout.operator('jet_fluid.bake')
-        self.layout.operator('jet_fluid.bake_mesh')
+        split = self.layout.split(percentage=0.75, align=True)
+        split.operator('jet_fluid.bake')
+        split.alert = True
+        split.operator('jet_fluid.reset_particles', text="Reset")
+        split = self.layout.split(percentage=0.75, align=True)
+        split.operator('jet_fluid.bake_mesh')
+        split.alert = True
+        split.operator('jet_fluid.reset_mesh', text="Reset")
         self.layout.prop(obj_props, 'solver_type')
         self.layout.prop(obj_props, 'resolution')
         self.layout.prop(obj_props, 'resolution_mesh')
