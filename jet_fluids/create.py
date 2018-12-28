@@ -4,6 +4,11 @@ import struct
 
 import bpy
 
+from . import render
+
+
+GL_PARTICLES_CACHE = {}
+
 
 def remove_par_object(domain):
     if domain.jet_fluid.particles_object:
@@ -134,6 +139,52 @@ def create_mesh(domain):
     )
 
 
+def get_gl_particles_cache():
+    global GL_PARTICLES_CACHE
+    return GL_PARTICLES_CACHE
+
+
+def update_particles_cache(self, context):
+    global GL_PARTICLES_CACHE
+    obj_names = {obj.name for obj in bpy.data.objects}
+    for obj_name in obj_names:
+        obj = bpy.data.objects.get(obj_name)
+        if not obj:
+            continue
+        if obj.jet_fluid.show_particles:
+            file_path = '{}particles_{}.bin'.format(
+                bpy.path.abspath(obj.jet_fluid.cache_folder),
+                bpy.context.scene.frame_current
+            )
+            if os.path.exists(file_path):
+                particles_file = open(file_path, 'rb')
+                particles_data = particles_file.read()
+                particles_file.close()
+                p = 0
+                particles_count = struct.unpack('I', particles_data[p : p + 4])[0]
+                p += 4
+                if obj.jet_fluid.color_type == 'VELOCITY':
+                    positions = []
+                    colors = []
+                    for particle_index in range(particles_count):
+                        particle_position = struct.unpack('3f', particles_data[p : p + 12])
+                        p += 12
+                        positions.append(particle_position)
+                        vel = struct.unpack('3f', particles_data[p : p + 12])
+                        p += 24    # skip forces
+                        color_factor = (vel[0]**2 + vel[1]**2 + vel[2]**2) ** (1/2) / obj.jet_fluid.max_velocity
+                        color = render.generate_particle_color(color_factor, obj.jet_fluid)
+                        colors.append(color)
+                    GL_PARTICLES_CACHE[obj.name] = [positions, colors]
+                else:
+                    positions = []
+                    for particle_index in range(particles_count):
+                        particle_position = struct.unpack('3f', particles_data[p : p + 12])
+                        p += 36    # skip velocities and forces
+                        positions.append(particle_position)
+                    GL_PARTICLES_CACHE[obj.name] = positions
+
+
 @bpy.app.handlers.persistent
 def import_geometry(scene):
     obj_names = {obj.name for obj in bpy.data.objects}
@@ -145,6 +196,7 @@ def import_geometry(scene):
             if obj.jet_fluid.create_particles:
                 create_particles(obj)
             create_mesh(obj)
+    update_particles_cache(None, bpy.context)
 
 
 def register():

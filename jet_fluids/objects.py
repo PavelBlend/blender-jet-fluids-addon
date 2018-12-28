@@ -34,7 +34,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         ('SINGLE_COLOR', 'Single Color', '')
     ]
     color_type = bpy.props.EnumProperty(
-        items=items, name='Color', default='VELOCITY'
+        items=items, name='Color', default='VELOCITY', update=create.update_particles_cache
     )
     particles_object = bpy.props.StringProperty(default='', name='Particles')
     create_particles = bpy.props.BoolProperty(default=False, name='Create Particles', update=create.update_par_object)

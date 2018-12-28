@@ -5,6 +5,8 @@ import os
 import bpy
 import bgl
 
+from . import create
+
 
 handle_3d = None
 
@@ -20,44 +22,24 @@ def draw_scene_particles():
     for obj in bpy.data.objects:
         if obj.jet_fluid.is_active:
             if obj.jet_fluid.show_particles:
-                draw_particles(obj)
+                particles = create.get_gl_particles_cache().get(obj.name, None)
+                if particles:
+                    draw_particles(obj, particles)
 
 
-def draw_particles(domain):
-    file_path = '{}particles_{}.bin'.format(
-        bpy.path.abspath(domain.jet_fluid.cache_folder),
-        bpy.context.scene.frame_current
-    )
-    if not os.path.exists(file_path):
-        return
-    particles_file = open(file_path, 'rb')
-    particles_data = particles_file.read()
-    particles_file.close()
-    p = 0
-    particles_count = struct.unpack('I', particles_data[p : p + 4])[0]
-    p += 4
+def draw_particles(domain, particles):
     bgl.glPointSize(3)
     bgl.glBegin(bgl.GL_POINTS)
     if domain.jet_fluid.color_type == 'VELOCITY':
-        for particle_index in range(particles_count):
-            particle_position = struct.unpack('3f', particles_data[p : p + 12])
-            p += 12
-            vel = struct.unpack('3f', particles_data[p : p + 12])
-            p += 24    # skip forces
-            color_factor = (vel[0]**2 + vel[1]**2 + vel[2]**2) ** (1/2) / domain.jet_fluid.max_velocity
-            color = generate_particle_color(color_factor, domain.jet_fluid)
-            bgl.glColor4f(color[0], color[1], color[2], 1.0)
-            bgl.glVertex3f(
-                particle_position[0],
-                particle_position[2],
-                particle_position[1]
-            )
+        positions = particles[0]
+        colors = particles[1]
+        for index, pos in enumerate(positions):
+            bgl.glColor4f(colors[index][0], colors[index][1], colors[index][2], 1.0)
+            bgl.glVertex3f(pos[0], pos[2], pos[1])
     elif domain.jet_fluid.color_type == 'SINGLE_COLOR':
         color = domain.jet_fluid.color_1
         bgl.glColor4f(color[0], color[1], color[2], 1.0)
-        for particle_index in range(particles_count):
-            particle_position = struct.unpack('3f', particles_data[p : p + 12])
-            p += 36    # skip velocities and forces
+        for particle_position in particles:
             bgl.glVertex3f(
                 particle_position[0],
                 particle_position[2],
