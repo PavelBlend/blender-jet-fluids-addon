@@ -24,7 +24,10 @@ def draw_scene_particles():
 
 
 def draw_particles(domain):
-    file_path = '{}particles_{}.bin'.format(domain.jet_fluid.cache_folder, bpy.context.scene.frame_current)
+    file_path = '{}particles_{}.bin'.format(
+        bpy.path.abspath(domain.jet_fluid.cache_folder),
+        bpy.context.scene.frame_current
+    )
     if not os.path.exists(file_path):
         return
     particles_file = open(file_path, 'rb')

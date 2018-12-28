@@ -45,7 +45,10 @@ def update_par_object(self, context):
 
 
 def create_particles(domain):
-    file_path = '{}particles_{}.bin'.format(domain.jet_fluid.cache_folder, bpy.context.scene.frame_current)
+    file_path = '{}particles_{}.bin'.format(
+        bpy.path.abspath(domain.jet_fluid.cache_folder),
+        bpy.context.scene.frame_current
+    )
     if not os.path.exists(file_path):
         remove_par_object(domain)
         return
@@ -79,7 +82,10 @@ def create_particles(domain):
 
 
 def create_mesh(domain):
-    file_path = '{}mesh_{}.bin'.format(domain.jet_fluid.cache_folder, bpy.context.scene.frame_current)
+    file_path = '{}mesh_{}.bin'.format(
+        bpy.path.abspath(domain.jet_fluid.cache_folder),
+        bpy.context.scene.frame_current
+    )
     if not os.path.exists(file_path):
         remove_mesh_object(domain)
         return

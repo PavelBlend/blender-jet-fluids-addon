@@ -99,7 +99,10 @@ class JetFluidBakeMesh(bpy.types.Operator):
         frame_index = scn.frame_start
         while frame_index <= scn.frame_end:
             print('frame', frame_index)
-            file_path = '{}particles_{}.bin'.format(domain.jet_fluid.cache_folder, frame_index)
+            file_path = '{}particles_{}.bin'.format(
+                bpy.path.abspath(domain.jet_fluid.cache_folder),
+                frame_index
+            )
             if not os.path.exists(file_path):
                 continue
             print('open particles file')
@@ -145,7 +148,10 @@ class JetFluidBakeMesh(bpy.types.Operator):
                 bin_mesh_data.extend(struct.pack('3I', tris.x, tris.y, tris.z))
 
             print('write file')
-            file_path = '{}mesh_{}.bin'.format(self.domain.jet_fluid.cache_folder, frame_index)
+            file_path = '{}mesh_{}.bin'.format(
+                bpy.path.abspath(self.domain.jet_fluid.cache_folder),
+                frame_index
+            )
             file = open(file_path, 'wb')
             file.write(bin_mesh_data)
             file.close()
@@ -180,7 +186,10 @@ class JetFluidBake(bpy.types.Operator):
             for vert_index in range(vertices_count):
                 bin_data.extend(struct.pack('3f', *positions[vert_index]))
                 bin_data.extend(struct.pack('3f', *velocities[vert_index]))
-            file_path = '{}particles_{}.bin'.format(self.domain.jet_fluid.cache_folder, self.frame.index)
+            file_path = '{}particles_{}.bin'.format(
+                bpy.path.abspath(self.domain.jet_fluid.cache_folder),
+                self.frame.index
+            )
             file = open(file_path, 'wb')
             file.write(bin_data)
             file.close()
