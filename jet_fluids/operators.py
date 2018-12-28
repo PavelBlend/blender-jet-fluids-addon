@@ -32,7 +32,7 @@ class JetFluidResetParticles(bpy.types.Operator):
         if not os.path.exists(file_path):
             return {'FINISHED'}
         for file_ in os.listdir(file_path):
-            if re.search('particles_[0-9]*.bin', file_) or re.search('simulation_[0-9]*.bin', file_):
+            if re.search('particles_[0-9]*.bin', file_):
                 os.remove(file_path + file_)
         return {'FINISHED'}
 

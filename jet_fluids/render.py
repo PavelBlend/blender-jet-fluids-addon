@@ -43,7 +43,7 @@ def draw_particles(domain):
             particle_position = struct.unpack('3f', particles_data[p : p + 12])
             p += 12
             vel = struct.unpack('3f', particles_data[p : p + 12])
-            p += 12
+            p += 24    # skip forces
             color_factor = (vel[0]**2 + vel[1]**2 + vel[2]**2) ** (1/2) / domain.jet_fluid.max_velocity
             color = generate_particle_color(color_factor, domain.jet_fluid)
             bgl.glColor4f(color[0], color[1], color[2], 1.0)
@@ -57,7 +57,7 @@ def draw_particles(domain):
         bgl.glColor4f(color[0], color[1], color[2], 1.0)
         for particle_index in range(particles_count):
             particle_position = struct.unpack('3f', particles_data[p : p + 12])
-            p += 24    # skip velocities
+            p += 36    # skip velocities and forces
             bgl.glVertex3f(
                 particle_position[0],
                 particle_position[2],

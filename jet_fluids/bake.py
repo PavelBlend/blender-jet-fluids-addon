@@ -15,6 +15,29 @@ solvers = {
 }
 
 
+def read_particles(file_path):
+    particles_file = open(file_path, 'rb')
+    particles_data = particles_file.read()
+    particles_file.close()
+    p = 0
+    particles_count = struct.unpack('I', particles_data[p : p + 4])[0]
+    p += 4
+    positions = []
+    velocities = []
+    forces = []
+    for particle_index in range(particles_count):
+        pos = struct.unpack('3f', particles_data[p : p + 12])
+        p += 12
+        positions.append(pos)
+        vel = struct.unpack('3f', particles_data[p : p + 12])
+        p += 12
+        velocities.append(vel)
+        force = struct.unpack('3f', particles_data[p : p + 12])
+        p += 12
+        forces.append(force)
+    return positions, velocities, forces
+
+
 def get_triangle_mesh(context, source, solver):
     selected_objects_name = [o.name for o in context.selected_objects]
     active_object_name = context.scene.objects.active.name
@@ -183,6 +206,7 @@ class JetFluidBake(bpy.types.Operator):
             print('start save particles')
             positions = numpy.array(solv.particleSystemData.positions, copy=False)
             velocities = numpy.array(solv.particleSystemData.velocities, copy=False)
+            forces = numpy.array(solv.particleSystemData.forces, copy=False)
             print('numpy convert')
             bin_data = bytearray()
             vertices_count = len(positions)
@@ -191,16 +215,11 @@ class JetFluidBake(bpy.types.Operator):
             for vert_index in range(vertices_count):
                 bin_data.extend(struct.pack('3f', *positions[vert_index]))
                 bin_data.extend(struct.pack('3f', *velocities[vert_index]))
+                bin_data.extend(struct.pack('3f', *forces[vert_index]))
             file = open(file_path, 'wb')
             file.write(bin_data)
             file.close()
             print('end save particles')
-            print('serialize')
-            file_path = '{}simulation_{}.bin'.format(
-                bpy.path.abspath(self.domain.jet_fluid.cache_folder),
-                self.frame.index + offset
-            )
-            solv.particleSystemData.serializeToFile(filename=file_path)
             self.frame.advance()
         return {'FINISHED'}
 
@@ -221,7 +240,7 @@ class JetFluidBake(bpy.types.Operator):
         self.frame = frame
         self.frame_end = context.scene.frame_end
         for frame_index in range(0, self.frame_end):
-            file_path = '{}simulation_{}.bin'.format(
+            file_path = '{}particles_{}.bin'.format(
                 bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                 frame_index
             )
@@ -247,7 +266,7 @@ class JetFluidBake(bpy.types.Operator):
                     break
                 else:
                     last_frame = frame_index - 1
-                    file_path = '{}simulation_{}.bin'.format(
+                    file_path = '{}particles_{}.bin'.format(
                         bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                         last_frame
                     )
@@ -264,7 +283,8 @@ class JetFluidBake(bpy.types.Operator):
                         triangle_mesh = get_triangle_mesh(context, bpy.data.objects[obj.jet_fluid.collider], solver)
                         collider = pyjet.RigidBodyCollider3(surface=triangle_mesh)
                         solver.collider = collider
-                    solver.particleSystemData.deserializeFromFile(file_path)
+                    pos, vel, forc = read_particles(file_path)
+                    solver.particleSystemData.addParticles(pos, vel, forc)
                     self.simulate(offset=last_frame)
                     break
         return {'FINISHED'}
