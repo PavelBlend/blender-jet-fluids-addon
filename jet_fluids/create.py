@@ -61,7 +61,7 @@ def create_particles(domain):
     vertices = []
     for particle_index in range(particles_count):
         pos = struct.unpack('3f', particles_data[p : p + 12])
-        p += 36    # skip velocities and forces
+        p += 24    # skip velocities
         vertices.append((pos[0], pos[2], pos[1]))
 
     par_mesh = bpy.data.meshes.new('temp_name')
