@@ -51,9 +51,6 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     velocity = bpy.props.FloatVectorProperty(default=(0, 0, 0), name='Velocity')
     one_shot = bpy.props.BoolProperty(default=False, name='One Shot')
 
-    # collider props
-    collider = bpy.props.StringProperty(default='', name='Collider')
-
     # create props
     create_mesh = bpy.props.BoolProperty(
         default=True,

@@ -2,6 +2,26 @@
 import bpy
 
 
+class JetFluidColliderPanel(bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "physics"
+    bl_label = "Jet Fluid"
+
+    @classmethod
+    def poll(cls, context):
+        jet = context.object.jet_fluid
+        return jet.is_active and jet.object_type == 'COLLIDER'
+
+    def draw(self, context):
+        obj = context.object
+        jet = obj.jet_fluid
+        lay = self.layout
+
+        # create ui elements
+        lay.prop(jet, 'object_type')
+
+
 class JetFluidEmitterPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -162,7 +182,6 @@ class JetFluidSimulatePanel(bpy.types.Panel):
         lay.prop(jet, 'resolution')
         lay.prop(jet, 'resolution_mesh')
         lay.prop(jet, 'particles_count')
-        lay.prop_search(jet, 'collider', bpy.data, 'objects')
 
 
 class JetFluidPanel(bpy.types.Panel):
@@ -216,7 +235,8 @@ __CLASSES__ = [
     JetFluidCreatePanel,
     JetFluidWorldPanel,
     JetFluidDebugPanel,
-    JetFluidEmitterPanel
+    JetFluidEmitterPanel,
+    JetFluidColliderPanel
 ]
 
 

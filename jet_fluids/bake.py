@@ -195,8 +195,9 @@ class JetFluidBake(bpy.types.Operator):
     bl_label = "Bake Particles"
     bl_options = {'REGISTER'}
 
-    def find_emitters(self):
+    def find_emitters_and_colliders(self):
         emitters = []
+        colliders = []
         obj_names = {obj.name for obj in bpy.data.objects}
         for obj_name in obj_names:
             obj = bpy.data.objects.get(obj_name)
@@ -205,7 +206,9 @@ class JetFluidBake(bpy.types.Operator):
             if obj.jet_fluid.is_active:
                 if obj.jet_fluid.object_type == 'EMITTER':
                     emitters.append(obj)
-        return emitters
+                elif obj.jet_fluid.object_type == 'COLLIDER':
+                    colliders.append(obj)
+        return emitters, colliders
 
     def simulate(self, offset=0):
         print('EXECUTE START')
@@ -267,7 +270,7 @@ class JetFluidBake(bpy.types.Operator):
                 continue
             else:
                 if frame_index == 0:
-                    emitters = self.find_emitters()
+                    emitters, colliders = self.find_emitters_and_colliders()
                     jet_emitters = []
                     for emitter_object in emitters:
                         triangle_mesh = get_triangle_mesh(context, emitter_object, solver)
@@ -280,11 +283,15 @@ class JetFluidBake(bpy.types.Operator):
                         jet_emitters.append(emitter)
                     emitter_set = pyjet.ParticleEmitterSet3(emitters=jet_emitters)
                     solver.particleEmitter = emitter_set
-                    collider_name = obj.jet_fluid.collider
-                    if collider_name:
-                        triangle_mesh = get_triangle_mesh(context, bpy.data.objects[obj.jet_fluid.collider], solver)
-                        collider = pyjet.RigidBodyCollider3(surface=triangle_mesh)
-                        solver.collider = collider
+                    # set colliders
+                    jet_colliders = []
+                    for collider_object in colliders:
+                        triangle_mesh = get_triangle_mesh(context, collider_object, solver)
+                        jet_colliders.append(triangle_mesh)
+                    collider_surface = pyjet.SurfaceSet3(others=jet_colliders)
+                    collider = pyjet.RigidBodyCollider3(surface=collider_surface)
+                    solver.collider = collider
+                    # simulate
                     self.simulate()
                     break
                 else:
@@ -293,7 +300,7 @@ class JetFluidBake(bpy.types.Operator):
                         bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                         last_frame
                     )
-                    emitters = self.find_emitters()
+                    emitters, colliders = self.find_emitters_and_colliders()
                     jet_emitters = []
                     for emitter_object in emitters:
                         if not emitter_object.jet_fluid.one_shot:
@@ -307,11 +314,15 @@ class JetFluidBake(bpy.types.Operator):
                             jet_emitters.append(emitter)
                     emitter_set = pyjet.ParticleEmitterSet3(emitters=jet_emitters)
                     solver.particleEmitter = emitter_set
-                    collider_name = obj.jet_fluid.collider
-                    if collider_name:
-                        triangle_mesh = get_triangle_mesh(context, bpy.data.objects[obj.jet_fluid.collider], solver)
-                        collider = pyjet.RigidBodyCollider3(surface=triangle_mesh)
-                        solver.collider = collider
+                    # set colliders
+                    jet_colliders = []
+                    for collider_object in colliders:
+                        triangle_mesh = get_triangle_mesh(context, collider_object, solver)
+                        jet_colliders.append(triangle_mesh)
+                    collider_surface = pyjet.SurfaceSet3(others=jet_colliders)
+                    collider = pyjet.RigidBodyCollider3(surface=collider_surface)
+                    solver.collider = collider
+                    # resume particles
                     pos, vel, forc = read_particles(file_path)
                     solver.particleSystemData.addParticles(pos, vel, forc)
                     self.simulate(offset=last_frame)
