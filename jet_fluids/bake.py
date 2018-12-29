@@ -270,14 +270,15 @@ class JetFluidBake(bpy.types.Operator):
                         bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                         last_frame
                     )
-                    triangle_mesh = get_triangle_mesh(context, bpy.data.objects[obj.jet_fluid.emitter], solver)
-                    emitter = pyjet.VolumeParticleEmitter3(
-                        implicitSurface=triangle_mesh,
-                        spacing=self.domain_max_size / (obj.jet_fluid.resolution * obj.jet_fluid.particles_count),
-                        isOneShot=obj.jet_fluid.one_shot,
-                        initialVel=[v for v in obj.jet_fluid.velocity]
-                    )
-                    solver.particleEmitter = emitter
+                    if not obj.jet_fluid.one_shot:
+                        triangle_mesh = get_triangle_mesh(context, bpy.data.objects[obj.jet_fluid.emitter], solver)
+                        emitter = pyjet.VolumeParticleEmitter3(
+                            implicitSurface=triangle_mesh,
+                            spacing=self.domain_max_size / (obj.jet_fluid.resolution * obj.jet_fluid.particles_count),
+                            isOneShot=obj.jet_fluid.one_shot,
+                            initialVel=[v for v in obj.jet_fluid.velocity]
+                        )
+                        solver.particleEmitter = emitter
                     collider_name = obj.jet_fluid.collider
                     if collider_name:
                         triangle_mesh = get_triangle_mesh(context, bpy.data.objects[obj.jet_fluid.collider], solver)
