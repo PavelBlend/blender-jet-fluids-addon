@@ -36,6 +36,19 @@ def remove_mesh_object(domain):
         mesh.name = 'jet_fluid_mesh'
 
 
+def update_mesh_object(self, context):
+    obj_names = {obj.name for obj in bpy.data.objects}
+    for obj_name in obj_names:
+        obj = bpy.data.objects.get(obj_name)
+        if not obj:
+            continue
+        if obj.jet_fluid.is_active:
+            if obj.jet_fluid.create_mesh:
+                create_mesh(obj)
+            else:
+                remove_mesh_object(obj)
+
+
 def update_par_object(self, context):
     obj_names = {obj.name for obj in bpy.data.objects}
     for obj_name in obj_names:
@@ -195,7 +208,8 @@ def import_geometry(scene):
         if obj.jet_fluid.is_active:
             if obj.jet_fluid.create_particles:
                 create_particles(obj)
-            create_mesh(obj)
+            if obj.jet_fluid.create_mesh:
+                create_mesh(obj)
     global GL_PARTICLES_CACHE
     GL_PARTICLES_CACHE = {}
     update_particles_cache(None, bpy.context)

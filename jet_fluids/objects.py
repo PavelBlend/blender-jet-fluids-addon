@@ -48,7 +48,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     create_mesh = bpy.props.BoolProperty(
         default=True,
         name='Create Mesh',
-        update=create.update_par_object
+        update=create.update_mesh_object
     )
     mesh_object = bpy.props.StringProperty(default='', name='Mesh')
     create_particles = bpy.props.BoolProperty(
