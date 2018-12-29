@@ -140,7 +140,7 @@ class JetFluidBakeMesh(bpy.types.Operator):
             points = []
             for particle_index in range(particles_count):
                 particle_position = struct.unpack('3f', particles_data[p : p + 12])
-                p += 24    # skip velocities
+                p += 36    # skip velocities and forces
                 points.append(particle_position)
 
             print('create converter')
