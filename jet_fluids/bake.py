@@ -191,7 +191,7 @@ class JetFluidBakeMesh(bpy.types.Operator):
 
 
 class JetFluidBake(bpy.types.Operator):
-    bl_idname = "jet_fluid.bake"
+    bl_idname = "jet_fluid.bake_particles"
     bl_label = "Bake Particles"
     bl_options = {'REGISTER'}
 

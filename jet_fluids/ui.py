@@ -2,51 +2,148 @@
 import bpy
 
 
-class JetFluidPanel(bpy.types.Panel):
+class JetFluidWorldPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "physics"
-    bl_category = "Jet Fluid"
-    bl_label = "Jet Fluid"
+    bl_label = "Jet Fluid World"
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
-        obj_props = context.scene.objects.active.jet_fluid
-        return obj_props.is_active
+        jet = context.object.jet_fluid
+        return jet.is_active
 
     def draw(self, context):
-        obj = context.scene.objects.active
-        obj_props = obj.jet_fluid
-        split = self.layout.split(percentage=0.75, align=True)
-        split.operator('jet_fluid.bake')
+        obj = context.object
+        jet = obj.jet_fluid
+        lay = self.layout
+
+        # create ui elements
+        lay.prop(jet, 'viscosity')
+
+
+class JetFluidCreatePanel(bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "physics"
+    bl_label = "Jet Fluid Create"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        jet = context.object.jet_fluid
+        return jet.is_active
+
+    def draw(self, context):
+        obj = context.object
+        jet = obj.jet_fluid
+        lay = self.layout
+
+        # create ui elements
+
+        # mesh properties
+        lay.prop(jet, 'create_mesh')
+        if jet.create_mesh:
+            lay.prop_search(jet, 'mesh_object', bpy.data, 'objects')
+
+        # particles properties
+        lay.prop(jet, 'create_particles')
+        if jet.create_particles:
+            lay.prop_search(jet, 'particles_object', bpy.data, 'objects')
+
+
+class JetFluidDebugPanel(bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "physics"
+    bl_label = "Jet Fluid Debug"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        jet = context.object.jet_fluid
+        return jet.is_active
+
+    def draw(self, context):
+        obj = context.object
+        jet = obj.jet_fluid
+        lay = self.layout
+
+        # create ui elements
+        lay.prop(jet, 'show_particles')
+        if jet.show_particles:
+            lay.prop(jet, 'color_type')
+            row = lay.row()
+            row.prop(jet, 'color_1', text='')
+            if jet.color_type == 'VELOCITY':
+                row.prop(jet, 'color_2', text='')
+                lay.prop(jet, 'max_velocity')
+
+
+class JetFluidCachePanel(bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "physics"
+    bl_label = "Jet Fluid Cache"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        jet = context.object.jet_fluid
+        return jet.is_active
+
+    def draw(self, context):
+        obj = context.object
+        jet = obj.jet_fluid
+        lay = self.layout
+
+        # create ui elements
+        lay.prop(jet, 'cache_folder')
+
+
+class JetFluidSimulatePanel(bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "physics"
+    bl_label = "Jet Fluid Simulate"
+
+    @classmethod
+    def poll(cls, context):
+        jet = context.object.jet_fluid
+        return jet.is_active
+
+    def draw(self, context):
+        obj = context.object
+        jet = obj.jet_fluid
+        lay = self.layout
+
+        # create ui elements
+
+        # bake particles
+        split = lay.split(percentage=0.75, align=True)
+        split.operator('jet_fluid.bake_particles')
         split.alert = True
         split.operator('jet_fluid.reset_particles', text="Reset")
-        split = self.layout.split(percentage=0.75, align=True)
+
+        # bake mesh
+        split = lay.split(percentage=0.75, align=True)
         split.operator('jet_fluid.bake_mesh')
         split.alert = True
         split.operator('jet_fluid.reset_mesh', text="Reset")
-        self.layout.prop(obj_props, 'solver_type')
-        self.layout.prop(obj_props, 'resolution')
-        self.layout.prop(obj_props, 'resolution_mesh')
-        self.layout.prop(obj_props, 'particles_count')
-        self.layout.prop(obj_props, 'viscosity')
-        self.layout.prop_search(obj_props, 'emitter', bpy.data, 'objects')
-        self.layout.prop(obj_props, 'velocity')
-        self.layout.prop(obj_props, 'one_shot')
-        self.layout.prop_search(obj_props, 'collider', bpy.data, 'objects')
-        self.layout.prop(obj_props, 'cache_folder')
-        self.layout.prop_search(obj_props, 'mesh_object', bpy.data, 'objects')
-        self.layout.prop(obj_props, 'show_particles')
-        self.layout.prop(obj_props, 'create_particles')
-        self.layout.prop_search(obj_props, 'particles_object', bpy.data, 'objects')
-        row = self.layout.row()
-        row.prop(obj_props, 'color_1', text='')
-        row.prop(obj_props, 'color_2', text='')
-        self.layout.prop(obj_props, 'max_velocity')
-        self.layout.prop(obj_props, 'color_type')
+
+        # simulation properties
+        lay.prop(jet, 'solver_type')
+        lay.prop(jet, 'resolution')
+        lay.prop(jet, 'resolution_mesh')
+        lay.prop(jet, 'particles_count')
+        lay.prop_search(jet, 'emitter', bpy.data, 'objects')
+        lay.prop(jet, 'velocity')
+        lay.prop(jet, 'one_shot')
+        lay.prop_search(jet, 'collider', bpy.data, 'objects')
 
 
-def add_panel(self, context):
+def add_jet_fluid_button(self, context):
     obj = context.scene.objects.active
     if not obj.type == 'MESH':
         return
@@ -58,9 +155,9 @@ def add_panel(self, context):
 
     if obj.jet_fluid.is_active:
         column_right.operator(
-                "jet_fluid.remove", 
-                 text="Jet Fluid", 
-                 icon='X'
+            "jet_fluid.remove", 
+            text="Jet Fluid", 
+            icon='X'
         )
     else:
         column_right.operator(
@@ -70,11 +167,22 @@ def add_panel(self, context):
         )
 
 
+__CLASSES__ = [
+    JetFluidSimulatePanel,
+    JetFluidCachePanel,
+    JetFluidCreatePanel,
+    JetFluidWorldPanel,
+    JetFluidDebugPanel
+]
+
+
 def register():
-    bpy.types.PHYSICS_PT_add.append(add_panel)
-    bpy.utils.register_class(JetFluidPanel)
+    bpy.types.PHYSICS_PT_add.append(add_jet_fluid_button)
+    for class_ in __CLASSES__:
+        bpy.utils.register_class(class_)
 
 
 def unregister():
-    bpy.utils.unregister_class(JetFluidPanel)
-    bpy.types.PHYSICS_PT_add.remove(add_panel)
+    for class_ in reversed(__CLASSES__):
+        bpy.utils.unregister_class(class_)
+    bpy.types.PHYSICS_PT_add.remove(add_jet_fluid_button)

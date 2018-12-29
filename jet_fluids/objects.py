@@ -15,7 +15,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     solver_type = bpy.props.EnumProperty(
         items=items, name='Fluid Solver', default='PIC'
     )
-    resolution = bpy.props.IntProperty(default=30, name='Resolution')
+    resolution = bpy.props.IntProperty(default=30, name='Simulate Resolution')
     resolution_mesh = bpy.props.IntProperty(default=30, name='Mesh Resolution')
     particles_count = bpy.props.FloatProperty(default=2.0, name='Particles', min=1.0)
     viscosity = bpy.props.FloatProperty(default=0.0, name='Viscosity')
@@ -23,6 +23,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     velocity = bpy.props.FloatVectorProperty(default=(0, 0, 0), name='Velocity')
     one_shot = bpy.props.BoolProperty(default=False, name='One Shot')
     collider = bpy.props.StringProperty(default='', name='Collider')
+    create_mesh = bpy.props.BoolProperty(default=True, name='Create Mesh', update=create.update_par_object)
     mesh_object = bpy.props.StringProperty(default='', name='Mesh')
     show_particles = bpy.props.BoolProperty(default=True, name='Show Particles')
     cache_folder = bpy.props.StringProperty(default='', name='Cache Folder', subtype='DIR_PATH')
