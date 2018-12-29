@@ -196,6 +196,8 @@ def import_geometry(scene):
             if obj.jet_fluid.create_particles:
                 create_particles(obj)
             create_mesh(obj)
+    global GL_PARTICLES_CACHE
+    GL_PARTICLES_CACHE = {}
     update_particles_cache(None, bpy.context)
 
 
