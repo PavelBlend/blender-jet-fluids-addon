@@ -195,6 +195,18 @@ class JetFluidBake(bpy.types.Operator):
     bl_label = "Bake Particles"
     bl_options = {'REGISTER'}
 
+    def find_emitters(self):
+        emitters = []
+        obj_names = {obj.name for obj in bpy.data.objects}
+        for obj_name in obj_names:
+            obj = bpy.data.objects.get(obj_name)
+            if not obj:
+                continue
+            if obj.jet_fluid.is_active:
+                if obj.jet_fluid.object_type == 'EMITTER':
+                    emitters.append(obj)
+        return emitters
+
     def simulate(self, offset=0):
         print('EXECUTE START')
         solv = self.solver
@@ -255,14 +267,19 @@ class JetFluidBake(bpy.types.Operator):
                 continue
             else:
                 if frame_index == 0:
-                    triangle_mesh = get_triangle_mesh(context, bpy.data.objects[obj.jet_fluid.emitter], solver)
-                    emitter = pyjet.VolumeParticleEmitter3(
-                        implicitSurface=triangle_mesh,
-                        spacing=self.domain_max_size / (obj.jet_fluid.resolution * obj.jet_fluid.particles_count),
-                        isOneShot=obj.jet_fluid.one_shot,
-                        initialVel=[v for v in obj.jet_fluid.velocity]
-                    )
-                    solver.particleEmitter = emitter
+                    emitters = self.find_emitters()
+                    jet_emitters = []
+                    for emitter_object in emitters:
+                        triangle_mesh = get_triangle_mesh(context, emitter_object, solver)
+                        emitter = pyjet.VolumeParticleEmitter3(
+                            implicitSurface=triangle_mesh,
+                            spacing=self.domain_max_size / (obj.jet_fluid.resolution * obj.jet_fluid.particles_count),
+                            isOneShot=emitter_object.jet_fluid.one_shot,
+                            initialVel=[v for v in emitter_object.jet_fluid.velocity]
+                        )
+                        jet_emitters.append(emitter)
+                    emitter_set = pyjet.ParticleEmitterSet3(emitters=jet_emitters)
+                    solver.particleEmitter = emitter_set
                     collider_name = obj.jet_fluid.collider
                     if collider_name:
                         triangle_mesh = get_triangle_mesh(context, bpy.data.objects[obj.jet_fluid.collider], solver)
@@ -276,15 +293,20 @@ class JetFluidBake(bpy.types.Operator):
                         bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                         last_frame
                     )
-                    if not obj.jet_fluid.one_shot:
-                        triangle_mesh = get_triangle_mesh(context, bpy.data.objects[obj.jet_fluid.emitter], solver)
-                        emitter = pyjet.VolumeParticleEmitter3(
-                            implicitSurface=triangle_mesh,
-                            spacing=self.domain_max_size / (obj.jet_fluid.resolution * obj.jet_fluid.particles_count),
-                            isOneShot=obj.jet_fluid.one_shot,
-                            initialVel=[v for v in obj.jet_fluid.velocity]
-                        )
-                        solver.particleEmitter = emitter
+                    emitters = self.find_emitters()
+                    jet_emitters = []
+                    for emitter_object in emitters:
+                        if not emitter_object.jet_fluid.one_shot:
+                            triangle_mesh = get_triangle_mesh(context, emitter_object, solver)
+                            emitter = pyjet.VolumeParticleEmitter3(
+                                implicitSurface=triangle_mesh,
+                                spacing=self.domain_max_size / (obj.jet_fluid.resolution * obj.jet_fluid.particles_count),
+                                isOneShot=emitter_object.jet_fluid.one_shot,
+                                initialVel=[v for v in emitter_object.jet_fluid.velocity]
+                            )
+                            jet_emitters.append(emitter)
+                    emitter_set = pyjet.ParticleEmitterSet3(emitters=jet_emitters)
+                    solver.particleEmitter = emitter_set
                     collider_name = obj.jet_fluid.collider
                     if collider_name:
                         triangle_mesh = get_triangle_mesh(context, bpy.data.objects[obj.jet_fluid.collider], solver)

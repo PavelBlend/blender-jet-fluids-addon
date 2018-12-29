@@ -2,6 +2,28 @@
 import bpy
 
 
+class JetFluidEmitterPanel(bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "physics"
+    bl_label = "Jet Fluid"
+
+    @classmethod
+    def poll(cls, context):
+        jet = context.object.jet_fluid
+        return jet.is_active and jet.object_type == 'EMITTER'
+
+    def draw(self, context):
+        obj = context.object
+        jet = obj.jet_fluid
+        lay = self.layout
+
+        # create ui elements
+        lay.prop(jet, 'object_type')
+        lay.prop(jet, 'one_shot')
+        lay.prop(jet, 'velocity')
+
+
 class JetFluidWorldPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -12,7 +34,7 @@ class JetFluidWorldPanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         jet = context.object.jet_fluid
-        return jet.is_active
+        return jet.is_active and jet.object_type == 'DOMAIN'
 
     def draw(self, context):
         obj = context.object
@@ -33,7 +55,7 @@ class JetFluidCreatePanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         jet = context.object.jet_fluid
-        return jet.is_active
+        return jet.is_active and jet.object_type == 'DOMAIN'
 
     def draw(self, context):
         obj = context.object
@@ -63,7 +85,7 @@ class JetFluidDebugPanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         jet = context.object.jet_fluid
-        return jet.is_active
+        return jet.is_active and jet.object_type == 'DOMAIN'
 
     def draw(self, context):
         obj = context.object
@@ -91,7 +113,7 @@ class JetFluidCachePanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         jet = context.object.jet_fluid
-        return jet.is_active
+        return jet.is_active and jet.object_type == 'DOMAIN'
 
     def draw(self, context):
         obj = context.object
@@ -111,7 +133,7 @@ class JetFluidSimulatePanel(bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         jet = context.object.jet_fluid
-        return jet.is_active
+        return jet.is_active and jet.object_type == 'DOMAIN'
 
     def draw(self, context):
         obj = context.object
@@ -119,6 +141,9 @@ class JetFluidSimulatePanel(bpy.types.Panel):
         lay = self.layout
 
         # create ui elements
+
+        # object type
+        lay.prop(jet, 'object_type')
 
         # bake particles
         split = lay.split(percentage=0.75, align=True)
@@ -137,10 +162,27 @@ class JetFluidSimulatePanel(bpy.types.Panel):
         lay.prop(jet, 'resolution')
         lay.prop(jet, 'resolution_mesh')
         lay.prop(jet, 'particles_count')
-        lay.prop_search(jet, 'emitter', bpy.data, 'objects')
-        lay.prop(jet, 'velocity')
-        lay.prop(jet, 'one_shot')
         lay.prop_search(jet, 'collider', bpy.data, 'objects')
+
+
+class JetFluidPanel(bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "physics"
+    bl_label = "Jet Fluid"
+
+    @classmethod
+    def poll(cls, context):
+        jet = context.object.jet_fluid
+        return jet.is_active and jet.object_type == 'NONE'
+
+    def draw(self, context):
+        obj = context.object
+        jet = obj.jet_fluid
+        lay = self.layout
+
+        # create ui elements
+        lay.prop(jet, 'object_type')
 
 
 def add_jet_fluid_button(self, context):
@@ -168,11 +210,13 @@ def add_jet_fluid_button(self, context):
 
 
 __CLASSES__ = [
+    JetFluidPanel,
     JetFluidSimulatePanel,
     JetFluidCachePanel,
     JetFluidCreatePanel,
     JetFluidWorldPanel,
-    JetFluidDebugPanel
+    JetFluidDebugPanel,
+    JetFluidEmitterPanel
 ]
 
 

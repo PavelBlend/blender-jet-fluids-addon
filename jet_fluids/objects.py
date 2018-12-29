@@ -9,6 +9,17 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
 
     is_active = bpy.props.BoolProperty(default=False)
 
+    # object type
+    items = [
+        ('NONE', 'None', ''),
+        ('DOMAIN', 'Domain', ''),
+        ('EMITTER', 'Emitter', ''),
+        ('COLLIDER', 'Collider', '')
+    ]
+    object_type = bpy.props.EnumProperty(
+        items=items, name='Fluid Type', default='NONE'
+    )
+
     # simulate props
     items = [
         ('APIC', 'APIC', ''),
@@ -37,7 +48,6 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     viscosity = bpy.props.FloatProperty(default=0.0, name='Viscosity')
 
     # emitter props
-    emitter = bpy.props.StringProperty(default='', name='Emitter')
     velocity = bpy.props.FloatVectorProperty(default=(0, 0, 0), name='Velocity')
     one_shot = bpy.props.BoolProperty(default=False, name='One Shot')
 

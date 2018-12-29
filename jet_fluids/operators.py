@@ -56,6 +56,7 @@ class JetFluidRemove(bpy.types.Operator):
     def execute(self, context):
         obj = context.scene.objects.active
         obj.jet_fluid.is_active = False
+        obj.jet_fluid.object_type = 'NONE'
         return {'FINISHED'}
 
 
