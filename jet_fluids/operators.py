@@ -59,7 +59,7 @@ class JetFluidRemove(bpy.types.Operator):
         return {'FINISHED'}
 
 
-classes = [
+__CLASSES__ = [
     JetFluidAdd,
     JetFluidRemove,
     JetFluidResetParticles,
@@ -68,10 +68,10 @@ classes = [
 
 
 def register():
-    for class_ in classes:
+    for class_ in __CLASSES__:
         bpy.utils.register_class(class_)
 
 
 def unregister():
-    for class_ in classes.reverse():
-        bpy.utils.register_class(class_)
+    for class_ in reversed(__CLASSES__):
+        bpy.utils.unregister_class(class_)

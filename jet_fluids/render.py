@@ -49,8 +49,10 @@ def draw_particles(domain, particles):
 
 
 def register():
+    global handle_3d
     handle_3d = bpy.types.SpaceView3D.draw_handler_add(draw_scene_particles, (), 'WINDOW', 'POST_VIEW')
 
 
 def unregister():
+    global handle_3d
     bpy.types.SpaceView3D.draw_handler_remove(handle_3d, 'WINDOW')
