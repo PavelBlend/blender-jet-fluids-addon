@@ -13,6 +13,10 @@ solvers = {
     'PIC': pyjet.PicSolver3,
     'FLIP': pyjet.FlipSolver3
 }
+advection_solvers = {
+    'SEMI_LAGRANGIAN': pyjet.SemiLagrangian3,
+    'CUBIC_SEMI_LAGRANGIAN': pyjet.CubicSemiLagrangian3
+}
 
 
 def read_particles(file_path):
@@ -283,6 +287,7 @@ class JetFluidBake(bpy.types.Operator):
             domainSizeX=domain_size_x
         )
         solver.maxCfl = obj.jet_fluid.max_cfl
+        solver.advectionSolver = advection_solvers[obj.jet_fluid.advection_solver_type]()
         solver.useCompressedLinearSystem = True
         set_closed_domain_boundary_flag(solver, obj)
         solver.viscosityCoefficient = obj.jet_fluid.viscosity

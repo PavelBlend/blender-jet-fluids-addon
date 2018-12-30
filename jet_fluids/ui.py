@@ -211,6 +211,7 @@ class JetFluidSimulatePanel(bpy.types.Panel):
 
         # simulation properties
         lay.prop(jet, 'solver_type')
+        lay.prop(jet, 'advection_solver_type')
         lay.prop(jet, 'resolution')
         lay.prop(jet, 'resolution_mesh')
         lay.prop(jet, 'particles_count')

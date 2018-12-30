@@ -29,6 +29,13 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     solver_type = bpy.props.EnumProperty(
         items=items, name='Fluid Solver', default='PIC'
     )
+    items = [
+        ('SEMI_LAGRANGIAN', 'Semi-Lagrangian', ''),
+        ('CUBIC_SEMI_LAGRANGIAN', 'Cubic Semi-Lagrangian', '')
+    ]
+    advection_solver_type = bpy.props.EnumProperty(
+        items=items, name='Advection Solver', default='SEMI_LAGRANGIAN'
+    )
     resolution = bpy.props.IntProperty(default=30, name='Simulate Resolution')
     resolution_mesh = bpy.props.IntProperty(default=30, name='Mesh Resolution')
     particles_count = bpy.props.FloatProperty(
