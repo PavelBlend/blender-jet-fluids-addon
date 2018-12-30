@@ -46,6 +46,10 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
 
     # world props
     viscosity = bpy.props.FloatProperty(default=0.0, name='Viscosity')
+    gravity = bpy.props.FloatVectorProperty(
+        default=(0.0, 0.0, -9.8),
+        name='Gravity'
+    )
 
     # emitter props
     velocity = bpy.props.FloatVectorProperty(default=(0, 0, 0), name='Velocity')

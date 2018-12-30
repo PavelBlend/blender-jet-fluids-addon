@@ -63,6 +63,7 @@ class JetFluidWorldPanel(bpy.types.Panel):
 
         # create ui elements
         lay.prop(jet, 'viscosity')
+        lay.prop(jet, 'gravity')
 
 
 class JetFluidCreatePanel(bpy.types.Panel):

@@ -256,6 +256,8 @@ class JetFluidBake(bpy.types.Operator):
         )
         solver.useCompressedLinearSystem = True
         solver.viscosityCoefficient = obj.jet_fluid.viscosity
+        grav = obj.jet_fluid.gravity
+        solver.gravity = grav[0], grav[2], grav[1]
         frame = pyjet.Frame(0, 1.0 / context.scene.render.fps)
         self.solver = solver
         self.frame = frame
