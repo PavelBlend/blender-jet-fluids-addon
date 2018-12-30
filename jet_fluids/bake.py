@@ -67,6 +67,34 @@ def get_triangle_mesh(context, source, solver):
     return imp_triangle_mesh
 
 
+def set_closed_domain_boundary_flag(solver, obj):
+    jet = obj.jet_fluid
+    bounds = [
+        jet.bound_right,
+        jet.bound_left,
+        jet.bound_front,
+        jet.bound_back,
+        jet.bound_up,
+        jet.bound_down
+    ]
+    flags = [
+        pyjet.DIRECTION_RIGHT,
+        pyjet.DIRECTION_LEFT,
+        pyjet.DIRECTION_FRONT,
+        pyjet.DIRECTION_BACK,
+        pyjet.DIRECTION_UP,
+        pyjet.DIRECTION_DOWN
+        
+    ]
+
+    bound_flag = 0
+    for bound_index, bound in enumerate(bounds):
+        if bound:
+            bound_flag |= flags[bound_index]
+
+    solver.closedDomainBoundaryFlag = bound_flag
+
+
 def calc_res(self, obj, type='FLUID'):
     self.domain = obj
     domain_size_x = obj.bound_box[6][0] * obj.scale[0] - obj.bound_box[0][0] * obj.scale[0]
@@ -247,7 +275,7 @@ class JetFluidBake(bpy.types.Operator):
     def execute(self, context):
         print('INVOKE START')
         pyjet.Logging.mute()
-        obj = context.scene.objects.active
+        obj = context.object
         resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, _ = calc_res(self, obj)
         solver = solvers[obj.jet_fluid.solver_type](
             resolution=(resolution_x, resolution_z, resolution_y),
@@ -255,6 +283,7 @@ class JetFluidBake(bpy.types.Operator):
             domainSizeX=domain_size_x
         )
         solver.useCompressedLinearSystem = True
+        set_closed_domain_boundary_flag(solver, obj)
         solver.viscosityCoefficient = obj.jet_fluid.viscosity
         grav = obj.jet_fluid.gravity
         solver.gravity = grav[0], grav[2], grav[1]
@@ -276,11 +305,12 @@ class JetFluidBake(bpy.types.Operator):
                     jet_emitters = []
                     for emitter_object in emitters:
                         triangle_mesh = get_triangle_mesh(context, emitter_object, solver)
+                        init_vel = emitter_object.jet_fluid.velocity
                         emitter = pyjet.VolumeParticleEmitter3(
                             implicitSurface=triangle_mesh,
                             spacing=self.domain_max_size / (obj.jet_fluid.resolution * obj.jet_fluid.particles_count),
                             isOneShot=emitter_object.jet_fluid.one_shot,
-                            initialVelocity=[v for v in emitter_object.jet_fluid.velocity]
+                            initialVelocity=[init_vel[0], init_vel[2], init_vel[1]]
                         )
                         jet_emitters.append(emitter)
                     emitter_set = pyjet.ParticleEmitterSet3(emitters=jet_emitters)
@@ -308,11 +338,12 @@ class JetFluidBake(bpy.types.Operator):
                     for emitter_object in emitters:
                         if not emitter_object.jet_fluid.one_shot:
                             triangle_mesh = get_triangle_mesh(context, emitter_object, solver)
+                            init_vel = emitter_object.jet_fluid.velocity
                             emitter = pyjet.VolumeParticleEmitter3(
                                 implicitSurface=triangle_mesh,
                                 spacing=self.domain_max_size / (obj.jet_fluid.resolution * obj.jet_fluid.particles_count),
                                 isOneShot=emitter_object.jet_fluid.one_shot,
-                                initialVelocity=[v for v in emitter_object.jet_fluid.velocity]
+                                initialVelocity=[init_vel[0], init_vel[2], init_vel[1]]
                             )
                             jet_emitters.append(emitter)
                     emitter_set = pyjet.ParticleEmitterSet3(emitters=jet_emitters)

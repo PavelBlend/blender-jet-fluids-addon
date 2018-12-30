@@ -44,6 +44,37 @@ class JetFluidEmitterPanel(bpy.types.Panel):
         lay.prop(jet, 'velocity')
 
 
+class JetFluidBoundaryPanel(bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "physics"
+    bl_label = "Jet Fluid Boundary"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        jet = context.object.jet_fluid
+        return jet.is_active and jet.object_type == 'DOMAIN'
+
+    def draw(self, context):
+        obj = context.object
+        jet = obj.jet_fluid
+        lay = self.layout
+
+        # create ui elements
+        row = lay.row()
+        row.prop(jet, 'bound_right')
+        row.prop(jet, 'bound_left')
+
+        row = lay.row()
+        row.prop(jet, 'bound_front')
+        row.prop(jet, 'bound_back')
+
+        row = lay.row()
+        row.prop(jet, 'bound_up')
+        row.prop(jet, 'bound_down')
+
+
 class JetFluidWorldPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -232,6 +263,7 @@ def add_jet_fluid_button(self, context):
 __CLASSES__ = [
     JetFluidPanel,
     JetFluidSimulatePanel,
+    JetFluidBoundaryPanel,
     JetFluidCachePanel,
     JetFluidCreatePanel,
     JetFluidWorldPanel,
