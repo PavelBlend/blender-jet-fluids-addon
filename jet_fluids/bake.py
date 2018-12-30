@@ -293,7 +293,10 @@ class JetFluidBake(bpy.types.Operator):
         solver.viscosityCoefficient = obj.jet_fluid.viscosity
         grav = obj.jet_fluid.gravity
         solver.gravity = grav[0], grav[2], grav[1]
-        frame = pyjet.Frame(0, 1.0 / context.scene.render.fps)
+        if obj.jet_fluid.use_scene_fps:
+            frame = pyjet.Frame(0, 1.0 / context.scene.render.fps)
+        else:
+            frame = pyjet.Frame(0, 1.0 / obj.jet_fluid.fps)
         self.solver = solver
         self.frame = frame
         self.frame_end = context.scene.frame_end

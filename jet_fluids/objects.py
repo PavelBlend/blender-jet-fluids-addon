@@ -44,6 +44,8 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         min=1.0
     )
     max_cfl = bpy.props.FloatProperty(default=5.0, name='Max CFL')
+    use_scene_fps = bpy.props.BoolProperty(default=True, name='Use Scene FPS')
+    fps = bpy.props.FloatProperty(default=30.0, name='FPS')
 
     # boundary
     bound_right = bpy.props.BoolProperty(default=True, name='Right')
