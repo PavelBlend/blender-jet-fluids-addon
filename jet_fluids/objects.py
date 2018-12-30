@@ -36,6 +36,20 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     advection_solver_type = bpy.props.EnumProperty(
         items=items, name='Advection Solver', default='SEMI_LAGRANGIAN'
     )
+    items = [
+        ('FORWARD_EULER', 'Forward Euler', ''),
+        ('BACKWARD_EULER', 'Backward Euler', '')
+    ]
+    diffusion_solver_type = bpy.props.EnumProperty(
+        items=items, name='Diffusion Solver', default='FORWARD_EULER'
+    )
+    items = [
+        ('SINGLE_PHASE', 'Single Phase', ''),
+        ('FRACTIONAL_SINGLE_PHASE', 'Fractional Single Phase', '')
+    ]
+    pressure_solver_type = bpy.props.EnumProperty(
+        items=items, name='Pressure Solver', default='SINGLE_PHASE'
+    )
     resolution = bpy.props.IntProperty(default=30, name='Simulate Resolution')
     resolution_mesh = bpy.props.IntProperty(default=30, name='Mesh Resolution')
     particles_count = bpy.props.FloatProperty(

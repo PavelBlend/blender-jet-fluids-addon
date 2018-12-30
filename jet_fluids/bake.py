@@ -17,6 +17,14 @@ advection_solvers = {
     'SEMI_LAGRANGIAN': pyjet.SemiLagrangian3,
     'CUBIC_SEMI_LAGRANGIAN': pyjet.CubicSemiLagrangian3
 }
+diffusion_solvers = {
+    'FORWARD_EULER': pyjet.GridForwardEulerDiffusionSolver3,
+    'BACKWARD_EULER': pyjet.GridBackwardEulerDiffusionSolver3
+}
+pressure_solvers = {
+    'FRACTIONAL_SINGLE_PHASE': pyjet.GridFractionalSinglePhasePressureSolver3,
+    'SINGLE_PHASE': pyjet.GridSinglePhasePressureSolver3
+}
 
 
 def read_particles(file_path):
@@ -288,6 +296,8 @@ class JetFluidBake(bpy.types.Operator):
         )
         solver.maxCfl = obj.jet_fluid.max_cfl
         solver.advectionSolver = advection_solvers[obj.jet_fluid.advection_solver_type]()
+        solver.diffusionSolver = diffusion_solvers[obj.jet_fluid.diffusion_solver_type]()
+        solver.pressureSolver = pressure_solvers[obj.jet_fluid.pressure_solver_type]()
         solver.useCompressedLinearSystem = True
         set_closed_domain_boundary_flag(solver, obj)
         solver.viscosityCoefficient = obj.jet_fluid.viscosity
