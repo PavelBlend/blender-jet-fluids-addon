@@ -58,6 +58,11 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         min=1.0
     )
     max_cfl = bpy.props.FloatProperty(default=5.0, name='Max CFL')
+    compressed_linear_system = bpy.props.BoolProperty(
+        default=False, name='Compressed Linear System'
+    )
+    fixed_substeps = bpy.props.BoolProperty(default=False, name='Fixed Substeps')
+    fixed_substeps_count = bpy.props.IntProperty(default=1, name='Substeps Count')
     use_scene_fps = bpy.props.BoolProperty(default=True, name='Use Scene FPS')
     fps = bpy.props.FloatProperty(default=30.0, name='FPS')
 

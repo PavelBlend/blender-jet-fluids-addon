@@ -218,6 +218,16 @@ class JetFluidSimulatePanel(bpy.types.Panel):
         lay.prop(jet, 'resolution_mesh')
         lay.prop(jet, 'particles_count')
         lay.prop(jet, 'max_cfl')
+        lay.prop(jet, 'compressed_linear_system')
+
+        # substeps
+        lay.prop(jet, 'fixed_substeps')
+        row = lay.row()
+        if not jet.fixed_substeps:
+            row.active = False
+        row.prop(jet, 'fixed_substeps_count')
+
+        # fps
         lay.prop(jet, 'use_scene_fps')
         row = lay.row()
         if jet.use_scene_fps:

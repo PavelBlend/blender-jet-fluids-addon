@@ -298,7 +298,9 @@ class JetFluidBake(bpy.types.Operator):
         solver.advectionSolver = advection_solvers[obj.jet_fluid.advection_solver_type]()
         solver.diffusionSolver = diffusion_solvers[obj.jet_fluid.diffusion_solver_type]()
         solver.pressureSolver = pressure_solvers[obj.jet_fluid.pressure_solver_type]()
-        solver.useCompressedLinearSystem = True
+        solver.useCompressedLinearSystem = obj.jet_fluid.compressed_linear_system
+        solver.isUsingFixedSubTimeSteps = obj.jet_fluid.fixed_substeps
+        solver.numberOfFixedSubTimeSteps = obj.jet_fluid.fixed_substeps_count
         set_closed_domain_boundary_flag(solver, obj)
         solver.viscosityCoefficient = obj.jet_fluid.viscosity
         grav = obj.jet_fluid.gravity
