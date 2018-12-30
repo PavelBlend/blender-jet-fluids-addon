@@ -66,11 +66,6 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
     resolution = bpy.props.IntProperty(default=30, name='Simulate Resolution')
     resolution_mesh = bpy.props.IntProperty(default=30, name='Mesh Resolution')
-    particles_count = bpy.props.FloatProperty(
-        default=1.0,
-        name='Particles',
-        min=1.0
-    )
     max_cfl = bpy.props.FloatProperty(default=5.0, name='Max CFL')
     compressed_linear_system = bpy.props.BoolProperty(
         default=False, name='Compressed Linear System'
@@ -107,6 +102,11 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     # emitter props
     velocity = bpy.props.FloatVectorProperty(default=(0, 0, 0), name='Velocity')
     one_shot = bpy.props.BoolProperty(default=False, name='One Shot')
+    particles_count = bpy.props.FloatProperty(
+        default=1.0,
+        name='Particles',
+        min=0.001
+    )
 
     # create props
     create_mesh = bpy.props.BoolProperty(
