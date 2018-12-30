@@ -41,6 +41,7 @@ class JetFluidEmitterPanel(bpy.types.Panel):
         # create ui elements
         lay.prop(jet, 'object_type')
         lay.prop(jet, 'one_shot')
+        lay.prop(jet, 'particles_count')
         lay.prop(jet, 'velocity')
 
 
@@ -216,7 +217,6 @@ class JetFluidSimulatePanel(bpy.types.Panel):
         lay.prop(jet, 'pressure_solver_type')
         lay.prop(jet, 'resolution')
         lay.prop(jet, 'resolution_mesh')
-        lay.prop(jet, 'particles_count')
         lay.prop(jet, 'max_cfl')
         lay.prop(jet, 'compressed_linear_system')
 

@@ -329,7 +329,7 @@ class JetFluidBake(bpy.types.Operator):
                         init_vel = emitter_object.jet_fluid.velocity
                         emitter = pyjet.VolumeParticleEmitter3(
                             implicitSurface=triangle_mesh,
-                            spacing=self.domain_max_size / (obj.jet_fluid.resolution * obj.jet_fluid.particles_count),
+                            spacing=self.domain_max_size / (obj.jet_fluid.resolution * emitter_object.jet_fluid.particles_count),
                             isOneShot=emitter_object.jet_fluid.one_shot,
                             initialVelocity=[init_vel[0], init_vel[2], init_vel[1]]
                         )
@@ -362,7 +362,7 @@ class JetFluidBake(bpy.types.Operator):
                             init_vel = emitter_object.jet_fluid.velocity
                             emitter = pyjet.VolumeParticleEmitter3(
                                 implicitSurface=triangle_mesh,
-                                spacing=self.domain_max_size / (obj.jet_fluid.resolution * obj.jet_fluid.particles_count),
+                                spacing=self.domain_max_size / (obj.jet_fluid.resolution * emitter_object.jet_fluid.particles_count),
                                 isOneShot=emitter_object.jet_fluid.one_shot,
                                 initialVelocity=[init_vel[0], init_vel[2], init_vel[1]]
                             )
