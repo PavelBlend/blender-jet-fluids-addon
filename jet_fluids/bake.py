@@ -254,9 +254,23 @@ class JetFluidBake(bpy.types.Operator):
         print('EXECUTE START')
         solv = self.solver
         resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, grid_spacing = calc_res(self, self.domain, type='MESH')
+        jet = self.domain.jet_fluid
+        create_mesh = jet.create_mesh
+        create_particles = jet.create_particles
+        show_particles = jet.show_particles
+        jet.create_mesh = False
+        jet.create_particles = False
+        jet.show_particles = False
+        current_frame = self.context.scene.frame_current
         print('grid')
         while self.frame.index + offset <= self.frame_end:
             print('frame start', self.frame.index + offset)
+            for emitter in self.emitters:
+                jet_emmiter = self.jet_emitters_dict[emitter.name]
+                vel = emitter.jet_fluid.velocity
+                jet_emmiter.initialVelocity = vel[0], vel[2], vel[1]
+                jet_emmiter.isOneShot = emitter.jet_fluid.one_shot
+            self.context.scene.frame_set(self.frame.index + offset)
             file_path = '{}particles_{}.bin'.format(
                 bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                 self.frame.index + offset
@@ -282,10 +296,15 @@ class JetFluidBake(bpy.types.Operator):
             file.close()
             print('end save particles')
             self.frame.advance()
+        jet.create_mesh = create_mesh
+        jet.create_particles = create_particles
+        jet.show_particles = show_particles
+        self.context.scene.frame_set(current_frame)
         return {'FINISHED'}
 
     def execute(self, context):
         print('INVOKE START')
+        self.context = context
         pyjet.Logging.mute()
         obj = context.object
         resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, _ = calc_res(self, obj)
@@ -324,6 +343,7 @@ class JetFluidBake(bpy.types.Operator):
                 if frame_index == 0:
                     emitters, colliders = self.find_emitters_and_colliders()
                     jet_emitters = []
+                    self.jet_emitters_dict = {}
                     for emitter_object in emitters:
                         triangle_mesh = get_triangle_mesh(context, emitter_object, solver)
                         init_vel = emitter_object.jet_fluid.velocity
@@ -333,7 +353,9 @@ class JetFluidBake(bpy.types.Operator):
                             isOneShot=emitter_object.jet_fluid.one_shot,
                             initialVelocity=[init_vel[0], init_vel[2], init_vel[1]]
                         )
+                        self.jet_emitters_dict[emitter_object.name] = emitter
                         jet_emitters.append(emitter)
+                    self.emitters = emitters
                     emitter_set = pyjet.ParticleEmitterSet3(emitters=jet_emitters)
                     solver.particleEmitter = emitter_set
                     # set colliders
@@ -356,6 +378,7 @@ class JetFluidBake(bpy.types.Operator):
                     )
                     emitters, colliders = self.find_emitters_and_colliders()
                     jet_emitters = []
+                    self.jet_emitters_dict = {}
                     for emitter_object in emitters:
                         if not emitter_object.jet_fluid.one_shot:
                             triangle_mesh = get_triangle_mesh(context, emitter_object, solver)
@@ -366,7 +389,9 @@ class JetFluidBake(bpy.types.Operator):
                                 isOneShot=emitter_object.jet_fluid.one_shot,
                                 initialVelocity=[init_vel[0], init_vel[2], init_vel[1]]
                             )
+                            self.jet_emitters_dict[emitter_object.name] = emitter
                             jet_emitters.append(emitter)
+                    self.emitters = emitters
                     emitter_set = pyjet.ParticleEmitterSet3(emitters=jet_emitters)
                     solver.particleEmitter = emitter_set
                     # set colliders
