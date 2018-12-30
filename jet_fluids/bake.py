@@ -288,9 +288,10 @@ class JetFluidBake(bpy.types.Operator):
                     for collider_object in colliders:
                         triangle_mesh = get_triangle_mesh(context, collider_object, solver)
                         jet_colliders.append(triangle_mesh)
-                    collider_surface = pyjet.SurfaceSet3(others=jet_colliders)
-                    collider = pyjet.RigidBodyCollider3(surface=collider_surface)
-                    solver.collider = collider
+                    if jet_colliders:
+                        collider_surface = pyjet.SurfaceSet3(others=jet_colliders)
+                        collider = pyjet.RigidBodyCollider3(surface=collider_surface)
+                        solver.collider = collider
                     # simulate
                     self.simulate()
                     break
@@ -319,9 +320,10 @@ class JetFluidBake(bpy.types.Operator):
                     for collider_object in colliders:
                         triangle_mesh = get_triangle_mesh(context, collider_object, solver)
                         jet_colliders.append(triangle_mesh)
-                    collider_surface = pyjet.SurfaceSet3(others=jet_colliders)
-                    collider = pyjet.RigidBodyCollider3(surface=collider_surface)
-                    solver.collider = collider
+                    if jet_colliders:
+                        collider_surface = pyjet.SurfaceSet3(others=jet_colliders)
+                        collider = pyjet.RigidBodyCollider3(surface=collider_surface)
+                        solver.collider = collider
                     # resume particles
                     pos, vel, forc = read_particles(file_path)
                     solver.particleSystemData.addParticles(pos, vel, forc)
