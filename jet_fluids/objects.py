@@ -4,6 +4,17 @@ import bpy
 from . import create
 
 
+def update_object_draw_type(self, context):
+    obj = context.object
+    jet = obj.jet_fluid
+    if jet.object_type == 'DOMAIN':
+        obj.draw_type = 'BOUNDS'
+    elif jet.object_type == 'EMITTER':
+        obj.draw_type = 'WIRE'
+    elif jet.object_type == 'COLLIDER' or jet.object_type == 'NONE':
+        obj.draw_type = 'TEXTURED'
+
+
 class JetFluidsProperties(bpy.types.PropertyGroup):
     bpy_type = bpy.types.Object
 
@@ -17,7 +28,10 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         ('COLLIDER', 'Collider', '')
     ]
     object_type = bpy.props.EnumProperty(
-        items=items, name='Fluid Type', default='NONE'
+        items=items,
+        name='Fluid Type',
+        default='NONE',
+        update=update_object_draw_type
     )
 
     # simulate props
