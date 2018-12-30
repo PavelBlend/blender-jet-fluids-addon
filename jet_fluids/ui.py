@@ -214,6 +214,7 @@ class JetFluidSimulatePanel(bpy.types.Panel):
         lay.prop(jet, 'resolution')
         lay.prop(jet, 'resolution_mesh')
         lay.prop(jet, 'particles_count')
+        lay.prop(jet, 'max_cfl')
 
 
 class JetFluidPanel(bpy.types.Panel):

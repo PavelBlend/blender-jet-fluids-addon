@@ -36,6 +36,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         name='Particles',
         min=1.0
     )
+    max_cfl = bpy.props.FloatProperty(default=5.0, name='Max CFL')
 
     # boundary
     bound_right = bpy.props.BoolProperty(default=True, name='Right')

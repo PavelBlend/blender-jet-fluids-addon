@@ -282,6 +282,7 @@ class JetFluidBake(bpy.types.Operator):
             gridOrigin=(origin_x, origin_z, origin_y),
             domainSizeX=domain_size_x
         )
+        solver.maxCfl = obj.jet_fluid.max_cfl
         solver.useCompressedLinearSystem = True
         set_closed_domain_boundary_flag(solver, obj)
         solver.viscosityCoefficient = obj.jet_fluid.viscosity
