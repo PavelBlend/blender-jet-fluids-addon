@@ -500,8 +500,7 @@ class JetFluidBake(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        thread = threading.Thread(target=self.execute, args=(context, ))
-        thread.start()
+        self.execute(context)
         return {'FINISHED'}
 
 
