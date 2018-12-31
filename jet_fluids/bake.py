@@ -234,6 +234,53 @@ class JetFluidBakeMesh(bpy.types.Operator):
         return {'FINISHED'}
 
 
+def save_blender_particles_cache_times(folder, times, frame_end):
+    indices = list(times.keys())
+    indices.sort()
+
+    bin_data = bytearray()
+    bin_data.extend(b'BPHYSICS')
+    bin_data.extend(struct.pack('I', 1))    # cache type (1 - particles)
+    bin_data.extend(struct.pack('I', indices[-1]))    # particles count
+    bin_data.extend(struct.pack('I', 0b1000000))    # particles data types
+
+    for index in indices:
+        time = times[index]
+        bin_data.extend(struct.pack('3f', time, frame_end, frame_end))
+
+    file = open(folder + 'fluid_{:0>6}_00.bphys'.format(0), 'wb')
+    file.write(bin_data)
+    file.close()
+
+    return indices[-1]
+
+
+def save_blender_particles_cache(frame_index, folder, positions, velocities, times):
+    bin_data = bytearray()
+    particles_count = len(positions)
+    bin_data.extend(b'BPHYSICS')
+    bin_data.extend(struct.pack('I', 1))    # cache type (1 - particles)
+    bin_data.extend(struct.pack('I', particles_count))
+    bin_data.extend(struct.pack('I', 0b111))    # particles data types
+
+    for particle_index in range(particles_count):
+
+        bin_data.extend(struct.pack('I', particle_index))
+
+        pos = positions[particle_index]
+        bin_data.extend(struct.pack('3f', pos[0], pos[2], pos[1]))
+
+        vel = velocities[particle_index]
+        bin_data.extend(struct.pack('3f', vel[0], vel[2], vel[1]))
+
+        if not times.get(particle_index):
+            times[particle_index] = frame_index
+
+    file = open(folder + 'fluid_{:0>6}_00.bphys'.format(frame_index), 'wb')
+    file.write(bin_data)
+    file.close()
+
+
 class JetFluidBake(bpy.types.Operator):
     bl_idname = "jet_fluid.bake_particles"
     bl_label = "Bake Particles"
@@ -267,6 +314,7 @@ class JetFluidBake(bpy.types.Operator):
         jet.show_particles = False
         current_frame = self.context.scene.frame_current
         print('grid')
+        times = {}
         while self.frame.index + offset <= self.frame_end:
             print('frame start', self.frame.index + offset)
             for emitter in self.emitters:
@@ -300,10 +348,24 @@ class JetFluidBake(bpy.types.Operator):
             file.write(bin_data)
             file.close()
             print('end save particles')
+            folder = bpy.path.abspath(self.domain.jet_fluid.cache_folder)
+            save_blender_particles_cache(self.frame.index, folder, positions, velocities, times)
             self.frame.advance()
+        particles_count = save_blender_particles_cache_times(folder, times, self.frame_end + 1)
         jet.create_mesh = create_mesh
         jet.create_particles = create_particles
         jet.show_particles = show_particles
+        if self.domain.particle_systems.get('fluid'):
+            par_sys = self.domain.particle_systems['fluid']
+        else:
+            bpy.ops.object.particle_system_add()
+            par_sys = self.domain.particle_systems.active
+            par_sys.name = 'fluid'
+        par_sys.point_cache.use_external = True
+        par_sys.point_cache.filepath = self.domain.jet_fluid.cache_folder
+        par_sys.point_cache.name = 'fluid'
+        par_sys.point_cache.index = 0
+        par_sys.settings.count = particles_count
         self.context.scene.frame_set(current_frame)
         return {'FINISHED'}
 
