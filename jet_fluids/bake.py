@@ -151,6 +151,9 @@ class JetFluidBakeMesh(bpy.types.Operator):
         pyjet.Logging.mute()
         scn = context.scene
         domain = context.object
+        if not domain.jet_fluid.cache_folder:
+            self.report({'WARNING'}, 'Cache Folder not Specified!')
+            return {'FINISHED'}
         resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, _ = calc_res(self, domain)
         solv = solvers[domain.jet_fluid.solver_type](
             resolution=(resolution_x, resolution_z, resolution_y),
@@ -374,6 +377,9 @@ class JetFluidBake(bpy.types.Operator):
         self.context = context
         pyjet.Logging.mute()
         obj = context.object
+        if not obj.jet_fluid.cache_folder:
+            self.report({'WARNING'}, 'Cache Folder not Specified!')
+            return {'FINISHED'}
         print('create solver')
         resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, _ = calc_res(self, obj)
         solver = solvers[obj.jet_fluid.solver_type](
