@@ -2,6 +2,7 @@
 import struct
 import os
 import numpy
+import threading
 
 import bpy
 
@@ -150,7 +151,7 @@ class JetFluidBakeMesh(bpy.types.Operator):
     def execute(self, context):
         pyjet.Logging.mute()
         scn = context.scene
-        domain = context.object
+        domain = scn.objects.active
         if not domain.jet_fluid.cache_folder:
             self.report({'WARNING'}, 'Cache Folder not Specified!')
             return {'FINISHED'}
@@ -234,6 +235,11 @@ class JetFluidBakeMesh(bpy.types.Operator):
                 file.write(bin_mesh_data)
                 file.close()
                 print('save mesh end')
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        thread = threading.Thread(target=self.execute, args=(context, ))
+        thread.start()
         return {'FINISHED'}
 
 
@@ -491,6 +497,11 @@ class JetFluidBake(bpy.types.Operator):
                     solver.particleSystemData.addParticles(pos, vel, forc)
                     self.simulate(offset=last_frame)
                     break
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        thread = threading.Thread(target=self.execute, args=(context, ))
+        thread.start()
         return {'FINISHED'}
 
 
