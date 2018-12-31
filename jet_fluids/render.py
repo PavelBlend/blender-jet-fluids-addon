@@ -28,7 +28,7 @@ def draw_scene_particles():
 
 
 def draw_particles(domain, particles):
-    bgl.glPointSize(3)
+    bgl.glPointSize(domain.jet_fluid.particle_size)
     bgl.glBegin(bgl.GL_POINTS)
     if domain.jet_fluid.color_type == 'VELOCITY':
         positions = particles[0]

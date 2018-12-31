@@ -148,6 +148,7 @@ class JetFluidDebugPanel(bpy.types.Panel):
         # create ui elements
         lay.prop(jet, 'show_particles')
         if jet.show_particles:
+            lay.prop(jet, 'particle_size')
             lay.prop(jet, 'color_type')
             row = lay.row()
             row.prop(jet, 'color_1', text='')

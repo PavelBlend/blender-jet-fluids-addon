@@ -124,6 +124,12 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
 
     # debug props
     show_particles = bpy.props.BoolProperty(default=True, name='Show Particles')
+    particle_size = bpy.props.IntProperty(
+        default=3,
+        name='Particle Size',
+        min=1,
+        max=10
+    )
     items = [
         ('VELOCITY', 'Velocity', ''),
         ('SINGLE_COLOR', 'Single Color', '')
