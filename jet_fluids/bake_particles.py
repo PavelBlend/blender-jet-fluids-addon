@@ -51,17 +51,18 @@ class JetFluidBakeParticles(bpy.types.Operator):
                 times = {}
         while self.frame.index + offset <= self.frame_end:
             print('frame start', self.frame.index + offset)
+            self.context.scene.frame_set(self.frame.index + offset)
             for emitter in self.emitters:
                 jet_emmiter = self.jet_emitters_dict.get(emitter.name, None)
                 if jet_emmiter:
                     vel = emitter.jet_fluid.velocity
                     jet_emmiter.initialVelocity = vel[0], vel[2], vel[1]
                     jet_emmiter.isOneShot = emitter.jet_fluid.one_shot
-            self.context.scene.frame_set(self.frame.index + offset)
             file_path = '{}particles_{}.bin'.format(
                 bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                 self.frame.index + offset
             )
+            solv.viscosityCoefficient = self.domain.jet_fluid.viscosity
             print('solver update start')
             solv.update(self.frame)
             print('solver update end')
