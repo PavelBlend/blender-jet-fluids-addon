@@ -55,7 +55,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         ('BACKWARD_EULER', 'Backward Euler', '')
     ]
     diffusion_solver_type = bpy.props.EnumProperty(
-        items=items, name='Diffusion Solver', default='FORWARD_EULER'
+        items=items, name='Diffusion Solver', default='BACKWARD_EULER'
     )
     items = [
         ('SINGLE_PHASE', 'Single Phase', ''),
