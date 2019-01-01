@@ -42,6 +42,10 @@ class JetFluidEmitterPanel(bpy.types.Panel):
         lay.prop(jet, 'object_type')
         lay.prop(jet, 'one_shot')
         lay.prop(jet, 'particles_count')
+        lay.prop(jet, 'max_number_of_particles')
+        lay.prop(jet, 'emitter_jitter')
+        lay.prop(jet, 'emitter_seed')
+        lay.prop(jet, 'allow_overlapping')
         lay.prop(jet, 'velocity')
 
 

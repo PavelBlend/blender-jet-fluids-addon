@@ -107,6 +107,22 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         name='Particles',
         min=0.001
     )
+    emitter_jitter = bpy.props.FloatProperty(
+        default=0.0,
+        name='Jitter'
+    )
+    allow_overlapping = bpy.props.BoolProperty(
+        default=False,
+        name='Allow Overlapping'
+    )
+    emitter_seed = bpy.props.IntProperty(
+        default=0,
+        name='Seed'
+    )
+    max_number_of_particles = bpy.props.IntProperty(
+        default=12000000,
+        name='Max Number of Particles'
+    )
 
     # create props
     create_mesh = bpy.props.BoolProperty(

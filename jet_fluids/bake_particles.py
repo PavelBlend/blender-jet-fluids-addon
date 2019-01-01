@@ -164,7 +164,11 @@ class JetFluidBakeParticles(bpy.types.Operator):
                             implicitSurface=triangle_mesh,
                             spacing=self.domain_max_size / (obj.jet_fluid.resolution * emitter_object.jet_fluid.particles_count),
                             isOneShot=emitter_object.jet_fluid.one_shot,
-                            initialVelocity=[init_vel[0], init_vel[2], init_vel[1]]
+                            initialVelocity=[init_vel[0], init_vel[2], init_vel[1]],
+                            jitter=emitter_object.jet_fluid.emitter_jitter,
+                            allowOverlapping=emitter_object.jet_fluid.allow_overlapping,
+                            seed=emitter_object.jet_fluid.emitter_seed,
+                            maxNumberOfParticles=emitter_object.jet_fluid.max_number_of_particles
                         )
                         self.jet_emitters_dict[emitter_object.name] = emitter
                         jet_emitters.append(emitter)
