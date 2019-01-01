@@ -1,5 +1,6 @@
 
-from . import bake
+from . import bake_mesh
+from . import bake_particles
 from . import objects
 from . import operators
 from . import ui
@@ -10,7 +11,8 @@ from . import create
 modules = [
     objects,
     operators,
-    bake,
+    bake_mesh,
+    bake_particles,
     ui,
     render,
     create
