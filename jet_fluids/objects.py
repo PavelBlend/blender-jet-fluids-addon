@@ -70,8 +70,12 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     compressed_linear_system = bpy.props.BoolProperty(
         default=False, name='Compressed Linear System'
     )
-    fixed_substeps = bpy.props.BoolProperty(default=False, name='Fixed Substeps')
-    fixed_substeps_count = bpy.props.IntProperty(default=1, name='Substeps Count')
+    fixed_substeps = bpy.props.BoolProperty(
+        default=False, name='Fixed Substeps'
+    )
+    fixed_substeps_count = bpy.props.IntProperty(
+        default=1, name='Substeps Count'
+    )
     use_scene_fps = bpy.props.BoolProperty(default=True, name='Use Scene FPS')
     fps = bpy.props.FloatProperty(default=30.0, name='FPS')
 
@@ -100,7 +104,9 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
 
     # emitter props
-    velocity = bpy.props.FloatVectorProperty(default=(0, 0, 0), name='Velocity')
+    velocity = bpy.props.FloatVectorProperty(
+        default=(0, 0, 0), name='Velocity'
+    )
     one_shot = bpy.props.BoolProperty(default=False, name='One Shot')
     particles_count = bpy.props.FloatProperty(
         default=1.0,
@@ -139,7 +145,9 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     particles_object = bpy.props.StringProperty(default='', name='Particles')
 
     # debug props
-    show_particles = bpy.props.BoolProperty(default=True, name='Show Particles')
+    show_particles = bpy.props.BoolProperty(
+        default=False, name='Show Particles'
+    )
     particle_size = bpy.props.IntProperty(
         default=3,
         name='Particle Size',

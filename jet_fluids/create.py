@@ -88,13 +88,17 @@ def create_particles(domain):
         domain.jet_fluid.particles_object = par_object.name
         bpy.context.scene.objects.link(par_object)
     else:
-        par_object = bpy.data.objects[domain.jet_fluid.particles_object]
-        old_par_mesh = par_object.data
-        par_object.data = par_mesh
-        materials = [m for m in old_par_mesh.materials]
-        for mat in materials:
-            par_mesh.materials.append(mat)
-        bpy.data.meshes.remove(old_par_mesh)
+        if bpy.data.objects.get(domain.jet_fluid.particles_object):
+            par_object = bpy.data.objects[domain.jet_fluid.particles_object]
+            old_par_mesh = par_object.data
+            par_object.data = par_mesh
+            materials = [m for m in old_par_mesh.materials]
+            for mat in materials:
+                par_mesh.materials.append(mat)
+            bpy.data.meshes.remove(old_par_mesh)
+        else:
+            par_object = bpy.data.objects.new(domain.jet_fluid.particles_object, par_mesh)
+            bpy.context.scene.objects.link(par_object)
     par_mesh.from_pydata(vertices, (), ())
     par_mesh.name = 'jet_fluid_particles'
 
@@ -133,13 +137,17 @@ def create_mesh(domain):
         domain.jet_fluid.mesh_object = mesh_object.name
         bpy.context.scene.objects.link(mesh_object)
     else:
-        mesh_object = bpy.data.objects[domain.jet_fluid.mesh_object]
-        old_mesh = mesh_object.data
-        mesh_object.data = mesh
-        materials = [m for m in old_mesh.materials]
-        for mat in materials:
-            mesh.materials.append(mat)
-        bpy.data.meshes.remove(old_mesh)
+        if not bpy.data.objects.get(domain.jet_fluid.mesh_object):
+            mesh_object = bpy.data.objects.new(domain.jet_fluid.mesh_object, mesh)
+            bpy.context.scene.objects.link(mesh_object)
+        else:
+            mesh_object = bpy.data.objects[domain.jet_fluid.mesh_object]
+            old_mesh = mesh_object.data
+            mesh_object.data = mesh
+            materials = [m for m in old_mesh.materials]
+            for mat in materials:
+                mesh.materials.append(mat)
+            bpy.data.meshes.remove(old_mesh)
 
     mesh.from_pydata(vertices, (), triangles)
     for polygon in mesh.polygons:
