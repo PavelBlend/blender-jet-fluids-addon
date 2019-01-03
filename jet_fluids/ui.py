@@ -49,6 +49,44 @@ class JetFluidEmitterPanel(bpy.types.Panel):
         lay.prop(jet, 'velocity')
 
 
+class JetFluidSolversPanel(bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "physics"
+    bl_label = "Jet Fluid Solvers"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        jet = context.object.jet_fluid
+        return jet.is_active and jet.object_type == 'DOMAIN'
+
+    def draw(self, context):
+        obj = context.object
+        jet = obj.jet_fluid
+        lay = self.layout
+
+        # create ui elements
+        row = lay.row()
+
+        # solvers
+        lay.prop(jet, 'solver_type')
+        lay.prop(jet, 'advection_solver_type')
+        lay.prop(jet, 'diffusion_solver_type')
+        lay.prop(jet, 'pressure_solver_type')
+
+        # settings
+        lay.prop(jet, 'max_cfl')
+        lay.prop(jet, 'compressed_linear_system')
+
+        # substeps
+        lay.prop(jet, 'fixed_substeps')
+        row = lay.row()
+        if not jet.fixed_substeps:
+            row.active = False
+        row.prop(jet, 'fixed_substeps_count')
+
+
 class JetFluidBoundaryPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -182,6 +220,34 @@ class JetFluidCachePanel(bpy.types.Panel):
         lay.prop(jet, 'cache_folder')
 
 
+class JetFluidMeshPanel(bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "physics"
+    bl_label = "Jet Fluid Mesh"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        jet = context.object.jet_fluid
+        return jet.is_active and jet.object_type == 'DOMAIN'
+
+    def draw(self, context):
+        obj = context.object
+        jet = obj.jet_fluid
+        lay = self.layout
+
+        # create ui elements
+        row = lay.row()
+
+        # bake mesh
+        split = lay.split(percentage=0.75, align=True)
+        split.operator('jet_fluid.bake_mesh')
+        split.alert = True
+        split.operator('jet_fluid.reset_mesh', text="Reset")
+        lay.prop(jet, 'resolution_mesh')
+
+
 class JetFluidSimulatePanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -209,35 +275,17 @@ class JetFluidSimulatePanel(bpy.types.Panel):
         split.alert = True
         split.operator('jet_fluid.reset_particles', text="Reset")
 
-        # bake mesh
-        split = lay.split(percentage=0.75, align=True)
-        split.operator('jet_fluid.bake_mesh')
-        split.alert = True
-        split.operator('jet_fluid.reset_mesh', text="Reset")
-
-        # simulation properties
-        lay.prop(jet, 'solver_type')
-        lay.prop(jet, 'advection_solver_type')
-        lay.prop(jet, 'diffusion_solver_type')
-        lay.prop(jet, 'pressure_solver_type')
         lay.prop(jet, 'resolution')
-        lay.prop(jet, 'resolution_mesh')
-        lay.prop(jet, 'max_cfl')
-        lay.prop(jet, 'compressed_linear_system')
-
-        # substeps
-        lay.prop(jet, 'fixed_substeps')
-        row = lay.row()
-        if not jet.fixed_substeps:
-            row.active = False
-        row.prop(jet, 'fixed_substeps_count')
 
         # fps
+        lay.label('Time:')
         lay.prop(jet, 'use_scene_fps')
         row = lay.row()
         if jet.use_scene_fps:
             row.active = False
-        row.prop(jet, 'fps')
+            row.prop(context.scene.render, 'fps')
+        else:
+            row.prop(jet, 'fps')
 
 
 class JetFluidPanel(bpy.types.Panel):
@@ -287,6 +335,8 @@ def add_jet_fluid_button(self, context):
 __CLASSES__ = [
     JetFluidPanel,
     JetFluidSimulatePanel,
+    JetFluidMeshPanel,
+    JetFluidSolversPanel,
     JetFluidBoundaryPanel,
     JetFluidCachePanel,
     JetFluidCreatePanel,
