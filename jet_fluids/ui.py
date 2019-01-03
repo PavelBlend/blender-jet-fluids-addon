@@ -2,6 +2,18 @@
 import bpy
 
 
+class JetFluidDomainPanel(bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "physics"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        jet = context.object.jet_fluid
+        return jet.is_active and jet.object_type == 'DOMAIN'
+
+
 class JetFluidColliderPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -49,17 +61,8 @@ class JetFluidEmitterPanel(bpy.types.Panel):
         lay.prop(jet, 'velocity')
 
 
-class JetFluidSolversPanel(bpy.types.Panel):
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "physics"
+class JetFluidSolversPanel(JetFluidDomainPanel):
     bl_label = "Jet Fluid Solvers"
-    bl_options = {'DEFAULT_CLOSED'}
-
-    @classmethod
-    def poll(cls, context):
-        jet = context.object.jet_fluid
-        return jet.is_active and jet.object_type == 'DOMAIN'
 
     def draw(self, context):
         obj = context.object
@@ -87,17 +90,8 @@ class JetFluidSolversPanel(bpy.types.Panel):
         row.prop(jet, 'fixed_substeps_count')
 
 
-class JetFluidBoundaryPanel(bpy.types.Panel):
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "physics"
+class JetFluidBoundaryPanel(JetFluidDomainPanel):
     bl_label = "Jet Fluid Boundary"
-    bl_options = {'DEFAULT_CLOSED'}
-
-    @classmethod
-    def poll(cls, context):
-        jet = context.object.jet_fluid
-        return jet.is_active and jet.object_type == 'DOMAIN'
 
     def draw(self, context):
         obj = context.object
@@ -118,17 +112,8 @@ class JetFluidBoundaryPanel(bpy.types.Panel):
         row.prop(jet, 'bound_down')
 
 
-class JetFluidWorldPanel(bpy.types.Panel):
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "physics"
+class JetFluidWorldPanel(JetFluidDomainPanel):
     bl_label = "Jet Fluid World"
-    bl_options = {'DEFAULT_CLOSED'}
-
-    @classmethod
-    def poll(cls, context):
-        jet = context.object.jet_fluid
-        return jet.is_active and jet.object_type == 'DOMAIN'
 
     def draw(self, context):
         obj = context.object
@@ -140,17 +125,8 @@ class JetFluidWorldPanel(bpy.types.Panel):
         lay.prop(jet, 'gravity')
 
 
-class JetFluidCreatePanel(bpy.types.Panel):
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "physics"
+class JetFluidCreatePanel(JetFluidDomainPanel):
     bl_label = "Jet Fluid Create"
-    bl_options = {'DEFAULT_CLOSED'}
-
-    @classmethod
-    def poll(cls, context):
-        jet = context.object.jet_fluid
-        return jet.is_active and jet.object_type == 'DOMAIN'
 
     def draw(self, context):
         obj = context.object
@@ -170,17 +146,8 @@ class JetFluidCreatePanel(bpy.types.Panel):
             lay.prop_search(jet, 'particles_object', bpy.data, 'objects')
 
 
-class JetFluidDebugPanel(bpy.types.Panel):
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "physics"
+class JetFluidDebugPanel(JetFluidDomainPanel):
     bl_label = "Jet Fluid Debug"
-    bl_options = {'DEFAULT_CLOSED'}
-
-    @classmethod
-    def poll(cls, context):
-        jet = context.object.jet_fluid
-        return jet.is_active and jet.object_type == 'DOMAIN'
 
     def draw(self, context):
         obj = context.object
@@ -199,17 +166,8 @@ class JetFluidDebugPanel(bpy.types.Panel):
                 lay.prop(jet, 'max_velocity')
 
 
-class JetFluidCachePanel(bpy.types.Panel):
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "physics"
+class JetFluidCachePanel(JetFluidDomainPanel):
     bl_label = "Jet Fluid Cache"
-    bl_options = {'DEFAULT_CLOSED'}
-
-    @classmethod
-    def poll(cls, context):
-        jet = context.object.jet_fluid
-        return jet.is_active and jet.object_type == 'DOMAIN'
 
     def draw(self, context):
         obj = context.object
@@ -220,17 +178,8 @@ class JetFluidCachePanel(bpy.types.Panel):
         lay.prop(jet, 'cache_folder')
 
 
-class JetFluidMeshPanel(bpy.types.Panel):
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "physics"
+class JetFluidMeshPanel(JetFluidDomainPanel):
     bl_label = "Jet Fluid Mesh"
-    bl_options = {'DEFAULT_CLOSED'}
-
-    @classmethod
-    def poll(cls, context):
-        jet = context.object.jet_fluid
-        return jet.is_active and jet.object_type == 'DOMAIN'
 
     def draw(self, context):
         obj = context.object
@@ -248,16 +197,9 @@ class JetFluidMeshPanel(bpy.types.Panel):
         lay.prop(jet, 'resolution_mesh')
 
 
-class JetFluidSimulatePanel(bpy.types.Panel):
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "physics"
+class JetFluidSimulatePanel(JetFluidDomainPanel):
     bl_label = "Jet Fluid Simulate"
-
-    @classmethod
-    def poll(cls, context):
-        jet = context.object.jet_fluid
-        return jet.is_active and jet.object_type == 'DOMAIN'
+    bl_options = set()
 
     def draw(self, context):
         obj = context.object
