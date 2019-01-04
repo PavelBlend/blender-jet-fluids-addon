@@ -145,6 +145,12 @@ class JetFluidCreatePanel(JetFluidDomainPanel):
         if jet.create_particles:
             lay.prop_search(jet, 'particles_object', bpy.data, 'objects')
 
+        # standart particle system
+        split = lay.split(percentage=0.75, align=True)
+        split.operator('jet_fluid.create_particle_system')
+        split.alert = True
+        split.operator('jet_fluid.reset_physic_cache', text='Clear')
+
 
 class JetFluidDebugPanel(JetFluidDomainPanel):
     bl_label = "Jet Fluid Debug"

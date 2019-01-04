@@ -43,12 +43,6 @@ class JetFluidBakeParticles(bpy.types.Operator):
         current_frame = self.context.scene.frame_current
         print('grid')
         folder = bpy.path.abspath(self.domain.jet_fluid.cache_folder)
-        if offset == 0:
-            times = {}
-        else:
-            times = bake.read_times_cache(folder)
-            if not times:
-                times = {}
         while self.frame.index + offset <= self.frame_end:
             print('frame start', self.frame.index + offset)
             self.context.scene.frame_set(self.frame.index + offset)
@@ -83,26 +77,10 @@ class JetFluidBakeParticles(bpy.types.Operator):
             file.write(bin_data)
             file.close()
             print('end save particles')
-            bake.save_blender_particles_cache(self.frame.index, folder, positions, velocities, times, offset)
             self.frame.advance()
-        if offset == 0:
-            particles_count = bake.save_blender_particles_cache_times(folder, times, self.frame_end + 1)
-        else:
-            particles_count = bake.append_blender_particles_cache_times(folder, times, self.frame_end + 1)
         jet.create_mesh = create_mesh
         jet.create_particles = create_particles
         jet.show_particles = show_particles
-        if self.domain.particle_systems.get('fluid'):
-            par_sys = self.domain.particle_systems['fluid']
-        else:
-            bpy.ops.object.particle_system_add()
-            par_sys = self.domain.particle_systems.active
-            par_sys.name = 'fluid'
-        par_sys.point_cache.use_external = True
-        par_sys.point_cache.filepath = self.domain.jet_fluid.cache_folder
-        par_sys.point_cache.name = 'fluid'
-        par_sys.point_cache.index = 0
-        par_sys.settings.count = particles_count
         self.context.scene.frame_set(current_frame)
         return {'FINISHED'}
 
