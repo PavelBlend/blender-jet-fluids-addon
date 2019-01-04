@@ -6,6 +6,7 @@ from . import operators
 from . import ui
 from . import render
 from . import create
+from . import export
 
 
 modules = [
@@ -15,7 +16,8 @@ modules = [
     bake_particles,
     ui,
     render,
-    create
+    create,
+    export
 ]
 
 def register():

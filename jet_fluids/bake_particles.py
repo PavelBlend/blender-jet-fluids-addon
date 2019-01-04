@@ -9,25 +9,26 @@ from . import pyjet
 from . import bake
 
 
+def find_emitters_and_colliders():
+    emitters = []
+    colliders = []
+    obj_names = {obj.name for obj in bpy.data.objects}
+    for obj_name in obj_names:
+        obj = bpy.data.objects.get(obj_name)
+        if not obj:
+            continue
+        if obj.jet_fluid.is_active:
+            if obj.jet_fluid.object_type == 'EMITTER':
+                emitters.append(obj)
+            elif obj.jet_fluid.object_type == 'COLLIDER':
+                colliders.append(obj)
+    return emitters, colliders
+
+
 class JetFluidBakeParticles(bpy.types.Operator):
     bl_idname = "jet_fluid.bake_particles"
     bl_label = "Bake Particles"
     bl_options = {'REGISTER'}
-
-    def find_emitters_and_colliders(self):
-        emitters = []
-        colliders = []
-        obj_names = {obj.name for obj in bpy.data.objects}
-        for obj_name in obj_names:
-            obj = bpy.data.objects.get(obj_name)
-            if not obj:
-                continue
-            if obj.jet_fluid.is_active:
-                if obj.jet_fluid.object_type == 'EMITTER':
-                    emitters.append(obj)
-                elif obj.jet_fluid.object_type == 'COLLIDER':
-                    colliders.append(obj)
-        return emitters, colliders
 
     def simulate(self, offset=0):
         print('EXECUTE START')
@@ -151,7 +152,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                 continue
             else:
                 if frame_index == 0:
-                    emitters, colliders = self.find_emitters_and_colliders()
+                    emitters, colliders = find_emitters_and_colliders()
                     jet_emitters = []
                     self.jet_emitters_dict = {}
                     print('create emitters')
@@ -197,7 +198,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                         bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                         last_frame
                     )
-                    emitters, colliders = self.find_emitters_and_colliders()
+                    emitters, colliders = find_emitters_and_colliders()
                     jet_emitters = []
                     self.jet_emitters_dict = {}
                     for emitter_object in emitters:

@@ -229,6 +229,8 @@ class JetFluidSimulatePanel(JetFluidDomainPanel):
         else:
             row.prop(jet, 'fps')
 
+        lay.operator('jet_fluid.export_to_script')
+
 
 class JetFluidPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
