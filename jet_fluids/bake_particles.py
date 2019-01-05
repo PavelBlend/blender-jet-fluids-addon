@@ -29,7 +29,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     colliders.append(obj)
         return emitters, colliders
 
-    def simulate(self, offset=0):
+    def simulate(self, offset=0, particles_colors=[]):
         print('EXECUTE START')
         solv = self.solver
         resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, grid_spacing = bake.calc_res(self, self.domain, type='MESH')
@@ -68,11 +68,17 @@ class JetFluidBakeParticles(bpy.types.Operator):
             bin_data = bytearray()
             vertices_count = len(positions)
             bin_data += struct.pack('I', vertices_count)
+            print('save particles colors')
+            par_color = self.domain.jet_fluid.particles_color
+            colors_count = len(particles_colors)
+            for i in range(vertices_count - colors_count):
+                particles_colors.append((par_color[0], par_color[1], par_color[2]))
             print('start save position and velocity')
             for vert_index in range(vertices_count):
                 bin_data.extend(struct.pack('3f', *positions[vert_index]))
                 bin_data.extend(struct.pack('3f', *velocities[vert_index]))
                 bin_data.extend(struct.pack('3f', *forces[vert_index]))
+                bin_data.extend(struct.pack('3f', *particles_colors[vert_index]))
             file = open(file_path, 'wb')
             file.write(bin_data)
             file.close()
@@ -203,9 +209,9 @@ class JetFluidBakeParticles(bpy.types.Operator):
                         collider = pyjet.RigidBodyCollider3(surface=collider_surface)
                         solver.collider = collider
                     # resume particles
-                    pos, vel, forc = bake.read_particles(file_path)
+                    pos, vel, forc, colors = bake.read_particles(file_path)
                     solver.particleSystemData.addParticles(pos, vel, forc)
-                    self.simulate(offset=last_frame)
+                    self.simulate(offset=last_frame, particles_colors=colors)
                     break
         return {'FINISHED'}
 

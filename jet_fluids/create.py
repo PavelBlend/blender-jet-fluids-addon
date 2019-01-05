@@ -79,7 +79,7 @@ def create_particles(domain):
     vertices = []
     for particle_index in range(particles_count):
         pos = struct.unpack('3f', particles_data[p : p + 12])
-        p += 36    # skip velocities and forces
+        p += 48    # skip velocities, forces and colors
         vertices.append((pos[0], pos[2], pos[1]))
 
     par_mesh = bpy.data.meshes.new('temp_name')
@@ -192,7 +192,7 @@ def update_particles_cache(self, context):
                         p += 12
                         positions.append(particle_position)
                         vel = struct.unpack('3f', particles_data[p : p + 12])
-                        p += 24    # skip forces
+                        p += 36    # skip forces and colors
                         color_factor = (vel[0]**2 + vel[1]**2 + vel[2]**2) ** (1/2) / obj.jet_fluid.max_velocity
                         color = render.generate_particle_color(color_factor, obj.jet_fluid)
                         colors.append(color)
@@ -201,7 +201,7 @@ def update_particles_cache(self, context):
                     positions = []
                     for particle_index in range(particles_count):
                         particle_position = struct.unpack('3f', particles_data[p : p + 12])
-                        p += 36    # skip velocities and forces
+                        p += 48    # skip velocities, forces and colors
                         positions.append(particle_position)
                     GL_PARTICLES_CACHE[obj.name] = positions
 

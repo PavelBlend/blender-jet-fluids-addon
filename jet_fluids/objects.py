@@ -113,6 +113,13 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         name='Particles',
         min=0.001
     )
+    particles_color = bpy.props.FloatVectorProperty(
+        default=(1.0, 1.0, 1.0),
+        name='Particles Color',
+        subtype='COLOR',
+        max=1.0,
+        min=0.0
+    )
     emitter_jitter = bpy.props.FloatProperty(
         default=0.0,
         name='Jitter'

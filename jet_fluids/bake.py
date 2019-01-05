@@ -36,6 +36,7 @@ def read_particles(file_path):
     positions = []
     velocities = []
     forces = []
+    colors = []
     for particle_index in range(particles_count):
         pos = struct.unpack('3f', particles_data[p : p + 12])
         p += 12
@@ -46,7 +47,10 @@ def read_particles(file_path):
         force = struct.unpack('3f', particles_data[p : p + 12])
         p += 12
         forces.append(force)
-    return positions, velocities, forces
+        color = struct.unpack('3f', particles_data[p : p + 12])
+        p += 12
+        colors.append(color)
+    return positions, velocities, forces, colors
 
 
 def get_triangle_mesh(context, source, solver, domain_object):

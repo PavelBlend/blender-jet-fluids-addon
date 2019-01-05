@@ -224,6 +224,7 @@ class JetFluidSimulatePanel(JetFluidDomainPanel):
         split.operator('jet_fluid.reset_particles', text="Reset")
 
         lay.prop(jet, 'resolution')
+        lay.prop(jet, 'particles_color')
 
         # fps
         lay.label('Time:')

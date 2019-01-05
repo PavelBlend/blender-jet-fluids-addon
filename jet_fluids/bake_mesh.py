@@ -90,7 +90,7 @@ def read_particles(domain, frame_index):
     points = []
     for particle_index in range(particles_count):
         particle_position = struct.unpack('3f', particles_data[p : p + 12])
-        p += 36    # skip velocities and forces
+        p += 48    # skip velocities, forces and colors
         points.append(particle_position)
     return points
 

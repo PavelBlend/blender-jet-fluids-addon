@@ -29,13 +29,13 @@ def save_blender_particles_cache_times(folder, times, frame_end):
     return particles_count
 
 
-def save_blender_particles_cache(frame_index, folder, positions, velocities, times):
+def save_blender_particles_cache(frame_index, folder, positions, velocities, colors, times):
     bin_data = bytearray()
     particles_count = len(positions)
     bin_data.extend(b'BPHYSICS')
     bin_data.extend(struct.pack('I', 1))    # cache type (1 - particles)
     bin_data.extend(struct.pack('I', particles_count))
-    bin_data.extend(struct.pack('I', 0b111))    # particles data types
+    bin_data.extend(struct.pack('I', 0b10111))    # particles data types
 
     for particle_index in range(particles_count):
 
@@ -46,6 +46,9 @@ def save_blender_particles_cache(frame_index, folder, positions, velocities, tim
 
         vel = velocities[particle_index]
         bin_data.extend(struct.pack('3f', vel[0], vel[2], vel[1]))
+
+        col = colors[particle_index]
+        bin_data.extend(struct.pack('3f', col[0], col[1], col[2]))
 
         if not times.get(particle_index):
             times[particle_index] = frame_index
@@ -66,8 +69,8 @@ def convert_particles_to_standart_particle_system(context, domain):
         file_path = '{}particles_{}.bin'.format(folder, frame_index)
         if not os.path.exists(file_path):
             continue
-        positions, velocities, forces = bake.read_particles(file_path)
-        times = save_blender_particles_cache(frame_index, folder, positions, velocities, times)
+        positions, velocities, forces, colors = bake.read_particles(file_path)
+        times = save_blender_particles_cache(frame_index, folder, positions, velocities, colors, times)
 
     if times:
         particles_count = save_blender_particles_cache_times(folder, times, frame_end)
