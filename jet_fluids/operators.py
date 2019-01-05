@@ -1,6 +1,7 @@
 
 import os
 import re
+import time
 
 import bpy
 
@@ -14,7 +15,9 @@ class JetFluidCreateStandartParticleSystem(bpy.types.Operator):
 
     def execute(self, context):
         obj = context.scene.objects.active
+        start_time = time.time()
         convert.convert_particles_to_standart_particle_system(context, obj)
+        print('total time:', time.time() - start_time)
         return {'FINISHED'}
 
 
