@@ -71,8 +71,11 @@ def get_triangle_mesh(context, source, solver, domain_object):
         pointIndices=[[p.vertices[0], p.vertices[2], p.vertices[1]] for p in mesh.polygons]
     )
     print('generete Implicit Triangle Mesh')
-    res_x = int(round(obj.dimensions[0] / domain_object.dimensions[0] * solver.resolution.x, 0))
-    imp_triangle_mesh = pyjet.ImplicitTriangleMesh3(mesh=triangle_mesh, resolutionX=res_x, margin=0.2)
+    imp_triangle_mesh = pyjet.ImplicitTriangleMesh3(
+        mesh=triangle_mesh,
+        resolutionX=solver.resolution.x,
+        margin=0.2
+    )
     print('remove objects')
     bpy.data.objects.remove(obj)
     bpy.data.meshes.remove(mesh)
