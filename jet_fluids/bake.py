@@ -59,7 +59,7 @@ def get_triangle_mesh(context, source, solver, domain_object):
     bpy.ops.object.select_all(action='DESELECT')
     source.select = True
     bpy.ops.object.duplicate()
-    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     obj = context.selected_objects[0]
     mesh = obj.data
     context.scene.objects.active = obj

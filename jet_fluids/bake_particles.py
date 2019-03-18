@@ -2,6 +2,7 @@
 import os
 import numpy
 import struct
+import math
 
 import bpy
 
@@ -52,6 +53,16 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     vel = emitter.jet_fluid.velocity
                     jet_emmiter.initialVelocity = vel[0], vel[2], vel[1]
                     jet_emmiter.isOneShot = emitter.jet_fluid.one_shot
+                    pos = emitter.location
+                    if emitter.rotation_mode != 'QUATERNION':
+                        rot = emitter.rotation_euler.to_quaternion()
+                    else:
+                        rot = emitter.rotation_quaternion
+                    jet_emmiter.surface.transform = pyjet.Transform3(
+                        translation=(pos[0], pos[2], pos[1]),
+                        orientation=(-rot[0], rot[1], rot[3], rot[2])
+                    )
+                    jet_emmiter.linearVelocity = (0, 0, 0)
             file_path = '{}particles_{}.bin'.format(
                 bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                 self.frame.index + offset
@@ -146,6 +157,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                         print('create particle emitter')
                         emitter = pyjet.VolumeParticleEmitter3(
                             implicitSurface=triangle_mesh,
+                            maxRegion=solver.gridSystemData.boundingBox,
                             spacing=self.domain_max_size / (obj.jet_fluid.resolution * emitter_object.jet_fluid.particles_count),
                             isOneShot=emitter_object.jet_fluid.one_shot,
                             initialVelocity=[init_vel[0], init_vel[2], init_vel[1]],
@@ -190,6 +202,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                             init_vel = emitter_object.jet_fluid.velocity
                             emitter = pyjet.VolumeParticleEmitter3(
                                 implicitSurface=triangle_mesh,
+                                maxRegion=solver.gridSystemData.boundingBox,
                                 spacing=self.domain_max_size / (obj.jet_fluid.resolution * emitter_object.jet_fluid.particles_count),
                                 isOneShot=emitter_object.jet_fluid.one_shot,
                                 initialVelocity=[init_vel[0], init_vel[2], init_vel[1]]
