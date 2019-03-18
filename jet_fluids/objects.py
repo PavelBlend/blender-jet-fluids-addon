@@ -163,7 +163,8 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
     items = [
         ('VELOCITY', 'Velocity', ''),
-        ('SINGLE_COLOR', 'Single Color', '')
+        ('SINGLE_COLOR', 'Single Color', ''),
+        ('PARTICLE_COLOR', 'Particle Color', '')
     ]
     color_type = bpy.props.EnumProperty(
         items=items,

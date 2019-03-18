@@ -197,13 +197,26 @@ def update_particles_cache(self, context):
                         color = render.generate_particle_color(color_factor, obj.jet_fluid)
                         colors.append(color)
                     GL_PARTICLES_CACHE[obj.name] = [positions, colors]
-                else:
+                elif obj.jet_fluid.color_type == 'SINGLE_COLOR':
                     positions = []
                     for particle_index in range(particles_count):
                         particle_position = struct.unpack('3f', particles_data[p : p + 12])
                         p += 48    # skip velocities, forces and colors
                         positions.append(particle_position)
                     GL_PARTICLES_CACHE[obj.name] = positions
+                elif obj.jet_fluid.color_type == 'PARTICLE_COLOR':
+                    positions = []
+                    colors = []
+                    for particle_index in range(particles_count):
+                        particle_position = struct.unpack('3f', particles_data[p : p + 12])
+                        p += 12
+                        positions.append(particle_position)
+                        vel = struct.unpack('3f', particles_data[p : p + 12])
+                        p += 24    # skip forces
+                        color = struct.unpack('3f', particles_data[p : p + 12])
+                        p += 12
+                        colors.append(color)
+                    GL_PARTICLES_CACHE[obj.name] = [positions, colors]
 
 
 @bpy.app.handlers.persistent

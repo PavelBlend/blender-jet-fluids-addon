@@ -166,10 +166,11 @@ class JetFluidDebugPanel(JetFluidDomainPanel):
             lay.prop(jet, 'particle_size')
             lay.prop(jet, 'color_type')
             row = lay.row()
-            row.prop(jet, 'color_1', text='')
-            if jet.color_type == 'VELOCITY':
-                row.prop(jet, 'color_2', text='')
-                lay.prop(jet, 'max_velocity')
+            if jet.color_type != 'PARTICLE_COLOR':
+                row.prop(jet, 'color_1', text='')
+                if jet.color_type == 'VELOCITY':
+                    row.prop(jet, 'color_2', text='')
+                    lay.prop(jet, 'max_velocity')
 
 
 class JetFluidCachePanel(JetFluidDomainPanel):

@@ -45,6 +45,12 @@ def draw_particles(domain, particles):
                 particle_position[2],
                 particle_position[1]
             )
+    elif domain.jet_fluid.color_type == 'PARTICLE_COLOR':
+        positions = particles[0]
+        colors = particles[1]
+        for index, pos in enumerate(positions):
+            bgl.glColor4f(colors[index][0], colors[index][1], colors[index][2], 1.0)
+            bgl.glVertex3f(pos[0], pos[2], pos[1])
     bgl.glEnd()
 
 
