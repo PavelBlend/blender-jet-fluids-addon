@@ -184,7 +184,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                         collider = pyjet.RigidBodyCollider3(surface=collider_surface)
                         solver.collider = collider
                     # simulate
-                    self.simulate()
+                    self.simulate(offset=0, particles_colors=[])
                     break
                 else:
                     last_frame = frame_index - 1
