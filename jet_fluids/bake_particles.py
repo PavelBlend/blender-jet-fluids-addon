@@ -2,7 +2,6 @@
 import os
 import numpy
 import struct
-import math
 
 import bpy
 
