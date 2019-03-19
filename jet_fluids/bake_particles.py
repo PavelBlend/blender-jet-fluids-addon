@@ -62,6 +62,16 @@ class JetFluidBakeParticles(bpy.types.Operator):
                         orientation=(-rot[0], rot[1], rot[3], rot[2])
                     )
                     jet_emmiter.linearVelocity = (0, 0, 0)
+            for collider, collider_object in self.jet_colliders:
+                pos = collider_object.location
+                if collider_object.rotation_mode != 'QUATERNION':
+                    rot = collider_object.rotation_euler.to_quaternion()
+                else:
+                    rot = collider_object.rotation_quaternion
+                collider.surface.transform = pyjet.Transform3(
+                    translation=(pos[0], pos[2], pos[1]),
+                    orientation=(-rot[0], rot[1], rot[3], rot[2])
+                )
             file_path = '{}particles_{}.bin'.format(
                 bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                 self.frame.index + offset
@@ -173,16 +183,27 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     solver.particleEmitter = emitter_set
                     # set colliders
                     print('create colliders')
-                    jet_colliders = []
+                    self.jet_colliders = []
                     for collider_object in colliders:
                         print('create collider mesh')
                         triangle_mesh = bake.get_triangle_mesh(context, collider_object, solver, obj)
-                        jet_colliders.append(triangle_mesh)
-                    if jet_colliders:
+                        pos = collider_object.location
+                        if collider_object.rotation_mode != 'QUATERNION':
+                            rot = collider_object.rotation_euler.to_quaternion()
+                        else:
+                            rot = collider_object.rotation_quaternion
+                        triangle_mesh.transform = pyjet.Transform3(
+                            translation=(pos[0], pos[2], pos[1]),
+                            orientation=(-rot[0], rot[1], rot[3], rot[2])
+                        )
+                        collider = pyjet.RigidBodyCollider3(surface=triangle_mesh)
+                        self.jet_colliders.append((collider, collider_object))
+                    if self.jet_colliders:
                         print('create collider set')
-                        collider_surface = pyjet.SurfaceSet3(others=jet_colliders)
-                        collider = pyjet.RigidBodyCollider3(surface=collider_surface)
-                        solver.collider = collider
+                        collider_set = pyjet.ColliderSet3()
+                        for collider, collider_object in self.jet_colliders:
+                            collider_set.addCollider(collider)
+                        solver.collider = collider_set
                     # simulate
                     self.simulate(offset=0, particles_colors=[])
                     break
@@ -212,14 +233,25 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     emitter_set = pyjet.ParticleEmitterSet3(emitters=jet_emitters)
                     solver.particleEmitter = emitter_set
                     # set colliders
-                    jet_colliders = []
+                    self.jet_colliders = []
                     for collider_object in colliders:
                         triangle_mesh = bake.get_triangle_mesh(context, collider_object, solver, obj)
-                        jet_colliders.append(triangle_mesh)
-                    if jet_colliders:
-                        collider_surface = pyjet.SurfaceSet3(others=jet_colliders)
-                        collider = pyjet.RigidBodyCollider3(surface=collider_surface)
-                        solver.collider = collider
+                        pos = collider_object.location
+                        if collider_object.rotation_mode != 'QUATERNION':
+                            rot = collider_object.rotation_euler.to_quaternion()
+                        else:
+                            rot = collider_object.rotation_quaternion
+                        triangle_mesh.transform = pyjet.Transform3(
+                            translation=(pos[0], pos[2], pos[1]),
+                            orientation=(-rot[0], rot[1], rot[3], rot[2])
+                        )
+                        collider = pyjet.RigidBodyCollider3(surface=triangle_mesh)
+                        self.jet_colliders.append((collider, collider_object))
+                    if self.jet_colliders:
+                        collider_set = pyjet.ColliderSet3()
+                        for collider, collider_object in self.jet_colliders:
+                            collider_set.addCollider(collider)
+                        solver.collider = collider_set
                     # resume particles
                     pos, vel, forc, colors = bake.read_particles(file_path)
                     solver.particleSystemData.addParticles(pos, vel, forc)
