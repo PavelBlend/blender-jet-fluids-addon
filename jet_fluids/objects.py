@@ -137,6 +137,13 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         name='Max Number of Particles'
     )
 
+    # collider props
+    friction_coefficient = bpy.props.FloatProperty(
+        default=0.0,
+        name='Friction Coefficient',
+        min=0.0
+    )
+
     # create props
     create_mesh = bpy.props.BoolProperty(
         default=True,

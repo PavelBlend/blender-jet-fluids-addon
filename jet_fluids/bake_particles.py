@@ -63,6 +63,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     )
                     jet_emmiter.linearVelocity = (0, 0, 0)
             for collider, collider_object in self.jet_colliders:
+                collider.frictionCoefficient = collider_object.jet_fluid.friction_coefficient
                 pos = collider_object.location
                 if collider_object.rotation_mode != 'QUATERNION':
                     rot = collider_object.rotation_euler.to_quaternion()
@@ -197,6 +198,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                             orientation=(-rot[0], rot[1], rot[3], rot[2])
                         )
                         collider = pyjet.RigidBodyCollider3(surface=triangle_mesh)
+                        collider.frictionCoefficient = collider_object.jet_fluid.friction_coefficient
                         self.jet_colliders.append((collider, collider_object))
                     if self.jet_colliders:
                         print('create collider set')
@@ -246,6 +248,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                             orientation=(-rot[0], rot[1], rot[3], rot[2])
                         )
                         collider = pyjet.RigidBodyCollider3(surface=triangle_mesh)
+                        collider.frictionCoefficient = collider_object.jet_fluid.friction_coefficient
                         self.jet_colliders.append((collider, collider_object))
                     if self.jet_colliders:
                         collider_set = pyjet.ColliderSet3()

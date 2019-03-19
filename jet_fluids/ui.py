@@ -32,6 +32,7 @@ class JetFluidColliderPanel(bpy.types.Panel):
 
         # create ui elements
         lay.prop(jet, 'object_type')
+        lay.prop(jet, 'friction_coefficient')
 
 
 class JetFluidEmitterPanel(bpy.types.Panel):
