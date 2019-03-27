@@ -4,6 +4,7 @@ import numpy
 import struct
 
 import bpy
+import mathutils
 
 from . import pyjet
 from . import bake
@@ -46,9 +47,22 @@ class JetFluidBakeParticles(bpy.types.Operator):
         while self.frame.index + offset <= self.frame_end:
             print('frame start', self.frame.index + offset)
             self.context.scene.frame_set(self.frame.index + offset)
+            vertices = []
             for emitter in self.emitters:
                 jet_emmiter = self.jet_emitters_dict.get(emitter.name, None)
                 if jet_emmiter:
+                    if jet.use_colors:
+                        if jet.simmulate_color_type == 'VERTEX_COLOR' and jet.use_colors:
+                            colors = {}
+                            for face in emitter.data.polygons:
+                                for loop_index in face.loop_indices:
+                                    loop = emitter.data.loops[loop_index]
+                                    color = emitter.data.vertex_colors[0].data[loop_index].color
+                                    colors[loop.vertex_index] = color
+                            for vertex in emitter.data.vertices:
+                                mat = mathutils.Matrix.Translation(vertex.co) + emitter.matrix_world
+                                coord = emitter.matrix_world * vertex.co
+                                vertices.append((coord, colors[vertex.index]))
                     vel = emitter.jet_fluid.velocity
                     jet_emmiter.initialVelocity = vel[0], vel[2], vel[1]
                     jet_emmiter.isOneShot = emitter.jet_fluid.one_shot
@@ -62,6 +76,14 @@ class JetFluidBakeParticles(bpy.types.Operator):
                         orientation=(-rot[0], rot[1], rot[3], rot[2])
                     )
                     jet_emmiter.linearVelocity = (0, 0, 0)
+
+            # KD Tree
+            if jet.simmulate_color_type == 'VERTEX_COLOR' and jet.use_colors:
+                kd_tree = mathutils.kdtree.KDTree(len(vertices))
+                for index, (coord, color) in enumerate(vertices):
+                    kd_tree.insert(coord, index)
+                kd_tree.balance()
+
             for collider, collider_object in self.jet_colliders:
                 collider.frictionCoefficient = collider_object.jet_fluid.friction_coefficient
                 pos = collider_object.location
@@ -92,14 +114,26 @@ class JetFluidBakeParticles(bpy.types.Operator):
             print('save particles colors')
             par_color = self.domain.jet_fluid.particles_color
             colors_count = len(particles_colors)
-            for i in range(vertices_count - colors_count):
-                particles_colors.append((par_color[0], par_color[1], par_color[2]))
+            if jet.use_colors:
+                if jet.simmulate_color_type == 'VERTEX_COLOR':
+                    for vert_index in range(colors_count, vertices_count):
+                        pos = positions[vert_index]
+                        vertex, index, _ = kd_tree.find((pos[0], pos[2], pos[1]))
+                        color = vertices[index][1]
+                        particles_colors.append(color)
+                elif jet.simmulate_color_type == 'SINGLE_COLOR':
+                    for i in range(vertices_count - colors_count):
+                        particles_colors.append(par_color.copy())
             print('start save position and velocity')
             for vert_index in range(vertices_count):
-                bin_data.extend(struct.pack('3f', *positions[vert_index]))
+                pos = positions[vert_index]
+                bin_data.extend(struct.pack('3f', *pos))
                 bin_data.extend(struct.pack('3f', *velocities[vert_index]))
                 bin_data.extend(struct.pack('3f', *forces[vert_index]))
-                bin_data.extend(struct.pack('3f', *particles_colors[vert_index]))
+                if jet.use_colors:
+                    bin_data.extend(struct.pack('3f', *particles_colors[vert_index]))
+                else:
+                    bin_data.extend(struct.pack('3f', 0.0, 0.0, 0.0))
             file = open(file_path, 'wb')
             file.write(bin_data)
             file.close()

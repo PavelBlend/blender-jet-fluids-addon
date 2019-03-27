@@ -118,10 +118,14 @@ def create_mesh(domain):
     vertices_count = struct.unpack('I', mesh_data[p : p + 4])[0]
     p += 4
     vertices = []
+    colors = []
     for vertex_index in range(vertices_count):
         pos = struct.unpack('3f', mesh_data[p : p + 12])
         p += 12
+        col = struct.unpack('3f', mesh_data[p : p + 12])
+        p += 12
         vertices.append((pos[0], pos[2], pos[1]))
+        colors.append(col)
 
     triangles_count = struct.unpack('I', mesh_data[p : p + 4])[0]
     p += 4
@@ -158,6 +162,15 @@ def create_mesh(domain):
         domain.bound_box[0][1] * domain.scale[1] + domain.location[1],
         domain.bound_box[0][2] * domain.scale[2] + domain.location[2]
     )
+    vertex_colors = mesh.vertex_colors.new('jet_fluid_color')
+    i = 0
+    for face in mesh.polygons:
+        for loop_index in face.loop_indices:
+            loop = mesh.loops[loop_index]
+            vertex_index = mesh.vertices[loop.vertex_index].index
+            color = colors[vertex_index]
+            vertex_colors.data[i].color = color
+            i += 1
 
 
 def get_gl_particles_cache():

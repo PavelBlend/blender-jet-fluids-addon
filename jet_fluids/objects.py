@@ -113,13 +113,6 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         name='Particles',
         min=0.001
     )
-    particles_color = bpy.props.FloatVectorProperty(
-        default=(1.0, 1.0, 1.0),
-        name='Particles Color',
-        subtype='COLOR',
-        max=1.0,
-        min=0.0
-    )
     emitter_jitter = bpy.props.FloatProperty(
         default=0.0,
         name='Jitter'
@@ -135,6 +128,28 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     max_number_of_particles = bpy.props.IntProperty(
         default=12000000,
         name='Max Number of Particles'
+    )
+
+    # colors
+    use_colors = bpy.props.BoolProperty(
+        default=False,
+        name='Use Colors'
+    )
+    items = [
+        ('VERTEX_COLOR', 'Emitter Vertex Color', ''),
+        ('SINGLE_COLOR', 'Domain Single Color', '')
+    ]
+    simmulate_color_type = bpy.props.EnumProperty(
+        items=items,
+        name='Color Type',
+        default='VERTEX_COLOR'
+    )
+    particles_color = bpy.props.FloatVectorProperty(
+        default=(1.0, 1.0, 1.0),
+        name='Particles Color',
+        subtype='COLOR',
+        max=1.0,
+        min=0.0
     )
 
     # collider props

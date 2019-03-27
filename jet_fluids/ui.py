@@ -126,6 +126,22 @@ class JetFluidWorldPanel(JetFluidDomainPanel):
         lay.prop(jet, 'gravity')
 
 
+class JetFluidColorPanel(JetFluidDomainPanel):
+    bl_label = "Jet Fluid Color"
+
+    def draw(self, context):
+        obj = context.object
+        jet = obj.jet_fluid
+        lay = self.layout
+
+        # create ui elements
+        lay.prop(jet, 'use_colors')
+        if jet.use_colors:
+            lay.prop(jet, 'simmulate_color_type')
+            if jet.simmulate_color_type == 'SINGLE_COLOR':
+                lay.prop(jet, 'particles_color')
+
+
 class JetFluidCreatePanel(JetFluidDomainPanel):
     bl_label = "Jet Fluid Create"
 
@@ -226,7 +242,6 @@ class JetFluidSimulatePanel(JetFluidDomainPanel):
         split.operator('jet_fluid.reset_particles', text="Reset")
 
         lay.prop(jet, 'resolution')
-        lay.prop(jet, 'particles_color')
 
         # fps
         lay.label('Time:')
@@ -292,6 +307,7 @@ __CLASSES__ = [
     JetFluidCachePanel,
     JetFluidCreatePanel,
     JetFluidWorldPanel,
+    JetFluidColorPanel,
     JetFluidDebugPanel,
     JetFluidEmitterPanel,
     JetFluidColliderPanel

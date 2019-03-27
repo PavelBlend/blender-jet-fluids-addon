@@ -4,6 +4,7 @@ import threading
 import struct
 
 import bpy
+import mathutils
 
 from . import pyjet
 from . import bake
@@ -29,18 +30,45 @@ def create_solver(self, domain):
     return solv, grid
 
 
-def save_mesh(operator, surface_mesh, frame_index):
+def save_mesh(operator, surface_mesh, frame_index, particles, colors):
     print('save verts')
     domain = operator.domain
     coef = domain.jet_fluid.resolution / domain.jet_fluid.resolution_mesh
     bin_mesh_data = bytearray()
     points_count = surface_mesh.numberOfPoints()
     bin_mesh_data.extend(struct.pack('I', points_count))
+
+    if domain.jet_fluid.use_colors:
+        kdtree = mathutils.kdtree.KDTree(len(particles))
+        for index, par in enumerate(particles):
+            kdtree.insert((par[0], par[2], par[1]), index)
+        kdtree.balance()
+
+    offset = (
+        domain.bound_box[0][0] * domain.scale[0] + domain.location[0],
+        domain.bound_box[0][1] * domain.scale[1] + domain.location[1],
+        domain.bound_box[0][2] * domain.scale[2] + domain.location[2]
+    )
+
     for point_index in range(points_count):
         point = surface_mesh.point(point_index)
         bin_mesh_data.extend(struct.pack(
             '3f', point.x * coef, point.y * coef, point.z * coef
         ))
+        if domain.jet_fluid.use_colors:
+            _, index, _ = kdtree.find((
+                point[0] * coef + offset[0],
+                point[2] * coef + offset[1],
+                point[1] * coef + offset[2]
+            ))
+            color = colors[index]
+            bin_mesh_data.extend(struct.pack(
+                '3f', *color
+            ))
+        else:
+            bin_mesh_data.extend(struct.pack(
+                '3f', 0.0, 0.0, 0.0
+            ))
 
     print('save tris')
     triangles_count = surface_mesh.numberOfTriangles()
@@ -88,16 +116,21 @@ def read_particles(domain, frame_index):
     particles_count = struct.unpack('I', particles_data[p : p + 4])[0]
     p += 4
     points = []
+    colors = []
     for particle_index in range(particles_count):
         particle_position = struct.unpack('3f', particles_data[p : p + 12])
-        p += 48    # skip velocities, forces and colors
+        p += 36    # skip velocities, forces
+        color = struct.unpack('3f', particles_data[p : p + 12])
+        p += 12
         points.append(particle_position)
-    return points
+        if domain.jet_fluid.use_colors:
+            colors.append(color)
+    return points, colors
 
 
 def bake_mesh(domain, solv, grid, frame_index):
     print('frame', frame_index)
-    points = read_particles(domain, frame_index)
+    points, colors = read_particles(domain, frame_index)
     print('create converter')
     converter = pyjet.SphPointsToImplicit3(2.0 * solv.gridSpacing.x, 0.5)
     print('convert')
@@ -110,7 +143,7 @@ def bake_mesh(domain, solv, grid, frame_index):
         0.0,
         pyjet.DIRECTION_ALL
     )
-    return surface_mesh
+    return surface_mesh, points, colors
 
 
 class JetFluidBakeMesh(bpy.types.Operator):
@@ -131,8 +164,8 @@ class JetFluidBakeMesh(bpy.types.Operator):
             if has_cache:
                 print('skip frame', frame_index)
             else:
-                surface_mesh = bake_mesh(domain, solv, grid, frame_index)
-                save_mesh(self, surface_mesh, frame_index)
+                surface_mesh, particles, colors = bake_mesh(domain, solv, grid, frame_index)
+                save_mesh(self, surface_mesh, frame_index, particles, colors)
         return {'FINISHED'}
 
     def invoke(self, context, event):
