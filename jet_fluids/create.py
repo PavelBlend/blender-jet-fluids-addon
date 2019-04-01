@@ -25,7 +25,9 @@ def remove_par_object(domain):
 
 def remove_mesh_object(domain):
     if domain.jet_fluid.mesh_object:
-        mesh_object = bpy.data.objects[domain.jet_fluid.mesh_object]
+        mesh_object = bpy.data.objects.get(domain.jet_fluid.mesh_object, None)
+        if not mesh_object:
+            return
         old_mesh = mesh_object.data
         materials = [m for m in old_mesh.materials]
         mesh = bpy.data.meshes.new('temp_name')

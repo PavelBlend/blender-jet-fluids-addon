@@ -100,13 +100,15 @@ def check_cache_file(domain, frame_index):
 
 
 def read_particles(domain, frame_index):
+    points = []
+    colors = []
     file_path = '{}particles_{}.bin'.format(
         bpy.path.abspath(domain.jet_fluid.cache_folder),
         frame_index
     )
     if not os.path.exists(file_path):
         print('can\'t find particles file in {} frame'.format(frame_index))
-        return False
+        return points, colors
     print('open particles file')
     particles_file = open(file_path, 'rb')
     particles_data = particles_file.read()
@@ -115,8 +117,6 @@ def read_particles(domain, frame_index):
     p = 0
     particles_count = struct.unpack('I', particles_data[p : p + 4])[0]
     p += 4
-    points = []
-    colors = []
     for particle_index in range(particles_count):
         particle_position = struct.unpack('3f', particles_data[p : p + 12])
         p += 36    # skip velocities, forces
@@ -131,6 +131,8 @@ def read_particles(domain, frame_index):
 def bake_mesh(domain, solv, grid, frame_index):
     print('frame', frame_index)
     points, colors = read_particles(domain, frame_index)
+    if not points:
+        return None, points, colors
     print('create converter')
     converter = pyjet.SphPointsToImplicit3(2.0 * solv.gridSpacing.x, 0.5)
     print('convert')
@@ -165,7 +167,8 @@ class JetFluidBakeMesh(bpy.types.Operator):
                 print('skip frame', frame_index)
             else:
                 surface_mesh, particles, colors = bake_mesh(domain, solv, grid, frame_index)
-                save_mesh(self, surface_mesh, frame_index, particles, colors)
+                if surface_mesh:
+                    save_mesh(self, surface_mesh, frame_index, particles, colors)
         return {'FINISHED'}
 
     def invoke(self, context, event):
