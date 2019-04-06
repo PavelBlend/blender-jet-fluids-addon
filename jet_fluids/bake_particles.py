@@ -10,6 +10,12 @@ from . import pyjet
 from . import bake
 
 
+def get_transforms(obj):
+    pos = obj.matrix_world.to_translation()
+    rot = obj.matrix_world.to_quaternion()
+    return pos, rot
+
+
 class JetFluidBakeParticles(bpy.types.Operator):
     bl_idname = "jet_fluid.bake_particles"
     bl_label = "Bake Particles"
@@ -66,11 +72,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     vel = emitter.jet_fluid.velocity
                     jet_emmiter.initialVelocity = vel[0], vel[2], vel[1]
                     jet_emmiter.isOneShot = emitter.jet_fluid.one_shot
-                    pos = emitter.location
-                    if emitter.rotation_mode != 'QUATERNION':
-                        rot = emitter.rotation_euler.to_quaternion()
-                    else:
-                        rot = emitter.rotation_quaternion
+                    pos, rot = get_transforms(emitter)
                     jet_emmiter.surface.transform = pyjet.Transform3(
                         translation=(pos[0], pos[2], pos[1]),
                         orientation=(-rot[0], rot[1], rot[3], rot[2])
@@ -86,11 +88,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
 
             for collider, collider_object in self.jet_colliders:
                 collider.frictionCoefficient = collider_object.jet_fluid.friction_coefficient
-                pos = collider_object.location
-                if collider_object.rotation_mode != 'QUATERNION':
-                    rot = collider_object.rotation_euler.to_quaternion()
-                else:
-                    rot = collider_object.rotation_quaternion
+                pos, rot = get_transforms(collider_object)
                 collider.surface.transform = pyjet.Transform3(
                     translation=(pos[0], pos[2], pos[1]),
                     orientation=(-rot[0], rot[1], rot[3], rot[2])
@@ -222,11 +220,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     for collider_object in colliders:
                         print('create collider mesh')
                         triangle_mesh = bake.get_triangle_mesh(context, collider_object, solver, obj)
-                        pos = collider_object.location
-                        if collider_object.rotation_mode != 'QUATERNION':
-                            rot = collider_object.rotation_euler.to_quaternion()
-                        else:
-                            rot = collider_object.rotation_quaternion
+                        pos, rot = get_transforms(collider_object)
                         triangle_mesh.transform = pyjet.Transform3(
                             translation=(pos[0], pos[2], pos[1]),
                             orientation=(-rot[0], rot[1], rot[3], rot[2])
@@ -272,11 +266,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     self.jet_colliders = []
                     for collider_object in colliders:
                         triangle_mesh = bake.get_triangle_mesh(context, collider_object, solver, obj)
-                        pos = collider_object.location
-                        if collider_object.rotation_mode != 'QUATERNION':
-                            rot = collider_object.rotation_euler.to_quaternion()
-                        else:
-                            rot = collider_object.rotation_quaternion
+                        pos, rot = get_transforms(collider_object)
                         triangle_mesh.transform = pyjet.Transform3(
                             translation=(pos[0], pos[2], pos[1]),
                             orientation=(-rot[0], rot[1], rot[3], rot[2])
