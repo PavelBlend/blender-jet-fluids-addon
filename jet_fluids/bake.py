@@ -77,7 +77,10 @@ def get_triangle_mesh(context, source, solver, domain_object):
     print('generete Implicit Triangle Mesh')
     imp_triangle_mesh = pyjet.ImplicitTriangleMesh3(
         mesh=triangle_mesh,
-        resolutionX=solver.resolution.x,
+        resolutionX=int(round(
+            solver.resolution.x * obj.dimensions[0] / domain_object.dimensions[0],
+            0
+        )),
         margin=0.2
     )
     print('remove objects')
