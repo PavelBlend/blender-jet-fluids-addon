@@ -89,6 +89,26 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     bound_up = bpy.props.BoolProperty(default=True, name='Up')
     bound_down = bpy.props.BoolProperty(default=True, name='Down')
 
+    # connectivity
+    con_right = bpy.props.BoolProperty(default=True, name='Right')
+    con_left = bpy.props.BoolProperty(default=True, name='Left')
+
+    con_front = bpy.props.BoolProperty(default=True, name='Front')
+    con_back = bpy.props.BoolProperty(default=True, name='Back')
+
+    con_up = bpy.props.BoolProperty(default=True, name='Up')
+    con_down = bpy.props.BoolProperty(default=True, name='Down')
+
+    # close
+    close_right = bpy.props.BoolProperty(default=True, name='Right')
+    close_left = bpy.props.BoolProperty(default=True, name='Left')
+
+    close_front = bpy.props.BoolProperty(default=True, name='Front')
+    close_back = bpy.props.BoolProperty(default=True, name='Back')
+
+    close_up = bpy.props.BoolProperty(default=True, name='Up')
+    close_down = bpy.props.BoolProperty(default=True, name='Down')
+
     # cache props
     cache_folder = bpy.props.StringProperty(
         default='',

@@ -138,12 +138,15 @@ def bake_mesh(domain, solv, grid, frame_index):
     print('convert')
     converter.convert(points, grid)
     print('meshing')
+    con_flag = bake.set_closed_domain_boundary_flag(domain, 'mesh_connectivity_boundary')
+    close_flag = bake.set_closed_domain_boundary_flag(domain, 'mesh_closed_boundary')
     surface_mesh = pyjet.marchingCubes(
         grid,
         (solv.gridSpacing.x, solv.gridSpacing.y, solv.gridSpacing.z),
         (0, 0, 0),
         0.0,
-        pyjet.DIRECTION_ALL
+        close_flag,
+        con_flag
     )
     return surface_mesh, points, colors
 

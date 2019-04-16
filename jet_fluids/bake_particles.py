@@ -166,7 +166,8 @@ class JetFluidBakeParticles(bpy.types.Operator):
         solver.useCompressedLinearSystem = obj.jet_fluid.compressed_linear_system
         solver.isUsingFixedSubTimeSteps = obj.jet_fluid.fixed_substeps
         solver.numberOfFixedSubTimeSteps = obj.jet_fluid.fixed_substeps_count
-        bake.set_closed_domain_boundary_flag(solver, obj)
+        bound_flag = bake.set_closed_domain_boundary_flag(obj, 'domain_closed_boundary')
+        solver.closedDomainBoundaryFlag = bound_flag
         solver.viscosityCoefficient = obj.jet_fluid.viscosity
         grav = obj.jet_fluid.gravity
         solver.gravity = grav[0], grav[2], grav[1]

@@ -92,16 +92,37 @@ def get_triangle_mesh(context, source, solver, domain_object):
     return imp_triangle_mesh
 
 
-def set_closed_domain_boundary_flag(solver, obj):
+def set_closed_domain_boundary_flag(obj, flag_type):
     jet = obj.jet_fluid
-    bounds = [
-        jet.bound_right,
-        jet.bound_left,
-        jet.bound_front,
-        jet.bound_back,
-        jet.bound_up,
-        jet.bound_down
-    ]
+    if flag_type == 'domain_closed_boundary':
+        bounds = [
+            jet.bound_right,
+            jet.bound_left,
+            jet.bound_front,
+            jet.bound_back,
+            jet.bound_up,
+            jet.bound_down
+        ]
+    elif flag_type == 'mesh_connectivity_boundary':
+        bounds = [
+            jet.con_right,
+            jet.con_left,
+            jet.con_front,
+            jet.con_back,
+            jet.con_up,
+            jet.con_down
+        ]
+    elif flag_type == 'mesh_closed_boundary':
+        bounds = [
+            jet.close_right,
+            jet.close_left,
+            jet.close_front,
+            jet.close_back,
+            jet.close_up,
+            jet.close_down
+        ]
+    else:
+        raise 'Unsupported flag type'
     flags = [
         pyjet.DIRECTION_RIGHT,
         pyjet.DIRECTION_LEFT,
@@ -117,7 +138,7 @@ def set_closed_domain_boundary_flag(solver, obj):
         if bound:
             bound_flag |= flags[bound_index]
 
-    solver.closedDomainBoundaryFlag = bound_flag
+    return bound_flag
 
 
 def calc_res(self, obj, type='FLUID'):

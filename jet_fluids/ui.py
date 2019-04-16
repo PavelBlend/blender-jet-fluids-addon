@@ -100,6 +100,8 @@ class JetFluidBoundaryPanel(JetFluidDomainPanel):
         lay = self.layout
 
         # create ui elements
+        lay.label('Domain Close:')
+
         row = lay.row()
         row.prop(jet, 'bound_right')
         row.prop(jet, 'bound_left')
@@ -111,6 +113,36 @@ class JetFluidBoundaryPanel(JetFluidDomainPanel):
         row = lay.row()
         row.prop(jet, 'bound_up')
         row.prop(jet, 'bound_down')
+
+        # connectivity
+        lay.label('Mesh Close:')
+
+        row = lay.row()
+        row.prop(jet, 'close_right')
+        row.prop(jet, 'close_left')
+
+        row = lay.row()
+        row.prop(jet, 'close_front')
+        row.prop(jet, 'close_back')
+
+        row = lay.row()
+        row.prop(jet, 'close_up')
+        row.prop(jet, 'close_down')
+
+        # connectivity
+        lay.label('Mesh Connectivity:')
+
+        row = lay.row()
+        row.prop(jet, 'con_right')
+        row.prop(jet, 'con_left')
+
+        row = lay.row()
+        row.prop(jet, 'con_front')
+        row.prop(jet, 'con_back')
+
+        row = lay.row()
+        row.prop(jet, 'con_up')
+        row.prop(jet, 'con_down')
 
 
 class JetFluidWorldPanel(JetFluidDomainPanel):
