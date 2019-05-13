@@ -53,6 +53,7 @@ class JetFluidEmitterPanel(bpy.types.Panel):
 
         # create ui elements
         lay.prop(jet, 'object_type')
+        lay.prop(jet, 'is_enable')
         lay.prop(jet, 'one_shot')
         lay.prop(jet, 'particles_count')
         lay.prop(jet, 'max_number_of_particles')

@@ -72,6 +72,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     vel = emitter.jet_fluid.velocity
                     jet_emmiter.initialVelocity = vel[0], vel[2], vel[1]
                     jet_emmiter.isOneShot = emitter.jet_fluid.one_shot
+                    jet_emmiter.isEnabled = emitter.jet_fluid.is_enable
                     pos, rot = get_transforms(emitter)
                     jet_emmiter.surface.transform = pyjet.Transform3(
                         translation=(pos[0], pos[2], pos[1]),
@@ -203,6 +204,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                             maxRegion=solver.gridSystemData.boundingBox,
                             spacing=self.domain_max_size / (obj.jet_fluid.resolution * emitter_object.jet_fluid.particles_count),
                             isOneShot=emitter_object.jet_fluid.one_shot,
+                            isEnable=emitter_object.jet_fluid.is_enable,
                             initialVelocity=[init_vel[0], init_vel[2], init_vel[1]],
                             jitter=emitter_object.jet_fluid.emitter_jitter,
                             allowOverlapping=emitter_object.jet_fluid.allow_overlapping,
@@ -256,6 +258,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                                 maxRegion=solver.gridSystemData.boundingBox,
                                 spacing=self.domain_max_size / (obj.jet_fluid.resolution * emitter_object.jet_fluid.particles_count),
                                 isOneShot=emitter_object.jet_fluid.one_shot,
+                                isEnable=emitter_object.jet_fluid.is_enable,
                                 initialVelocity=[init_vel[0], init_vel[2], init_vel[1]]
                             )
                             self.jet_emitters_dict[emitter_object.name] = emitter

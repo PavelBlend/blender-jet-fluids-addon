@@ -128,6 +128,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         default=(0, 0, 0), name='Velocity'
     )
     one_shot = bpy.props.BoolProperty(default=False, name='One Shot')
+    is_enable = bpy.props.BoolProperty(default=True, name='Enable')
     particles_count = bpy.props.FloatProperty(
         default=1.0,
         name='Particles',
