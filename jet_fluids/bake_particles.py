@@ -72,7 +72,16 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     vel = emitter.jet_fluid.velocity
                     jet_emmiter.initialVelocity = vel[0], vel[2], vel[1]
                     jet_emmiter.isOneShot = emitter.jet_fluid.one_shot
-                    jet_emmiter.isEnabled = emitter.jet_fluid.is_enable
+                    if not emitter.jet_fluid.one_shot:
+                        jet_emmiter.isEnabled = emitter.jet_fluid.is_enable
+                    else:
+                        if emitter.animation_data:
+                            fcurve = emitter.animation_data.action.fcurves.find('jet_fluid.is_enable')
+                            val = fcurve.evaluate(self.context.scene.frame_current - 1.0)
+                            if val == 1.0:
+                                jet_emmiter.isEnabled = False
+                            else:
+                                jet_emmiter.isEnabled = emitter.jet_fluid.is_enable
                     pos, rot = get_transforms(emitter)
                     jet_emmiter.surface.transform = pyjet.Transform3(
                         translation=(pos[0], pos[2], pos[1]),
