@@ -75,7 +75,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     if not emitter.jet_fluid.one_shot:
                         jet_emmiter.isEnabled = emitter.jet_fluid.is_enable
                     else:
-                        if emitter.animation_data:
+                        if emitter.animation_data.action:
                             fcurve = emitter.animation_data.action.fcurves.find('jet_fluid.is_enable')
                             val = fcurve.evaluate(self.context.scene.frame_current - 1.0)
                             if val == 1.0:
