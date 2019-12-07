@@ -1,4 +1,3 @@
-
 import os
 import numpy
 import struct
@@ -67,7 +66,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                                     colors[loop.vertex_index] = color
                             for vertex in emitter.data.vertices:
                                 mat = mathutils.Matrix.Translation(vertex.co) + emitter.matrix_world
-                                coord = emitter.matrix_world * vertex.co
+                                coord = emitter.matrix_world @ vertex.co
                                 vertices.append((coord, colors[vertex.index]))
                     vel = emitter.jet_fluid.velocity
                     jet_emmiter.initialVelocity = vel[0], vel[2], vel[1]
@@ -120,7 +119,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
             vertices_count = len(positions)
             bin_data += struct.pack('I', vertices_count)
             print('save particles colors')
-            par_color = self.domain.jet_fluid.particles_color
+            par_color = tuple(self.domain.jet_fluid.particles_color)
             colors_count = len(particles_colors)
             if jet.use_colors:
                 if jet.simmulate_color_type == 'VERTEX_COLOR':
@@ -131,7 +130,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                         particles_colors.append(color)
                 elif jet.simmulate_color_type == 'SINGLE_COLOR':
                     for i in range(vertices_count - colors_count):
-                        particles_colors.append(par_color.copy())
+                        particles_colors.append(par_color)
             print('start save position and velocity')
             for vert_index in range(vertices_count):
                 pos = positions[vert_index]
@@ -139,9 +138,9 @@ class JetFluidBakeParticles(bpy.types.Operator):
                 bin_data.extend(struct.pack('3f', *velocities[vert_index]))
                 bin_data.extend(struct.pack('3f', *forces[vert_index]))
                 if jet.use_colors:
-                    bin_data.extend(struct.pack('3f', *particles_colors[vert_index]))
+                    bin_data.extend(struct.pack('4f', *particles_colors[vert_index]))
                 else:
-                    bin_data.extend(struct.pack('3f', 0.0, 0.0, 0.0))
+                    bin_data.extend(struct.pack('4f', 0.0, 0.0, 0.0, 0.0))
             file = open(file_path, 'wb')
             file.write(bin_data)
             file.close()

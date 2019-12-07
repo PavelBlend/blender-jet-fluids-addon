@@ -1,4 +1,3 @@
-
 import os
 import struct
 
@@ -81,14 +80,14 @@ def create_particles(domain):
     vertices = []
     for particle_index in range(particles_count):
         pos = struct.unpack('3f', particles_data[p : p + 12])
-        p += 48    # skip velocities, forces and colors
+        p += 52    # skip velocities, forces and colors
         vertices.append((pos[0], pos[2], pos[1]))
 
     par_mesh = bpy.data.meshes.new('temp_name')
     if not domain.jet_fluid.particles_object:
         par_object = bpy.data.objects.new('jet_fluid_particles', par_mesh)
         domain.jet_fluid.particles_object = par_object.name
-        bpy.context.scene.objects.link(par_object)
+        bpy.context.scene.collection.objects.link(par_object)
     else:
         if bpy.data.objects.get(domain.jet_fluid.particles_object):
             par_object = bpy.data.objects[domain.jet_fluid.particles_object]
@@ -100,7 +99,7 @@ def create_particles(domain):
             bpy.data.meshes.remove(old_par_mesh)
         else:
             par_object = bpy.data.objects.new(domain.jet_fluid.particles_object, par_mesh)
-            bpy.context.scene.objects.link(par_object)
+            bpy.context.scene.collection.objects.link(par_object)
     par_mesh.from_pydata(vertices, (), ())
     par_mesh.name = 'jet_fluid_particles'
 
@@ -124,8 +123,8 @@ def create_mesh(domain):
     for vertex_index in range(vertices_count):
         pos = struct.unpack('3f', mesh_data[p : p + 12])
         p += 12
-        col = struct.unpack('3f', mesh_data[p : p + 12])
-        p += 12
+        col = struct.unpack('4f', mesh_data[p : p + 16])
+        p += 16
         vertices.append((pos[0], pos[2], pos[1]))
         colors.append(col)
 
@@ -141,11 +140,11 @@ def create_mesh(domain):
     if not domain.jet_fluid.mesh_object:
         mesh_object = bpy.data.objects.new('jet_fluid_mesh', mesh)
         domain.jet_fluid.mesh_object = mesh_object.name
-        bpy.context.scene.objects.link(mesh_object)
+        bpy.context.scene.collection.objects.link(mesh_object)
     else:
         if not bpy.data.objects.get(domain.jet_fluid.mesh_object):
             mesh_object = bpy.data.objects.new(domain.jet_fluid.mesh_object, mesh)
-            bpy.context.scene.objects.link(mesh_object)
+            bpy.context.scene.collection.objects.link(mesh_object)
         else:
             mesh_object = bpy.data.objects[domain.jet_fluid.mesh_object]
             old_mesh = mesh_object.data
@@ -164,7 +163,7 @@ def create_mesh(domain):
         domain.bound_box[0][1] * domain.scale[1] + domain.location[1],
         domain.bound_box[0][2] * domain.scale[2] + domain.location[2]
     )
-    vertex_colors = mesh.vertex_colors.new('jet_fluid_color')
+    vertex_colors = mesh.vertex_colors.new(name='jet_fluid_color')
     i = 0
     for face in mesh.polygons:
         for loop_index in face.loop_indices:
@@ -205,19 +204,27 @@ def update_particles_cache(self, context):
                     for particle_index in range(particles_count):
                         particle_position = struct.unpack('3f', particles_data[p : p + 12])
                         p += 12
-                        positions.append(particle_position)
+                        positions.append((
+                            particle_position[0],
+                            particle_position[2],
+                            particle_position[1]
+                        ))
                         vel = struct.unpack('3f', particles_data[p : p + 12])
-                        p += 36    # skip forces and colors
+                        p += 40    # skip forces and colors
                         color_factor = (vel[0]**2 + vel[1]**2 + vel[2]**2) ** (1/2) / obj.jet_fluid.max_velocity
                         color = render.generate_particle_color(color_factor, obj.jet_fluid)
-                        colors.append(color)
+                        colors.append((*color, 1.0))
                     GL_PARTICLES_CACHE[obj.name] = [positions, colors]
                 elif obj.jet_fluid.color_type == 'SINGLE_COLOR':
                     positions = []
                     for particle_index in range(particles_count):
                         particle_position = struct.unpack('3f', particles_data[p : p + 12])
-                        p += 48    # skip velocities, forces and colors
-                        positions.append(particle_position)
+                        p += 52    # skip velocities, forces and colors
+                        positions.append((
+                            particle_position[0],
+                            particle_position[2],
+                            particle_position[1]
+                        ))
                     GL_PARTICLES_CACHE[obj.name] = positions
                 elif obj.jet_fluid.color_type == 'PARTICLE_COLOR':
                     positions = []
@@ -225,11 +232,15 @@ def update_particles_cache(self, context):
                     for particle_index in range(particles_count):
                         particle_position = struct.unpack('3f', particles_data[p : p + 12])
                         p += 12
-                        positions.append(particle_position)
+                        positions.append((
+                            particle_position[0],
+                            particle_position[2],
+                            particle_position[1]
+                        ))
                         vel = struct.unpack('3f', particles_data[p : p + 12])
                         p += 24    # skip forces
-                        color = struct.unpack('3f', particles_data[p : p + 12])
-                        p += 12
+                        color = struct.unpack('4f', particles_data[p : p + 16])
+                        p += 16
                         colors.append(color)
                     GL_PARTICLES_CACHE[obj.name] = [positions, colors]
 

@@ -1,8 +1,7 @@
-
 import bpy
 
 
-class JetFluidDomainPanel(bpy.types.Panel):
+class JET_FLUID_PT_DomainPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "physics"
@@ -14,7 +13,7 @@ class JetFluidDomainPanel(bpy.types.Panel):
         return jet.is_active and jet.object_type == 'DOMAIN'
 
 
-class JetFluidColliderPanel(bpy.types.Panel):
+class JET_FLUID_PT_ColliderPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "physics"
@@ -35,7 +34,7 @@ class JetFluidColliderPanel(bpy.types.Panel):
         lay.prop(jet, 'friction_coefficient')
 
 
-class JetFluidEmitterPanel(bpy.types.Panel):
+class JET_FLUID_PT_EmitterPanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "physics"
@@ -63,7 +62,7 @@ class JetFluidEmitterPanel(bpy.types.Panel):
         lay.prop(jet, 'velocity')
 
 
-class JetFluidSolversPanel(JetFluidDomainPanel):
+class JET_FLUID_PT_SolversPanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid Solvers"
 
     def draw(self, context):
@@ -92,7 +91,7 @@ class JetFluidSolversPanel(JetFluidDomainPanel):
         row.prop(jet, 'fixed_substeps_count')
 
 
-class JetFluidBoundaryPanel(JetFluidDomainPanel):
+class JET_FLUID_PT_BoundaryPanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid Boundary"
 
     def draw(self, context):
@@ -101,7 +100,7 @@ class JetFluidBoundaryPanel(JetFluidDomainPanel):
         lay = self.layout
 
         # create ui elements
-        lay.label('Domain Close:')
+        lay.label(text='Domain Close:')
 
         row = lay.row()
         row.prop(jet, 'bound_right')
@@ -116,7 +115,7 @@ class JetFluidBoundaryPanel(JetFluidDomainPanel):
         row.prop(jet, 'bound_down')
 
         # connectivity
-        lay.label('Mesh Close:')
+        lay.label(text='Mesh Close:')
 
         row = lay.row()
         row.prop(jet, 'close_right')
@@ -131,7 +130,7 @@ class JetFluidBoundaryPanel(JetFluidDomainPanel):
         row.prop(jet, 'close_down')
 
         # connectivity
-        lay.label('Mesh Connectivity:')
+        lay.label(text='Mesh Connectivity:')
 
         row = lay.row()
         row.prop(jet, 'con_right')
@@ -146,7 +145,7 @@ class JetFluidBoundaryPanel(JetFluidDomainPanel):
         row.prop(jet, 'con_down')
 
 
-class JetFluidWorldPanel(JetFluidDomainPanel):
+class JET_FLUID_PT_WorldPanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid World"
 
     def draw(self, context):
@@ -159,7 +158,7 @@ class JetFluidWorldPanel(JetFluidDomainPanel):
         lay.prop(jet, 'gravity')
 
 
-class JetFluidColorPanel(JetFluidDomainPanel):
+class JET_FLUID_PT_ColorPanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid Color"
 
     def draw(self, context):
@@ -175,7 +174,7 @@ class JetFluidColorPanel(JetFluidDomainPanel):
                 lay.prop(jet, 'particles_color')
 
 
-class JetFluidCreatePanel(JetFluidDomainPanel):
+class JET_FLUID_PT_CreatePanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid Create"
 
     def draw(self, context):
@@ -196,13 +195,13 @@ class JetFluidCreatePanel(JetFluidDomainPanel):
             lay.prop_search(jet, 'particles_object', bpy.data, 'objects')
 
         # standart particle system
-        split = lay.split(percentage=0.75, align=True)
+        split = lay.split(factor=0.75, align=True)
         split.operator('jet_fluid.create_particle_system')
         split.alert = True
         split.operator('jet_fluid.reset_physic_cache', text='Clear')
 
 
-class JetFluidDebugPanel(JetFluidDomainPanel):
+class JET_FLUID_PT_DebugPanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid Debug"
 
     def draw(self, context):
@@ -223,7 +222,7 @@ class JetFluidDebugPanel(JetFluidDomainPanel):
                     lay.prop(jet, 'max_velocity')
 
 
-class JetFluidCachePanel(JetFluidDomainPanel):
+class JET_FLUID_PT_CachePanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid Cache"
 
     def draw(self, context):
@@ -235,7 +234,7 @@ class JetFluidCachePanel(JetFluidDomainPanel):
         lay.prop(jet, 'cache_folder')
 
 
-class JetFluidMeshPanel(JetFluidDomainPanel):
+class JET_FLUID_PT_MeshPanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid Mesh"
 
     def draw(self, context):
@@ -247,14 +246,14 @@ class JetFluidMeshPanel(JetFluidDomainPanel):
         row = lay.row()
 
         # bake mesh
-        split = lay.split(percentage=0.75, align=True)
+        split = lay.split(factor=0.75, align=True)
         split.operator('jet_fluid.bake_mesh')
         split.alert = True
         split.operator('jet_fluid.reset_mesh', text="Reset")
         lay.prop(jet, 'resolution_mesh')
 
 
-class JetFluidSimulatePanel(JetFluidDomainPanel):
+class JET_FLUID_PT_SimulatePanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid Simulate"
     bl_options = set()
 
@@ -269,7 +268,7 @@ class JetFluidSimulatePanel(JetFluidDomainPanel):
         lay.prop(jet, 'object_type')
 
         # bake particles
-        split = lay.split(percentage=0.75, align=True)
+        split = lay.split(factor=0.75, align=True)
         split.operator('jet_fluid.bake_particles')
         split.alert = True
         split.operator('jet_fluid.reset_particles', text="Reset")
@@ -277,7 +276,7 @@ class JetFluidSimulatePanel(JetFluidDomainPanel):
         lay.prop(jet, 'resolution')
 
         # fps
-        lay.label('Time:')
+        lay.label(text='Time:')
         lay.prop(jet, 'use_scene_fps')
         row = lay.row()
         if jet.use_scene_fps:
@@ -287,7 +286,7 @@ class JetFluidSimulatePanel(JetFluidDomainPanel):
             row.prop(jet, 'fps')
 
 
-class JetFluidPanel(bpy.types.Panel):
+class JET_FLUID_PT_Panel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "physics"
@@ -308,12 +307,12 @@ class JetFluidPanel(bpy.types.Panel):
 
 
 def add_jet_fluid_button(self, context):
-    obj = context.scene.objects.active
+    obj = context.object
     if not obj.type == 'MESH':
         return
 
     column = self.layout.column(align=True)
-    split = column.split(percentage=0.5)
+    split = column.split(factor=0.5)
     column_left = split.column()
     column_right = split.column()
 
@@ -332,18 +331,18 @@ def add_jet_fluid_button(self, context):
 
 
 __CLASSES__ = [
-    JetFluidPanel,
-    JetFluidSimulatePanel,
-    JetFluidMeshPanel,
-    JetFluidSolversPanel,
-    JetFluidBoundaryPanel,
-    JetFluidCachePanel,
-    JetFluidCreatePanel,
-    JetFluidWorldPanel,
-    JetFluidColorPanel,
-    JetFluidDebugPanel,
-    JetFluidEmitterPanel,
-    JetFluidColliderPanel
+    JET_FLUID_PT_Panel,
+    JET_FLUID_PT_SimulatePanel,
+    JET_FLUID_PT_MeshPanel,
+    JET_FLUID_PT_SolversPanel,
+    JET_FLUID_PT_BoundaryPanel,
+    JET_FLUID_PT_CachePanel,
+    JET_FLUID_PT_CreatePanel,
+    JET_FLUID_PT_WorldPanel,
+    JET_FLUID_PT_ColorPanel,
+    JET_FLUID_PT_DebugPanel,
+    JET_FLUID_PT_EmitterPanel,
+    JET_FLUID_PT_ColliderPanel
 ]
 
 

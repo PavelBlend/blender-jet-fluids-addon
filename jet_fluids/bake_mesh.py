@@ -1,4 +1,3 @@
-
 import os
 import threading
 import struct
@@ -63,11 +62,11 @@ def save_mesh(operator, surface_mesh, frame_index, particles, colors):
             ))
             color = colors[index]
             bin_mesh_data.extend(struct.pack(
-                '3f', *color
+                '4f', *color
             ))
         else:
             bin_mesh_data.extend(struct.pack(
-                '3f', 0.0, 0.0, 0.0
+                '4f', 0.0, 0.0, 0.0, 0.0
             ))
 
     print('save tris')
@@ -120,8 +119,8 @@ def read_particles(domain, frame_index):
     for particle_index in range(particles_count):
         particle_position = struct.unpack('3f', particles_data[p : p + 12])
         p += 36    # skip velocities, forces
-        color = struct.unpack('3f', particles_data[p : p + 12])
-        p += 12
+        color = struct.unpack('4f', particles_data[p : p + 16])
+        p += 16
         points.append(particle_position)
         if domain.jet_fluid.use_colors:
             colors.append(color)
@@ -159,7 +158,7 @@ class JetFluidBakeMesh(bpy.types.Operator):
     def execute(self, context):
         pyjet.Logging.mute()
         scn = context.scene
-        domain = scn.objects.active
+        domain = bpy.context.view_layer.objects.active
         if not domain.jet_fluid.cache_folder:
             self.report({'WARNING'}, 'Cache Folder not Specified!')
             return {'FINISHED'}

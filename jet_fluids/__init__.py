@@ -1,9 +1,8 @@
-
 bl_info = {
     'name': 'Jet-Fluids',
     'author': 'Pavel_Blend',
     'version': ('Demo', 0, 0, 4),
-    'blender': (2, 79, 0),
+    'blender': (2, 81, 0),
     'category': 'Animation',
     'location': 'Properties > Physics > Jet Fluid',
     'warning': 'Demo version',

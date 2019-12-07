@@ -1,4 +1,3 @@
-
 import struct
 import os
 
@@ -47,22 +46,23 @@ def read_particles(file_path):
         force = struct.unpack('3f', particles_data[p : p + 12])
         p += 12
         forces.append(force)
-        color = struct.unpack('3f', particles_data[p : p + 12])
-        p += 12
+        color = struct.unpack('4f', particles_data[p : p + 16])
+        p += 16
         colors.append(color)
     return positions, velocities, forces, colors
 
 
 def get_triangle_mesh(context, source, solver, domain_object):
     selected_objects_name = [o.name for o in context.selected_objects]
-    active_object_name = context.scene.objects.active.name
+    active_object_name = context.object.name
     bpy.ops.object.select_all(action='DESELECT')
-    source.select = True
+    source.select_set(True)
     bpy.ops.object.duplicate()
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     obj = context.selected_objects[0]
     mesh = obj.data
-    context.scene.objects.active = obj
+    view_layer = bpy.context.view_layer
+    view_layer.objects.active = obj
     bpy.ops.object.convert(target='MESH')
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.reveal()
@@ -87,8 +87,9 @@ def get_triangle_mesh(context, source, solver, domain_object):
     bpy.data.objects.remove(obj)
     bpy.data.meshes.remove(mesh)
     for obj_name in selected_objects_name:
-        bpy.data.objects[obj_name].select = True
-    bpy.context.scene.objects.active = bpy.data.objects[active_object_name]
+        bpy.data.objects[obj_name].select_set(True)
+    view_layer = bpy.context.view_layer
+    view_layer.objects.active = bpy.data.objects[active_object_name]
     return imp_triangle_mesh
 
 

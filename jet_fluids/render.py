@@ -1,9 +1,10 @@
-
 import struct
 import os
 
 import bpy
 import bgl
+import gpu
+from gpu_extras.batch import batch_for_shader
 
 from . import create
 
@@ -28,30 +29,24 @@ def draw_scene_particles():
 
 
 def draw_particles(domain, particles):
-    bgl.glPointSize(domain.jet_fluid.particle_size)
-    bgl.glBegin(bgl.GL_POINTS)
+    shader = gpu.shader.from_builtin('3D_FLAT_COLOR')
     if domain.jet_fluid.color_type == 'VELOCITY':
         positions = particles[0]
         colors = particles[1]
-        for index, pos in enumerate(positions):
-            bgl.glColor4f(colors[index][0], colors[index][1], colors[index][2], 1.0)
-            bgl.glVertex3f(pos[0], pos[2], pos[1])
+        batch = batch_for_shader(shader, 'POINTS', {"pos": positions, "color": colors})
     elif domain.jet_fluid.color_type == 'SINGLE_COLOR':
         color = domain.jet_fluid.color_1
-        bgl.glColor4f(color[0], color[1], color[2], 1.0)
-        for particle_position in particles:
-            bgl.glVertex3f(
-                particle_position[0],
-                particle_position[2],
-                particle_position[1]
-            )
+        colors = []
+        for i in range(len(particles)):
+            colors.append((*color, 1.0))
+        batch = batch_for_shader(shader, 'POINTS', {"pos": particles, "color": colors})
     elif domain.jet_fluid.color_type == 'PARTICLE_COLOR':
         positions = particles[0]
         colors = particles[1]
-        for index, pos in enumerate(positions):
-            bgl.glColor4f(colors[index][0], colors[index][1], colors[index][2], 1.0)
-            bgl.glVertex3f(pos[0], pos[2], pos[1])
-    bgl.glEnd()
+        batch = batch_for_shader(shader, 'POINTS', {"pos": positions, "color": colors})
+    shader.bind()
+    bgl.glPointSize(domain.jet_fluid.particle_size)
+    batch.draw(shader)
 
 
 def register():

@@ -1,4 +1,3 @@
-
 from . import bake_mesh
 from . import bake_particles
 from . import objects
@@ -17,6 +16,7 @@ modules = [
     render,
     create
 ]
+
 
 def register():
     for module in modules:

@@ -1,4 +1,3 @@
-
 import os
 import struct
 
@@ -33,7 +32,7 @@ def save_blender_particles_cache(frame_index, folder, par_file, times):
     file.write(struct.pack('I', 1))    # cache type (1 - particles)
     file.write(struct.pack('I', particles_count))
     file.write(struct.pack('I', 0b10111))    # particles data types
-    unpacker = struct.Struct('12f')
+    unpacker = struct.Struct('13f')
     packer = struct.Struct('9f')
 
     for particle_index in range(particles_count):
@@ -43,7 +42,7 @@ def save_blender_particles_cache(frame_index, folder, par_file, times):
         (pos_x, pos_z, pos_y,
         vel_x, vel_z, vel_y,
         for_x, for_z, for_y,
-        col_r, col_g, col_b) = unpacker.unpack(par_file.read(48))
+        col_r, col_g, col_b, col_a) = unpacker.unpack(par_file.read(52))
 
         file.write(packer.pack(
             pos_x, pos_y, pos_z,
@@ -87,5 +86,5 @@ def convert_particles_to_standart_particle_system(context, domain):
         par_sys.point_cache.name = 'fluid'
         par_sys.point_cache.index = 0
         par_sys.settings.count = particles_count
-        par_sys.settings.draw_color = 'VELOCITY'
+        par_sys.settings.display_color = 'VELOCITY'
         par_sys.settings.color_maximum = 10.0
