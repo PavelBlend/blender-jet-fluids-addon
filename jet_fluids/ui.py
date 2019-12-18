@@ -232,6 +232,7 @@ class JET_FLUID_PT_DebugPanel(JET_FLUID_PT_DomainPanel):
                 if jet.color_type == 'VELOCITY':
                     row.prop(jet, 'color_2', text='')
                     lay.prop(jet, 'max_velocity')
+        lay.operator('jet_fluid.remove_logs')
 
 
 class JET_FLUID_PT_CachePanel(JET_FLUID_PT_DomainPanel):
