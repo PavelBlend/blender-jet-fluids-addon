@@ -4,12 +4,25 @@ import time
 
 import bpy
 
-from .utils import print_info
+from .utils import get_log_path
+
+
+domain = None
+
+
+def print_convert_info(*print_params):
+    global domain
+    if domain.jet_fluid.print_debug_info:
+        print(*print_params)
+    if domain.jet_fluid.write_log:
+        log_file_path = get_log_path(domain, '_jet_fluids_convert.log')
+        with open(log_file_path, 'a') as log_file:
+            print(*print_params, file=log_file)
 
 
 def save_blender_particles_cache_times(folder, times, frame_end):
     start_time = time.time()
-    print_info('Save patricles times start')
+    print_convert_info('Save patricles times start')
     indices = list(times.keys())
     indices.sort()
 
@@ -27,15 +40,15 @@ def save_blender_particles_cache_times(folder, times, frame_end):
     file.close()
 
     particles_count = indices[-1]
-    print_info('Save patricles times end')
-    print_info('Save time: {0:.3}s'.format(time.time() - start_time))
-    print_info('-' * 79)
+    print_convert_info('Save patricles times end')
+    print_convert_info('Save time: {0:.3}s'.format(time.time() - start_time))
+    print_convert_info('-' * 79)
     return particles_count
 
 
 def save_blender_particles_cache(frame_index, folder, par_file, times):
     start_time = time.time()
-    print_info('Convert patricles start: frame {0:0>6}'.format(frame_index))
+    print_convert_info('Convert patricles start: frame {0:0>6}'.format(frame_index))
     file = open(folder + 'fluid_{:0>6}_00.bphys'.format(frame_index), 'wb')
     particles_count = struct.unpack('I', par_file.read(4))[0]
     file.write(b'BPHYSICS')
@@ -64,14 +77,19 @@ def save_blender_particles_cache(frame_index, folder, par_file, times):
             times[particle_index] = frame_index
 
     file.close()
-    print_info('Convert patricles end:   frame {0:0>6}'.format(frame_index))
-    print_info('Convert time: {0:.3}s'.format(time.time() - start_time))
-    print_info('-' * 79)
+    print_convert_info('Convert patricles end:   frame {0:0>6}'.format(frame_index))
+    print_convert_info('Convert time: {0:.3}s'.format(time.time() - start_time))
+    print_convert_info('-' * 79)
 
     return times
 
 
-def convert_particles_to_standart_particle_system(context, domain):
+def convert_particles_to_standart_particle_system(context, domain_object):
+    global domain
+    domain = domain_object
+    log_path = get_log_path(domain, '_jet_fluids_convert.log')
+    with open(log_path, 'w') as log_file:
+        pass
     times = {}
     folder = bpy.path.abspath(domain.jet_fluid.cache_folder)
     frame_end = context.scene.frame_end + 1

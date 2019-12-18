@@ -162,7 +162,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
 
     def execute(self, context):
         obj = context.object
-        log_path = get_log_path(obj)
+        log_path = get_log_path(obj, '_jet_fluids_simulate.log')
         with open(log_path, 'w') as log_file:
             pass
         print_info('-' * 79)

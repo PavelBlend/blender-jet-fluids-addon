@@ -8,7 +8,20 @@ import mathutils
 
 from . import pyjet
 from . import bake
-from .utils import print_info
+from .utils import get_log_path
+
+
+domain = None
+
+
+def print_mesh_info(*print_params):
+    global domain
+    if domain.jet_fluid.print_debug_info:
+        print(*print_params)
+    if domain.jet_fluid.write_log:
+        log_file_path = get_log_path(domain, '_jet_fluids_mesh.log')
+        with open(log_file_path, 'a') as log_file:
+            print(*print_params, file=log_file)
 
 
 def create_solver(self, domain):
@@ -33,7 +46,7 @@ def create_solver(self, domain):
 
 def save_mesh(operator, surface_mesh, frame_index, particles, colors):
     start_time = time.time()
-    print_info('Save mesh verts start')
+    print_mesh_info('Save mesh verts start')
     domain = operator.domain
     coef = domain.jet_fluid.resolution / domain.jet_fluid.resolution_mesh
     bin_mesh_data = bytearray()
@@ -71,17 +84,17 @@ def save_mesh(operator, surface_mesh, frame_index, particles, colors):
             bin_mesh_data.extend(struct.pack(
                 '4f', 0.0, 0.0, 0.0, 0.0
             ))
-    print_info('Save mesh verts end')
+    print_mesh_info('Save mesh verts end')
 
-    print_info('Save mesh tris start')
+    print_mesh_info('Save mesh tris start')
     triangles_count = surface_mesh.numberOfTriangles()
     bin_mesh_data.extend(struct.pack('I', triangles_count))
     for triangle_index in range(triangles_count):
         tris = surface_mesh.pointIndex(triangle_index)
         bin_mesh_data.extend(struct.pack('3I', tris.x, tris.y, tris.z))
-    print_info('Save mesh tris end')
+    print_mesh_info('Save mesh tris end')
 
-    print_info('Write mesh file start')
+    print_mesh_info('Write mesh file start')
     file_path = '{0}mesh_{1:0>6}.bin'.format(
         bpy.path.abspath(domain.jet_fluid.cache_folder),
         frame_index
@@ -89,8 +102,8 @@ def save_mesh(operator, surface_mesh, frame_index, particles, colors):
     file = open(file_path, 'wb')
     file.write(bin_mesh_data)
     file.close()
-    print_info('Write mesh file end')
-    print_info('Save mesh time: {0:.3}s'.format(time.time() - start_time))
+    print_mesh_info('Write mesh file end')
+    print_mesh_info('Save mesh time: {0:.3}s'.format(time.time() - start_time))
 
 
 def check_cache_file(domain, frame_index):
@@ -112,14 +125,14 @@ def read_particles(domain, frame_index):
         frame_index
     )
     if not os.path.exists(file_path):
-        print_info('Can\'t find particles file in {} frame'.format(frame_index))
+        print_mesh_info('Can\'t find particles file in {} frame'.format(frame_index))
         return points, colors
-    print_info('Open particles file start')
+    print_mesh_info('Open particles file start')
     particles_file = open(file_path, 'rb')
     particles_data = particles_file.read()
     particles_file.close()
-    print_info('Open particles file end')
-    print_info('Read particles start')
+    print_mesh_info('Open particles file end')
+    print_mesh_info('Read particles start')
     p = 0
     particles_count = struct.unpack('I', particles_data[p : p + 4])[0]
     p += 4
@@ -131,7 +144,7 @@ def read_particles(domain, frame_index):
         points.append(particle_position)
         if domain.jet_fluid.use_colors:
             colors.append(color)
-    print_info('Read particles end')
+    print_mesh_info('Read particles end')
     return points, colors
 
 
@@ -139,15 +152,15 @@ def bake_mesh(domain, solv, grid, frame_index):
     points, colors = read_particles(domain, frame_index)
     if not points:
         return None, points, colors
-    print_info('Create converter start')
+    print_mesh_info('Create converter start')
     converter = pyjet.SphPointsToImplicit3(
         domain.jet_fluid.kernel_radius * solv.gridSpacing.x, 0.5
     )
-    print_info('Create converter end')
-    print_info('Convert start')
+    print_mesh_info('Create converter end')
+    print_mesh_info('Convert start')
     converter.convert(points, grid)
-    print_info('Convert end')
-    print_info('Meshing start')
+    print_mesh_info('Convert end')
+    print_mesh_info('Meshing start')
     con_flag = bake.set_closed_domain_boundary_flag(domain, 'mesh_connectivity_boundary')
     close_flag = bake.set_closed_domain_boundary_flag(domain, 'mesh_closed_boundary')
     surface_mesh = pyjet.marchingCubes(
@@ -158,7 +171,7 @@ def bake_mesh(domain, solv, grid, frame_index):
         close_flag,
         con_flag
     )
-    print_info('Meshing end')
+    print_mesh_info('Meshing end')
     return surface_mesh, points, colors
 
 
@@ -168,8 +181,9 @@ class JetFluidBakeMesh(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def execute(self, context):
+        global domain
         domain = bpy.context.view_layer.objects.active
-        log_path = get_log_path(domain)
+        log_path = get_log_path(domain, '_jet_fluids_mesh.log')
         with open(log_path, 'w') as log_file:
             pass
         start_time = time.time()
@@ -182,17 +196,17 @@ class JetFluidBakeMesh(bpy.types.Operator):
         for frame_index in range(scn.frame_start, scn.frame_end + 1):
             has_cache = check_cache_file(domain, frame_index)
             if has_cache:
-                print_info('Skip frame', frame_index)
+                print_mesh_info('Skip frame', frame_index)
             else:
                 frame_start_time = time.time()
-                print_info('Generate mesh start: frame {0:0>6}'.format(frame_index))
+                print_mesh_info('Generate mesh start: frame {0:0>6}'.format(frame_index))
                 surface_mesh, particles, colors = bake_mesh(domain, solv, grid, frame_index)
                 if surface_mesh:
                     save_mesh(self, surface_mesh, frame_index, particles, colors)
-                print_info('Generate mesh end:   frame {0:0>6}'.format(frame_index))
-                print_info('Generate mesh time: {0:.3}s'.format(time.time() - frame_start_time))
-                print_info('-' * 79)
-        print_info('Total time: {0:.3}s'.format(time.time() - start_time))
+                print_mesh_info('Generate mesh end:   frame {0:0>6}'.format(frame_index))
+                print_mesh_info('Generate mesh time: {0:.3}s'.format(time.time() - frame_start_time))
+                print_mesh_info('-' * 79)
+        print_mesh_info('Total time: {0:.3}s'.format(time.time() - start_time))
         return {'FINISHED'}
 
     def invoke(self, context, event):
