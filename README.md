@@ -2,6 +2,11 @@
 
 **Jet-Fluids** is a blender add-on designed to simulate fluid.
 
+The author of the fluid engine is Doyub Kim.
+
+Fluid engine framework page: [github.com/doyubkim/fluid-engine-dev](https://github.com/doyubkim/fluid-engine-dev)
+
+
 ## Software
 
 This addon is supported only for **Windows 64 bit** and only for **Blender 2.8**.
