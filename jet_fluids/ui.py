@@ -200,6 +200,12 @@ class JET_FLUID_PT_CreatePanel(JET_FLUID_PT_DomainPanel):
         split.alert = True
         split.operator('jet_fluid.reset_physic_cache', text='Clear')
 
+        # frame range
+        lay.prop(jet, 'frame_range_convert')
+        if jet.frame_range_convert == 'CUSTOM':
+            lay.prop(jet, 'frame_range_convert_start')
+            lay.prop(jet, 'frame_range_convert_end')
+
 
 class JET_FLUID_PT_DebugPanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid Debug"
@@ -255,6 +261,12 @@ class JET_FLUID_PT_MeshPanel(JET_FLUID_PT_DomainPanel):
         lay.prop(jet, 'resolution_mesh')
         lay.prop(jet, 'kernel_radius')
 
+        # frame range
+        lay.prop(jet, 'frame_range_mesh')
+        if jet.frame_range_mesh == 'CUSTOM':
+            lay.prop(jet, 'frame_range_mesh_start')
+            lay.prop(jet, 'frame_range_mesh_end')
+
 
 class JET_FLUID_PT_SimulatePanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid Simulate"
@@ -287,6 +299,12 @@ class JET_FLUID_PT_SimulatePanel(JET_FLUID_PT_DomainPanel):
             row.prop(context.scene.render, 'fps')
         else:
             row.prop(jet, 'fps')
+
+        # frame range
+        lay.prop(jet, 'frame_range_simulation')
+        if jet.frame_range_simulation == 'CUSTOM':
+            lay.prop(jet, 'frame_range_simulation_start')
+            lay.prop(jet, 'frame_range_simulation_end')
 
 
 class JET_FLUID_PT_Panel(bpy.types.Panel):

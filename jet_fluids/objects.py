@@ -76,12 +76,51 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
     use_scene_fps: bpy.props.BoolProperty(default=True, name='Use Scene FPS')
     fps: bpy.props.FloatProperty(default=30.0, name='FPS')
+    items = [
+        ('TIMELINE', 'Timeline', ''),
+        ('CUSTOM', 'Custom', '')
+    ]
+    frame_range_simulation: bpy.props.EnumProperty(
+        items=items,
+        name='Frame Range',
+        default='TIMELINE'
+    )
+    frame_range_simulation_start: bpy.props.IntProperty(
+        default=0,
+        name='Start Frame',
+        min=0
+    )
+    frame_range_simulation_end: bpy.props.IntProperty(
+        default=50,
+        name='End Frame',
+        min=0
+    )
 
     # mesh generator properties
     resolution_mesh: bpy.props.IntProperty(default=30, name='Mesh Resolution')
     # SphPointsToImplicit3 properties
     kernel_radius: bpy.props.FloatProperty(
         default=2.0, name='Kernel Radius', min=0.1, max=10.0
+    )
+    items = [
+        ('TIMELINE', 'Timeline', ''),
+        ('CUSTOM', 'Custom', ''),
+        ('CURRENT_FRAME', 'Current Frame', '')
+    ]
+    frame_range_mesh: bpy.props.EnumProperty(
+        items=items,
+        name='Frame Range',
+        default='TIMELINE'
+    )
+    frame_range_mesh_start: bpy.props.IntProperty(
+        default=0,
+        name='Start Frame',
+        min=0
+    )
+    frame_range_mesh_end: bpy.props.IntProperty(
+        default=50,
+        name='End Frame',
+        min=0
     )
 
     # boundary
@@ -245,6 +284,28 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
     write_log: bpy.props.BoolProperty(
         default=True, name='Write Log File'
+    )
+
+    # convert props
+    items = [
+        ('TIMELINE', 'Timeline', ''),
+        ('CUSTOM', 'Custom', ''),
+        ('CURRENT_FRAME', 'Current Frame', '')
+    ]
+    frame_range_convert: bpy.props.EnumProperty(
+        items=items,
+        name='Frame Range',
+        default='TIMELINE'
+    )
+    frame_range_convert_start: bpy.props.IntProperty(
+        default=0,
+        name='Start Frame',
+        min=0
+    )
+    frame_range_convert_end: bpy.props.IntProperty(
+        default=50,
+        name='End Frame',
+        min=0
     )
 
 

@@ -200,10 +200,22 @@ class JetFluidBakeParticles(bpy.types.Operator):
             frame = pyjet.Frame(0, 1.0 / obj.jet_fluid.fps)
         self.solver = solver
         self.frame = frame
-        self.frame_end = context.scene.frame_end
         print_info('Set solver props end')
         print_info('Create others objects start')
-        for frame_index in range(0, self.frame_end):
+
+        if obj.jet_fluid.frame_range_simulation == 'CUSTOM':
+            frame_start = obj.jet_fluid.frame_range_simulation_start
+            frame_end = obj.jet_fluid.frame_range_simulation_end
+        elif obj.jet_fluid.frame_range_simulation == 'TIMELINE':
+            frame_start = context.scene.frame_start
+            frame_end = context.scene.frame_end
+        else:
+            frame_start = context.scene.frame_current
+            frame_end = context.scene.frame_current
+
+        self.frame_end = frame_end
+
+        for frame_index in range(frame_start, self.frame_end):
             file_path = '{0}particles_{1:0>6}.bin'.format(
                 bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                 frame_index
@@ -212,7 +224,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                 print_info('Skip frame:', frame_index)
                 continue
             else:
-                if frame_index == 0:
+                if frame_index == frame_start:
                     emitters, colliders = self.find_emitters_and_colliders()
                     jet_emitters = []
                     self.jet_emitters_dict = {}
@@ -268,7 +280,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                         print_info('    Create collider set end')
                     print_info('    Create colliders end')
                     # simulate
-                    self.simulate(offset=0, particles_colors=[])
+                    self.simulate(offset=frame_start, particles_colors=[])
                     break
                 else:
                     last_frame = frame_index - 1

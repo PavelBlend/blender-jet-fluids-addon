@@ -92,9 +92,18 @@ def convert_particles_to_standart_particle_system(context, domain_object):
         pass
     times = {}
     folder = bpy.path.abspath(domain.jet_fluid.cache_folder)
-    frame_end = context.scene.frame_end + 1
 
-    for frame_index in range(0, frame_end):
+    if domain.jet_fluid.frame_range_convert == 'CUSTOM':
+        frame_start = domain.jet_fluid.frame_range_convert_start
+        frame_end = domain.jet_fluid.frame_range_convert_end
+    elif domain.jet_fluid.frame_range_convert == 'TIMELINE':
+        frame_start = context.scene.frame_start
+        frame_end = context.scene.frame_end
+    else:
+        frame_start = context.scene.frame_current
+        frame_end = context.scene.frame_current
+
+    for frame_index in range(frame_start, frame_end + 1):
         file_path = '{0}particles_{1:0>6}.bin'.format(folder, frame_index)
         if not os.path.exists(file_path):
             continue
@@ -103,7 +112,7 @@ def convert_particles_to_standart_particle_system(context, domain_object):
         particles_file.close()
 
     if times:
-        particles_count = save_blender_particles_cache_times(folder, times, frame_end)
+        particles_count = save_blender_particles_cache_times(folder, times, frame_end + 1)
 
         if domain.particle_systems.get('fluid'):
             par_sys = domain.particle_systems['fluid']

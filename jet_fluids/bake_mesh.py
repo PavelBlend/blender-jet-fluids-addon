@@ -193,7 +193,18 @@ class JetFluidBakeMesh(bpy.types.Operator):
             self.report({'WARNING'}, 'Cache Folder not Specified!')
             return {'FINISHED'}
         solv, grid = create_solver(self, domain)
-        for frame_index in range(scn.frame_start, scn.frame_end + 1):
+
+        if domain.jet_fluid.frame_range_mesh == 'CUSTOM':
+            frame_start = domain.jet_fluid.frame_range_mesh_start
+            frame_end = domain.jet_fluid.frame_range_mesh_end
+        elif domain.jet_fluid.frame_range_mesh == 'TIMELINE':
+            frame_start = context.scene.frame_start
+            frame_end = context.scene.frame_end
+        else:
+            frame_start = context.scene.frame_current
+            frame_end = context.scene.frame_current
+
+        for frame_index in range(frame_start, frame_end + 1):
             has_cache = check_cache_file(domain, frame_index)
             if has_cache:
                 print_mesh_info('Skip frame', frame_index)
