@@ -1,4 +1,4 @@
-# Jet-Fluids Simulation in [Blender](https://www.blender.org/) 2.79
+# Jet-Fluids Simulation in [Blender](https://www.blender.org/) 2.8
 Only Windows 64 bit is supported.
 
 [Wiki](https://github.com/PavelBlend/blender_jet_fluids_addon/wiki)
