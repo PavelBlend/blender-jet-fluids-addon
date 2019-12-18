@@ -251,6 +251,7 @@ class JET_FLUID_PT_MeshPanel(JET_FLUID_PT_DomainPanel):
         split.alert = True
         split.operator('jet_fluid.reset_mesh', text="Reset")
         lay.prop(jet, 'resolution_mesh')
+        lay.prop(jet, 'kernel_radius')
 
 
 class JET_FLUID_PT_SimulatePanel(JET_FLUID_PT_DomainPanel):

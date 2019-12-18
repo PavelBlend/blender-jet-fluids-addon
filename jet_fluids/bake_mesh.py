@@ -133,7 +133,9 @@ def bake_mesh(domain, solv, grid, frame_index):
     if not points:
         return None, points, colors
     print('create converter')
-    converter = pyjet.SphPointsToImplicit3(2.0 * solv.gridSpacing.x, 0.5)
+    converter = pyjet.SphPointsToImplicit3(
+        domain.jet_fluid.kernel_radius * solv.gridSpacing.x, 0.5
+    )
     print('convert')
     converter.convert(points, grid)
     print('meshing')

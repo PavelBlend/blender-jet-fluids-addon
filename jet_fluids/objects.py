@@ -64,7 +64,6 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         items=items, name='Pressure Solver', default='SINGLE_PHASE'
     )
     resolution: bpy.props.IntProperty(default=30, name='Simulate Resolution')
-    resolution_mesh: bpy.props.IntProperty(default=30, name='Mesh Resolution')
     max_cfl: bpy.props.FloatProperty(default=5.0, name='Max CFL')
     compressed_linear_system: bpy.props.BoolProperty(
         default=False, name='Compressed Linear System'
@@ -77,6 +76,13 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
     use_scene_fps: bpy.props.BoolProperty(default=True, name='Use Scene FPS')
     fps: bpy.props.FloatProperty(default=30.0, name='FPS')
+
+    # mesh generator properties
+    resolution_mesh: bpy.props.IntProperty(default=30, name='Mesh Resolution')
+    # SphPointsToImplicit3 properties
+    kernel_radius: bpy.props.FloatProperty(
+        default=2.0, name='Kernel Radius', min=0.1, max=10.0
+    )
 
     # boundary
     bound_right: bpy.props.BoolProperty(default=True, name='Right')
