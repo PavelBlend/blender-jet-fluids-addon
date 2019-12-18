@@ -210,6 +210,8 @@ class JET_FLUID_PT_DebugPanel(JET_FLUID_PT_DomainPanel):
         lay = self.layout
 
         # create ui elements
+        lay.prop(jet, 'print_debug_info')
+        lay.prop(jet, 'write_log')
         lay.prop(jet, 'show_particles')
         if jet.show_particles:
             lay.prop(jet, 'particle_size')

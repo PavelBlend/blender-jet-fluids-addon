@@ -4,6 +4,7 @@ import os
 import bpy
 
 from . import pyjet
+from .utils import print_info
 
 
 solvers = {
@@ -69,13 +70,13 @@ def get_triangle_mesh(context, source, solver, domain_object):
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
     bpy.ops.object.mode_set(mode='OBJECT')
-    print('            Generete triangle mesh start: "{0}"'.format(source.name))
+    print_info('            Generete triangle mesh start: "{0}"'.format(source.name))
     triangle_mesh = pyjet.TriangleMesh3(
         points=[[v.co.x, v.co.z, v.co.y] for v in mesh.vertices],
         pointIndices=[[p.vertices[0], p.vertices[2], p.vertices[1]] for p in mesh.polygons]
     )
-    print('            Generete triangle mesh end:   "{0}"'.format(source.name))
-    print('            Generete implicit triangle mesh start: "{0}"'.format(source.name))
+    print_info('            Generete triangle mesh end:   "{0}"'.format(source.name))
+    print_info('            Generete implicit triangle mesh start: "{0}"'.format(source.name))
     imp_triangle_mesh = pyjet.ImplicitTriangleMesh3(
         mesh=triangle_mesh,
         resolutionX=int(round(
@@ -84,7 +85,7 @@ def get_triangle_mesh(context, source, solver, domain_object):
         )),
         margin=0.2
     )
-    print('            Generete implicit triangle mesh end:   "{0}"'.format(source.name))
+    print_info('            Generete implicit triangle mesh end:   "{0}"'.format(source.name))
     bpy.data.objects.remove(obj)
     bpy.data.meshes.remove(mesh)
     for obj_name in selected_objects_name:

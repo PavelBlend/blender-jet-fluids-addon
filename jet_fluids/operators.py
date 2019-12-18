@@ -5,6 +5,7 @@ import time
 import bpy
 
 from . import convert
+from .utils import print_info
 
 
 class JET_FLUID_OT_CreateStandartParticleSystem(bpy.types.Operator):
@@ -16,7 +17,7 @@ class JET_FLUID_OT_CreateStandartParticleSystem(bpy.types.Operator):
         obj = context.object
         start_time = time.time()
         convert.convert_particles_to_standart_particle_system(context, obj)
-        print('total time:', time.time() - start_time)
+        print_info('total time:', time.time() - start_time)
         return {'FINISHED'}
 
 

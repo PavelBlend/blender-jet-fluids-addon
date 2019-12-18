@@ -4,10 +4,12 @@ import time
 
 import bpy
 
+from .utils import print_info
+
 
 def save_blender_particles_cache_times(folder, times, frame_end):
     start_time = time.time()
-    print('Save patricles times start')
+    print_info('Save patricles times start')
     indices = list(times.keys())
     indices.sort()
 
@@ -25,15 +27,15 @@ def save_blender_particles_cache_times(folder, times, frame_end):
     file.close()
 
     particles_count = indices[-1]
-    print('Save patricles times end')
-    print('Save time: {0:.3}s'.format(time.time() - start_time))
-    print('-' * 79)
+    print_info('Save patricles times end')
+    print_info('Save time: {0:.3}s'.format(time.time() - start_time))
+    print_info('-' * 79)
     return particles_count
 
 
 def save_blender_particles_cache(frame_index, folder, par_file, times):
     start_time = time.time()
-    print('Convert patricles start: frame {0:0>6}'.format(frame_index))
+    print_info('Convert patricles start: frame {0:0>6}'.format(frame_index))
     file = open(folder + 'fluid_{:0>6}_00.bphys'.format(frame_index), 'wb')
     particles_count = struct.unpack('I', par_file.read(4))[0]
     file.write(b'BPHYSICS')
@@ -62,9 +64,9 @@ def save_blender_particles_cache(frame_index, folder, par_file, times):
             times[particle_index] = frame_index
 
     file.close()
-    print('Convert patricles end:   frame {0:0>6}'.format(frame_index))
-    print('Convert time: {0:.3}s'.format(time.time() - start_time))
-    print('-' * 79)
+    print_info('Convert patricles end:   frame {0:0>6}'.format(frame_index))
+    print_info('Convert time: {0:.3}s'.format(time.time() - start_time))
+    print_info('-' * 79)
 
     return times
 
