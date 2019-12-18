@@ -1,6 +1,7 @@
 import os
 import threading
 import struct
+import time
 
 import bpy
 import mathutils
@@ -30,7 +31,8 @@ def create_solver(self, domain):
 
 
 def save_mesh(operator, surface_mesh, frame_index, particles, colors):
-    print('save verts')
+    start_time = time.time()
+    print('Save mesh verts start')
     domain = operator.domain
     coef = domain.jet_fluid.resolution / domain.jet_fluid.resolution_mesh
     bin_mesh_data = bytearray()
@@ -68,15 +70,17 @@ def save_mesh(operator, surface_mesh, frame_index, particles, colors):
             bin_mesh_data.extend(struct.pack(
                 '4f', 0.0, 0.0, 0.0, 0.0
             ))
+    print('Save mesh verts end')
 
-    print('save tris')
+    print('Save mesh tris start')
     triangles_count = surface_mesh.numberOfTriangles()
     bin_mesh_data.extend(struct.pack('I', triangles_count))
     for triangle_index in range(triangles_count):
         tris = surface_mesh.pointIndex(triangle_index)
         bin_mesh_data.extend(struct.pack('3I', tris.x, tris.y, tris.z))
+    print('Save mesh tris end')
 
-    print('write file')
+    print('Write mesh file start')
     file_path = '{0}mesh_{1:0>6}.bin'.format(
         bpy.path.abspath(domain.jet_fluid.cache_folder),
         frame_index
@@ -84,7 +88,8 @@ def save_mesh(operator, surface_mesh, frame_index, particles, colors):
     file = open(file_path, 'wb')
     file.write(bin_mesh_data)
     file.close()
-    print('save mesh end')
+    print('Write mesh file end')
+    print('Save mesh time: {0:.3}s'.format(time.time() - start_time))
 
 
 def check_cache_file(domain, frame_index):
@@ -106,13 +111,14 @@ def read_particles(domain, frame_index):
         frame_index
     )
     if not os.path.exists(file_path):
-        print('can\'t find particles file in {} frame'.format(frame_index))
+        print('Can\'t find particles file in {} frame'.format(frame_index))
         return points, colors
-    print('open particles file')
+    print('Open particles file start')
     particles_file = open(file_path, 'rb')
     particles_data = particles_file.read()
     particles_file.close()
-    print('read particles')
+    print('Open particles file end')
+    print('Read particles start')
     p = 0
     particles_count = struct.unpack('I', particles_data[p : p + 4])[0]
     p += 4
@@ -124,21 +130,23 @@ def read_particles(domain, frame_index):
         points.append(particle_position)
         if domain.jet_fluid.use_colors:
             colors.append(color)
+    print('Read particles end')
     return points, colors
 
 
 def bake_mesh(domain, solv, grid, frame_index):
-    print('frame', frame_index)
     points, colors = read_particles(domain, frame_index)
     if not points:
         return None, points, colors
-    print('create converter')
+    print('Create converter start')
     converter = pyjet.SphPointsToImplicit3(
         domain.jet_fluid.kernel_radius * solv.gridSpacing.x, 0.5
     )
-    print('convert')
+    print('Create converter end')
+    print('Convert start')
     converter.convert(points, grid)
-    print('meshing')
+    print('Convert end')
+    print('Meshing start')
     con_flag = bake.set_closed_domain_boundary_flag(domain, 'mesh_connectivity_boundary')
     close_flag = bake.set_closed_domain_boundary_flag(domain, 'mesh_closed_boundary')
     surface_mesh = pyjet.marchingCubes(
@@ -149,6 +157,7 @@ def bake_mesh(domain, solv, grid, frame_index):
         close_flag,
         con_flag
     )
+    print('Meshing end')
     return surface_mesh, points, colors
 
 
@@ -158,6 +167,7 @@ class JetFluidBakeMesh(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def execute(self, context):
+        start_time = time.time()
         pyjet.Logging.mute()
         scn = context.scene
         domain = bpy.context.view_layer.objects.active
@@ -168,11 +178,17 @@ class JetFluidBakeMesh(bpy.types.Operator):
         for frame_index in range(scn.frame_start, scn.frame_end + 1):
             has_cache = check_cache_file(domain, frame_index)
             if has_cache:
-                print('skip frame', frame_index)
+                print('Skip frame', frame_index)
             else:
+                frame_start_time = time.time()
+                print('Generate mesh start: frame {0:0>6}'.format(frame_index))
                 surface_mesh, particles, colors = bake_mesh(domain, solv, grid, frame_index)
                 if surface_mesh:
                     save_mesh(self, surface_mesh, frame_index, particles, colors)
+                print('Generate mesh end:   frame {0:0>6}'.format(frame_index))
+                print('Generate mesh time: {0:.3}s'.format(time.time() - frame_start_time))
+                print('-' * 79)
+        print('Total time: {0:.3}s'.format(time.time() - start_time))
         return {'FINISHED'}
 
     def invoke(self, context, event):
