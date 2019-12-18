@@ -1,6 +1,7 @@
 import os
 import numpy
 import struct
+import time
 
 import bpy
 import mathutils
@@ -36,7 +37,6 @@ class JetFluidBakeParticles(bpy.types.Operator):
         return emitters, colliders
 
     def simulate(self, offset=0, particles_colors=[]):
-        print('EXECUTE START')
         solv = self.solver
         resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, grid_spacing = bake.calc_res(self, self.domain, type='MESH')
         jet = self.domain.jet_fluid
@@ -47,10 +47,10 @@ class JetFluidBakeParticles(bpy.types.Operator):
         jet.create_particles = False
         jet.show_particles = False
         current_frame = self.context.scene.frame_current
-        print('grid')
         folder = bpy.path.abspath(self.domain.jet_fluid.cache_folder)
         while self.frame.index + offset <= self.frame_end:
-            print('frame start', self.frame.index + offset)
+            print('-' * 79)
+            print('Frame start', self.frame.index + offset)
             self.context.scene.frame_set(self.frame.index + offset)
             vertices = []
             for emitter in self.emitters:
@@ -108,18 +108,19 @@ class JetFluidBakeParticles(bpy.types.Operator):
                 self.frame.index + offset
             )
             solv.viscosityCoefficient = self.domain.jet_fluid.viscosity
-            print('solver update start')
+            print('Solver update start')
             solv.update(self.frame)
-            print('solver update end')
-            print('start save particles')
+            print('Solver update end')
+            print('Save particles start')
+            print('    Convert particles to numpy array start')
             positions = numpy.array(solv.particleSystemData.positions, copy=False)
             velocities = numpy.array(solv.particleSystemData.velocities, copy=False)
             forces = numpy.array(solv.particleSystemData.forces, copy=False)
-            print('numpy convert')
+            print('    Convert particles to numpy array end')
             bin_data = bytearray()
             vertices_count = len(positions)
             bin_data += struct.pack('I', vertices_count)
-            print('save particles colors')
+            print('    Save particles color start')
             par_color = tuple(self.domain.jet_fluid.particles_color)
             colors_count = len(particles_colors)
             if jet.use_colors:
@@ -132,7 +133,8 @@ class JetFluidBakeParticles(bpy.types.Operator):
                 elif jet.simmulate_color_type == 'SINGLE_COLOR':
                     for i in range(vertices_count - colors_count):
                         particles_colors.append(par_color)
-            print('start save position and velocity')
+            print('    Save particles color end')
+            print('    Save position and velocity start')
             for vert_index in range(vertices_count):
                 pos = positions[vert_index]
                 bin_data.extend(struct.pack('3f', *pos))
@@ -142,10 +144,14 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     bin_data.extend(struct.pack('4f', *particles_colors[vert_index]))
                 else:
                     bin_data.extend(struct.pack('4f', 0.0, 0.0, 0.0, 0.0))
+            print('    Save position and velocity end')
+            print('    Write particles file start')
             file = open(file_path, 'wb')
             file.write(bin_data)
             file.close()
-            print('end save particles')
+            print('    Write particles file end')
+            print('Save particles end')
+            print('Frame end', self.frame.index + offset)
             self.frame.advance()
         jet.create_mesh = create_mesh
         jet.create_particles = create_particles
@@ -154,21 +160,24 @@ class JetFluidBakeParticles(bpy.types.Operator):
         return {'FINISHED'}
 
     def execute(self, context):
-        print('INVOKE START')
+        print('-' * 79)
+        print('SIMULATION START')
+        start_time = time.time()
         self.context = context
         pyjet.Logging.mute()
         obj = context.object
         if not obj.jet_fluid.cache_folder:
             self.report({'WARNING'}, 'Cache Folder not Specified!')
             return {'FINISHED'}
-        print('create solver')
+        print('Create solver start')
         resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, _ = bake.calc_res(self, obj)
         solver = bake.solvers[obj.jet_fluid.solver_type](
             resolution=(resolution_x, resolution_z, resolution_y),
             gridOrigin=(origin_x, origin_z, origin_y),
             domainSizeX=domain_size_x
         )
-        print('set solver props')
+        print('Create solver end')
+        print('Set solver props start')
         solver.maxCfl = obj.jet_fluid.max_cfl
         solver.advectionSolver = bake.advection_solvers[obj.jet_fluid.advection_solver_type]()
         solver.diffusionSolver = bake.diffusion_solvers[obj.jet_fluid.diffusion_solver_type]()
@@ -188,26 +197,28 @@ class JetFluidBakeParticles(bpy.types.Operator):
         self.solver = solver
         self.frame = frame
         self.frame_end = context.scene.frame_end
-        print('create others objects')
+        print('Set solver props end')
+        print('Create others objects start')
         for frame_index in range(0, self.frame_end):
             file_path = '{0}particles_{1:0>6}.bin'.format(
                 bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                 frame_index
             )
             if os.path.exists(file_path):
-                print('skip frame', frame_index)
+                print('Skip frame:', frame_index)
                 continue
             else:
                 if frame_index == 0:
                     emitters, colliders = self.find_emitters_and_colliders()
                     jet_emitters = []
                     self.jet_emitters_dict = {}
-                    print('create emitters')
+                    print('    Create emitters start')
                     for emitter_object in emitters:
-                        print('create mesh')
+                        print('        Create mesh start: "{0}"'.format(emitter_object.name))
                         triangle_mesh = bake.get_triangle_mesh(context, emitter_object, solver, obj)
+                        print('        Create mesh end:   "{0}"'.format(emitter_object.name))
                         init_vel = emitter_object.jet_fluid.velocity
-                        print('create particle emitter')
+                        print('        Create particle emitter start: "{0}"'.format(emitter_object.name))
                         emitter = pyjet.VolumeParticleEmitter3(
                             implicitSurface=triangle_mesh,
                             maxRegion=solver.gridSystemData.boundingBox,
@@ -222,15 +233,18 @@ class JetFluidBakeParticles(bpy.types.Operator):
                         )
                         self.jet_emitters_dict[emitter_object.name] = emitter
                         jet_emitters.append(emitter)
-                    print('create particle emitter set')
+                        print('        Create particle emitter end:   "{0}"'.format(emitter_object.name))
+                    print('    Create emitters end')
+                    print('    Create particle emitter set start')
                     self.emitters = emitters
                     emitter_set = pyjet.ParticleEmitterSet3(emitters=jet_emitters)
                     solver.particleEmitter = emitter_set
+                    print('    Create particle emitter set end')
                     # set colliders
-                    print('create colliders')
+                    print('    Create colliders start')
                     self.jet_colliders = []
                     for collider_object in colliders:
-                        print('create collider mesh')
+                        print('        Create collider mesh start: "{0}"'.format(collider_object.name))
                         triangle_mesh = bake.get_triangle_mesh(context, collider_object, solver, obj)
                         pos, rot = get_transforms(collider_object)
                         triangle_mesh.transform = pyjet.Transform3(
@@ -240,12 +254,15 @@ class JetFluidBakeParticles(bpy.types.Operator):
                         collider = pyjet.RigidBodyCollider3(surface=triangle_mesh)
                         collider.frictionCoefficient = collider_object.jet_fluid.friction_coefficient
                         self.jet_colliders.append((collider, collider_object))
+                        print('        Create collider mesh end:   "{0}"'.format(collider_object.name))
                     if self.jet_colliders:
-                        print('create collider set')
+                        print('    Create collider set start')
                         collider_set = pyjet.ColliderSet3()
                         for collider, collider_object in self.jet_colliders:
                             collider_set.addCollider(collider)
                         solver.collider = collider_set
+                        print('    Create collider set end')
+                    print('    Create colliders end')
                     # simulate
                     self.simulate(offset=0, particles_colors=[])
                     break
@@ -258,10 +275,14 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     emitters, colliders = self.find_emitters_and_colliders()
                     jet_emitters = []
                     self.jet_emitters_dict = {}
+                    print('    Create emitters start')
                     for emitter_object in emitters:
                         if not emitter_object.jet_fluid.one_shot:
+                            print('        Create mesh start: "{0}"'.format(emitter_object.name))
                             triangle_mesh = bake.get_triangle_mesh(context, emitter_object, solver, obj)
+                            print('        Create mesh end:   "{0}"'.format(emitter_object.name))
                             init_vel = emitter_object.jet_fluid.velocity
+                            print('        Create particle emitter start: "{0}"'.format(emitter_object.name))
                             emitter = pyjet.VolumeParticleEmitter3(
                                 implicitSurface=triangle_mesh,
                                 maxRegion=solver.gridSystemData.boundingBox,
@@ -272,12 +293,18 @@ class JetFluidBakeParticles(bpy.types.Operator):
                             )
                             self.jet_emitters_dict[emitter_object.name] = emitter
                             jet_emitters.append(emitter)
+                            print('        Create particle emitter end:   "{0}"'.format(emitter_object.name))
+                    print('    Create emitters end')
+                    print('    Create particle emitter set start')
                     self.emitters = emitters
                     emitter_set = pyjet.ParticleEmitterSet3(emitters=jet_emitters)
                     solver.particleEmitter = emitter_set
+                    print('    Create particle emitter set end')
                     # set colliders
+                    print('    Create colliders start')
                     self.jet_colliders = []
                     for collider_object in colliders:
+                        print('        Create collider mesh start: "{0}"'.format(collider_object.name))
                         triangle_mesh = bake.get_triangle_mesh(context, collider_object, solver, obj)
                         pos, rot = get_transforms(collider_object)
                         triangle_mesh.transform = pyjet.Transform3(
@@ -287,16 +314,26 @@ class JetFluidBakeParticles(bpy.types.Operator):
                         collider = pyjet.RigidBodyCollider3(surface=triangle_mesh)
                         collider.frictionCoefficient = collider_object.jet_fluid.friction_coefficient
                         self.jet_colliders.append((collider, collider_object))
+                        print('        Create collider mesh end:   "{0}"'.format(collider_object.name))
                     if self.jet_colliders:
+                        print('    Create collider set start')
                         collider_set = pyjet.ColliderSet3()
                         for collider, collider_object in self.jet_colliders:
                             collider_set.addCollider(collider)
                         solver.collider = collider_set
+                        print('    Create collider set end')
+                    print('    Create colliders end')
                     # resume particles
+                    print('Resume simulation start')
                     pos, vel, forc, colors = bake.read_particles(file_path)
                     solver.particleSystemData.addParticles(pos, vel, forc)
+                    print('Resume simulation end')
                     self.simulate(offset=last_frame, particles_colors=colors)
                     break
+        print('Create others objects end')
+        print('-' * 79)
+        print('SIMULATION END')
+        print('Total time: {0:.3}s'.format(time.time() - start_time))
         return {'FINISHED'}
 
     def invoke(self, context, event):
