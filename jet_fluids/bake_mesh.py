@@ -77,7 +77,7 @@ def save_mesh(operator, surface_mesh, frame_index, particles, colors):
         bin_mesh_data.extend(struct.pack('3I', tris.x, tris.y, tris.z))
 
     print('write file')
-    file_path = '{}mesh_{}.bin'.format(
+    file_path = '{0}mesh_{1:0>6}.bin'.format(
         bpy.path.abspath(domain.jet_fluid.cache_folder),
         frame_index
     )
@@ -88,7 +88,7 @@ def save_mesh(operator, surface_mesh, frame_index, particles, colors):
 
 
 def check_cache_file(domain, frame_index):
-    file_path = '{}mesh_{}.bin'.format(
+    file_path = '{0}mesh_{1:0>6}.bin'.format(
         bpy.path.abspath(domain.jet_fluid.cache_folder),
         frame_index
     )
@@ -101,7 +101,7 @@ def check_cache_file(domain, frame_index):
 def read_particles(domain, frame_index):
     points = []
     colors = []
-    file_path = '{}particles_{}.bin'.format(
+    file_path = '{0}particles_{1:0>6}.bin'.format(
         bpy.path.abspath(domain.jet_fluid.cache_folder),
         frame_index
     )

@@ -103,7 +103,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     translation=(pos[0], pos[2], pos[1]),
                     orientation=(-rot[0], rot[1], rot[3], rot[2])
                 )
-            file_path = '{}particles_{}.bin'.format(
+            file_path = '{0}particles_{1:0>6}.bin'.format(
                 bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                 self.frame.index + offset
             )
@@ -190,7 +190,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
         self.frame_end = context.scene.frame_end
         print('create others objects')
         for frame_index in range(0, self.frame_end):
-            file_path = '{}particles_{}.bin'.format(
+            file_path = '{0}particles_{1:0>6}.bin'.format(
                 bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                 frame_index
             )
@@ -251,7 +251,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     break
                 else:
                     last_frame = frame_index - 1
-                    file_path = '{}particles_{}.bin'.format(
+                    file_path = '{0}particles_{1:0>6}.bin'.format(
                         bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                         last_frame
                     )

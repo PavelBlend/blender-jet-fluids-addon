@@ -64,7 +64,7 @@ def convert_particles_to_standart_particle_system(context, domain):
     frame_end = context.scene.frame_end + 1
 
     for frame_index in range(0, frame_end):
-        file_path = '{}particles_{}.bin'.format(folder, frame_index)
+        file_path = '{0}particles_{1:0>6}.bin'.format(folder, frame_index)
         if not os.path.exists(file_path):
             continue
         particles_file = open(file_path, 'rb')
