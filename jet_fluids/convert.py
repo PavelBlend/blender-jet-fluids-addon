@@ -132,4 +132,6 @@ def convert_particles_to_standart_particle_system(context, domain_object):
         par_sys.point_cache.index = 0
         par_sys.settings.count = particles_count
         par_sys.settings.display_color = 'VELOCITY'
+        par_sys.settings.display_method = 'DOT'
+        par_sys.settings.display_size = 0.025
         par_sys.settings.color_maximum = 10.0
