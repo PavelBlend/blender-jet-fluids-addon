@@ -1,6 +1,6 @@
 # Jet-Fluids
 
-**Jet-Fluids** jet fluids is a blender add-on designed to simulate fluid.
+**Jet-Fluids** is a blender add-on designed to simulate fluid.
 
 ## Software
 
