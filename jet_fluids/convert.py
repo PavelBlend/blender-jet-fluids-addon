@@ -160,5 +160,4 @@ def convert_particles_to_standart_particle_system(context, domain_object):
 
     if times:
         particles_count = save_blender_particles_cache_times(folder, times, frame_end + 1)
-
-    create_standart_particles_system(domain, particles_count)
+        create_standart_particles_system(domain, particles_count)

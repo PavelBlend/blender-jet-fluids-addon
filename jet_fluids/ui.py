@@ -194,6 +194,17 @@ class JET_FLUID_PT_CreatePanel(JET_FLUID_PT_DomainPanel):
         if jet.create_particles:
             lay.prop_search(jet, 'particles_object', bpy.data, 'objects')
 
+
+class JET_FLUID_PT_ConvertPanel(JET_FLUID_PT_DomainPanel):
+    bl_label = "Jet Fluid Convert"
+
+    def draw(self, context):
+        obj = context.object
+        jet = obj.jet_fluid
+        lay = self.layout
+
+        # create ui elements
+
         # standart particle system
         split = lay.split(factor=0.75, align=True)
         split.operator('jet_fluid.create_particle_system')
@@ -368,6 +379,7 @@ __CLASSES__ = [
     JET_FLUID_PT_BoundaryPanel,
     JET_FLUID_PT_CachePanel,
     JET_FLUID_PT_CreatePanel,
+    JET_FLUID_PT_ConvertPanel,
     JET_FLUID_PT_WorldPanel,
     JET_FLUID_PT_ColorPanel,
     JET_FLUID_PT_DebugPanel,
