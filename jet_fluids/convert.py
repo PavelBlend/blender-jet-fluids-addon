@@ -47,9 +47,14 @@ def save_blender_particles_cache_times(folder, times, frame_end):
 
 
 def save_blender_particles_cache(frame_index, folder, par_file, times):
+    global domain
     start_time = time.time()
+    cache_path = folder + 'fluid_{:0>6}_00.bphys'.format(frame_index)
+    if os.path.exists(cache_path) and not domain.jet_fluid.overwrite_convert:
+        print('Skip frame: {0}'.format(frame_index))
+        return times
     print_convert_info('Convert patricles start: frame {0:0>6}'.format(frame_index))
-    file = open(folder + 'fluid_{:0>6}_00.bphys'.format(frame_index), 'wb')
+    file = open(cache_path, 'wb')
     particles_count = struct.unpack('I', par_file.read(4))[0]
     file.write(b'BPHYSICS')
     file.write(struct.pack('I', 1))    # cache type (1 - particles)

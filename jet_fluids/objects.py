@@ -95,6 +95,9 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         name='End Frame',
         min=0
     )
+    overwrite_simulation: bpy.props.BoolProperty(
+        default=False, name='Overwrite'
+    )
 
     # mesh generator properties
     resolution_mesh: bpy.props.IntProperty(default=30, name='Mesh Resolution')
@@ -121,6 +124,9 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         default=50,
         name='End Frame',
         min=0
+    )
+    overwrite_mesh: bpy.props.BoolProperty(
+        default=False, name='Overwrite'
     )
 
     # boundary
@@ -306,6 +312,9 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         default=50,
         name='End Frame',
         min=0
+    )
+    overwrite_convert: bpy.props.BoolProperty(
+        default=False, name='Overwrite'
     )
 
 

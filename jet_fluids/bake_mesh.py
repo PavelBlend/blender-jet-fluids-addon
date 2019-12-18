@@ -206,7 +206,7 @@ class JetFluidBakeMesh(bpy.types.Operator):
 
         for frame_index in range(frame_start, frame_end + 1):
             has_cache = check_cache_file(domain, frame_index)
-            if has_cache:
+            if has_cache and not domain.jet_fluid.overwrite_mesh:
                 print_mesh_info('Skip frame', frame_index)
             else:
                 frame_start_time = time.time()

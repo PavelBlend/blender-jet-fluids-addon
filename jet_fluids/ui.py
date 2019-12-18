@@ -206,6 +206,8 @@ class JET_FLUID_PT_CreatePanel(JET_FLUID_PT_DomainPanel):
             lay.prop(jet, 'frame_range_convert_start')
             lay.prop(jet, 'frame_range_convert_end')
 
+        lay.prop(jet, 'overwrite_convert')
+
 
 class JET_FLUID_PT_DebugPanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid Debug"
@@ -267,6 +269,8 @@ class JET_FLUID_PT_MeshPanel(JET_FLUID_PT_DomainPanel):
             lay.prop(jet, 'frame_range_mesh_start')
             lay.prop(jet, 'frame_range_mesh_end')
 
+        lay.prop(jet, 'overwrite_mesh')
+
 
 class JET_FLUID_PT_SimulatePanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid Simulate"
@@ -305,6 +309,8 @@ class JET_FLUID_PT_SimulatePanel(JET_FLUID_PT_DomainPanel):
         if jet.frame_range_simulation == 'CUSTOM':
             lay.prop(jet, 'frame_range_simulation_start')
             lay.prop(jet, 'frame_range_simulation_end')
+
+        lay.prop(jet, 'overwrite_simulation')
 
 
 class JET_FLUID_PT_Panel(bpy.types.Panel):

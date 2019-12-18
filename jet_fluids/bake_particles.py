@@ -220,7 +220,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                 bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                 frame_index
             )
-            if os.path.exists(file_path):
+            if os.path.exists(file_path) and not obj.jet_fluid.overwrite_simulation:
                 print_info('Skip frame:', frame_index)
                 continue
             else:
