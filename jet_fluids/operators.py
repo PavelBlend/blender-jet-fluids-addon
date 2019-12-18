@@ -8,6 +8,19 @@ from . import convert
 from .utils import print_info
 
 
+class JET_FLUID_OT_ReloadStandartParticleSystem(bpy.types.Operator):
+    bl_idname = "jet_fluid.reload_particle_system"
+    bl_label = "Reload Standart Particle System"
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+        obj = context.object
+        start_time = time.time()
+        convert.create_standart_particles_system(obj)
+        print_info('total time:', time.time() - start_time)
+        return {'FINISHED'}
+
+
 class JET_FLUID_OT_CreateStandartParticleSystem(bpy.types.Operator):
     bl_idname = "jet_fluid.create_particle_system"
     bl_label = "Create Standart Particle System"
@@ -100,7 +113,8 @@ __CLASSES__ = [
     JET_FLUID_OT_ResetParticles,
     JET_FLUID_OT_ResetMesh,
     JET_FLUID_OT_CreateStandartParticleSystem,
-    JET_FLUID_OT_ResetPhysicCache
+    JET_FLUID_OT_ResetPhysicCache,
+    JET_FLUID_OT_ReloadStandartParticleSystem
 ]
 
 

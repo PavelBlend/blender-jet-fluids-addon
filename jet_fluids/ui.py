@@ -200,6 +200,8 @@ class JET_FLUID_PT_CreatePanel(JET_FLUID_PT_DomainPanel):
         split.alert = True
         split.operator('jet_fluid.reset_physic_cache', text='Clear')
 
+        lay.operator('jet_fluid.reload_particle_system')
+
         # frame range
         lay.prop(jet, 'frame_range_convert')
         if jet.frame_range_convert == 'CUSTOM':

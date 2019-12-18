@@ -89,6 +89,48 @@ def save_blender_particles_cache(frame_index, folder, par_file, times):
     return times
 
 
+def get_particles_count(times_file_path):
+    with open(times_file_path, 'rb') as file:
+        data = file.read()
+    pos = 0
+    header = struct.unpack('8s', data[pos : pos + 8])    # BPHYSICS
+    pos += 8
+    cache_type = struct.unpack('I', data[pos : pos + 4])[0]
+    pos += 4
+    if cache_type != 1:    # particles
+        return 0
+    particles_count = struct.unpack('I', data[pos : pos + 4])[0]
+    pos += 4
+    return particles_count
+
+
+def create_standart_particles_system(domain, particles_count=None):
+    if domain.particle_systems.get('fluid'):
+        par_sys = domain.particle_systems['fluid']
+    else:
+        bpy.ops.object.particle_system_add()
+        par_sys = domain.particle_systems.active
+        par_sys.name = 'fluid'
+
+    if particles_count is None:
+        folder = bpy.path.abspath(domain.jet_fluid.cache_folder)
+        times_file_path = folder + 'fluid_{:0>6}_00.bphys'.format(0)
+        if os.path.exists(times_file_path):
+            particles_count = get_particles_count(times_file_path)
+        else:
+            particles_count = 0
+
+    par_sys.point_cache.use_external = True
+    par_sys.point_cache.filepath = domain.jet_fluid.cache_folder
+    par_sys.point_cache.name = 'fluid'
+    par_sys.point_cache.index = 0
+    par_sys.settings.count = particles_count
+    par_sys.settings.display_color = 'VELOCITY'
+    par_sys.settings.display_method = 'DOT'
+    par_sys.settings.display_size = 0.025
+    par_sys.settings.color_maximum = 10.0
+
+
 def convert_particles_to_standart_particle_system(context, domain_object):
     global domain
     domain = domain_object
@@ -119,19 +161,4 @@ def convert_particles_to_standart_particle_system(context, domain_object):
     if times:
         particles_count = save_blender_particles_cache_times(folder, times, frame_end + 1)
 
-        if domain.particle_systems.get('fluid'):
-            par_sys = domain.particle_systems['fluid']
-        else:
-            bpy.ops.object.particle_system_add()
-            par_sys = domain.particle_systems.active
-            par_sys.name = 'fluid'
-
-        par_sys.point_cache.use_external = True
-        par_sys.point_cache.filepath = domain.jet_fluid.cache_folder
-        par_sys.point_cache.name = 'fluid'
-        par_sys.point_cache.index = 0
-        par_sys.settings.count = particles_count
-        par_sys.settings.display_color = 'VELOCITY'
-        par_sys.settings.display_method = 'DOT'
-        par_sys.settings.display_size = 0.025
-        par_sys.settings.color_maximum = 10.0
+    create_standart_particles_system(domain, particles_count)
