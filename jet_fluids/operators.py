@@ -50,10 +50,14 @@ class JET_FLUID_OT_CreateStandartParticleSystem(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def execute(self, context):
-        obj = context.object
-        start_time = time.time()
-        convert.convert_particles_to_standart_particle_system(context, obj)
-        print_info('total time:', time.time() - start_time)
+        context.window.cursor_set('WAIT')
+        try:
+            obj = context.object
+            start_time = time.time()
+            convert.convert_particles_to_standart_particle_system(context, obj)
+            print_info('total time:', time.time() - start_time)
+        finally:
+            context.window.cursor_set('DEFAULT')
         return {'FINISHED'}
 
 

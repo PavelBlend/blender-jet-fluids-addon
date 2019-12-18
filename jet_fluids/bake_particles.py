@@ -353,7 +353,11 @@ class JetFluidBakeParticles(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        self.execute(context)
+        context.window.cursor_set('WAIT')
+        try:
+            self.execute(context)
+        finally:
+            context.window.cursor_set('DEFAULT')
         return {'FINISHED'}
 
 
