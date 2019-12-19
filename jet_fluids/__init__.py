@@ -1,7 +1,7 @@
 bl_info = {
     'name': 'Jet-Fluids',
     'author': 'Pavel_Blend',
-    'version': ('Demo', 0, 0, 4),
+    'version': ('demo', 0, 0, 4),
     'blender': (2, 81, 0),
     'category': 'Animation',
     'location': 'Properties > Physics > Jet Fluid',
@@ -11,4 +11,7 @@ bl_info = {
 }
 
 
-from .addon import register, unregister
+try:
+    from .addon import register, unregister
+except:
+    pass    # used in make_release.py
