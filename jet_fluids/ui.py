@@ -219,6 +219,10 @@ class JET_FLUID_PT_ConvertPanel(JET_FLUID_PT_DomainPanel):
             lay.prop(jet, 'frame_range_convert_start')
             lay.prop(jet, 'frame_range_convert_end')
 
+        lay.operator('jet_fluid.convert_to_jet_particles')
+        lay.prop(jet, 'input_data_type')
+        lay.prop_search(jet, 'input_vertices_object', bpy.data, 'objects')
+
         lay.prop(jet, 'overwrite_convert')
 
 

@@ -316,6 +316,16 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     overwrite_convert: bpy.props.BoolProperty(
         default=False, name='Overwrite'
     )
+    items = [
+        ('VERTICES', 'Vertices', ''),
+        ('PARTICLES', 'Particles', '')
+    ]
+    input_data_type: bpy.props.EnumProperty(
+        items=items,
+        name='Input Data Type',
+        default='VERTICES'
+    )
+    input_vertices_object: bpy.props.StringProperty(default='', name='Input Object')
 
 
 __CLASSES__ = [

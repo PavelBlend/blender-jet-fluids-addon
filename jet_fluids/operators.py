@@ -44,6 +44,23 @@ class JET_FLUID_OT_ReloadStandartParticleSystem(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class JET_FLUID_OT_ConvertDataToJetFluidParticles(bpy.types.Operator):
+    bl_idname = "jet_fluid.convert_to_jet_particles"
+    bl_label = "Convert to Jet Particles"
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+        context.window.cursor_set('WAIT')
+        try:
+            domain = context.object
+            start_time = time.time()
+            convert.convert_data_to_jet_particles(context, domain)
+            print_info('total time:', time.time() - start_time)
+        finally:
+            context.window.cursor_set('DEFAULT')
+        return {'FINISHED'}
+
+
 class JET_FLUID_OT_CreateStandartParticleSystem(bpy.types.Operator):
     bl_idname = "jet_fluid.create_particle_system"
     bl_label = "Create Standart Particle System"
@@ -142,6 +159,7 @@ __CLASSES__ = [
     JET_FLUID_OT_CreateStandartParticleSystem,
     JET_FLUID_OT_ResetPhysicCache,
     JET_FLUID_OT_ReloadStandartParticleSystem,
+    JET_FLUID_OT_ConvertDataToJetFluidParticles,
     JET_FLUID_OT_RemoveLogs
 ]
 

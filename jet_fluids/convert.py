@@ -161,3 +161,78 @@ def convert_particles_to_standart_particle_system(context, domain_object):
     if times:
         particles_count = save_blender_particles_cache_times(folder, times, frame_end + 1)
         create_standart_particles_system(domain, particles_count)
+
+
+def convert_data_to_jet_particles(context, domain_object):
+    global domain
+    domain = domain_object
+    print_convert_info('Convert data to jet particles start')
+    jet = domain.jet_fluid
+    verts_obj = bpy.data.objects.get(jet.input_vertices_object, None)
+    par_sys = verts_obj.particle_systems.active
+    if jet.frame_range_convert == 'CUSTOM':
+        frame_start = jet.frame_range_convert_start
+        frame_end = jet.frame_range_convert_end
+    elif jet.frame_range_convert == 'TIMELINE':
+        frame_start = context.scene.frame_start
+        frame_end = context.scene.frame_end
+    else:
+        frame_start = context.scene.frame_current
+        frame_end = context.scene.frame_current
+
+    for frame_index in range(frame_start, frame_end + 1):
+        bpy.context.scene.frame_set(frame_index)
+        file_path = '{0}particles_{1:0>6}.bin'.format(
+            bpy.path.abspath(jet.cache_folder),
+            frame_index
+        )
+        if os.path.exists(file_path) and not jet.overwrite_convert:
+            print_convert_info('    Skip frame: {0}'.format(frame_index))
+            continue
+        if not verts_obj:
+            return
+        if jet.input_data_type == 'VERTICES':
+            mesh = verts_obj.data
+            particles_count = len(mesh.vertices)
+            data = bytearray()
+            data.extend(struct.pack('I', particles_count))
+            for vertex in mesh.vertices:
+                vert_co = verts_obj.matrix_world @ vertex.co
+                # position
+                data.extend(struct.pack('3f', vert_co.x, vert_co.z, vert_co.y))
+                # velocity
+                data.extend(struct.pack('3f', 0.0, 0.0, 0.0))
+                # forces
+                data.extend(struct.pack('3f', 0.0, 0.0, 0.0))
+                # color
+                data.extend(struct.pack('4f', 1.0, 1.0, 1.0, 1.0))
+        elif jet.input_data_type == 'PARTICLES':
+            if not par_sys:
+                return
+            evaluated_object = context.view_layer.depsgraph.objects.get(verts_obj.name)
+            if not evaluated_object:
+                return
+            particles = evaluated_object.particle_systems[0].particles
+            particles_count = 0
+            data = bytearray()
+            for particle in particles:
+                if particle.alive_state == 'ALIVE':
+                    par_co = particle.location
+                    # position
+                    data.extend(struct.pack('3f', par_co.x, par_co.z, par_co.y))
+                    # velocity
+                    data.extend(struct.pack('3f', 0.0, 0.0, 0.0))
+                    # forces
+                    data.extend(struct.pack('3f', 0.0, 0.0, 0.0))
+                    # color
+                    data.extend(struct.pack('4f', 1.0, 1.0, 1.0, 1.0))
+                    particles_count += 1
+            par_count_bin = struct.pack('I', particles_count)
+            data.insert(0, par_count_bin[0])
+            data.insert(1, par_count_bin[1])
+            data.insert(2, par_count_bin[2])
+            data.insert(3, par_count_bin[3])
+        particles_file = open(file_path, 'wb')
+        particles_file.write(data)
+        particles_file.close()
+    print_convert_info('Convert data to jet particles end')
