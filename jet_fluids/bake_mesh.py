@@ -153,9 +153,31 @@ def bake_mesh(domain, solv, grid, frame_index):
     if not points:
         return None, points, colors
     print_mesh_info('Create converter start')
-    converter = pyjet.SphPointsToImplicit3(
-        domain.jet_fluid.kernel_radius * solv.gridSpacing.x, 0.5
-    )
+    if domain.jet_fluid.converter_type == 'ANISOTROPICPOINTSTOIMPLICIT':
+        converter = pyjet.AnisotropicPointsToImplicit3(
+            domain.jet_fluid.kernel_radius * solv.gridSpacing.x,
+            domain.jet_fluid.cut_off_density,
+            domain.jet_fluid.position_smoothing_factor,
+            domain.jet_fluid.min_num_neighbors,
+            domain.jet_fluid.is_output_sdf
+        )
+    elif domain.jet_fluid.converter_type == 'SPHPOINTSTOIMPLICIT':
+        converter = pyjet.SphPointsToImplicit3(
+            domain.jet_fluid.kernel_radius * solv.gridSpacing.x,
+            domain.jet_fluid.cut_off_density,
+            domain.jet_fluid.is_output_sdf
+        )
+    elif domain.jet_fluid.converter_type == 'SPHERICALPOINTSTOIMPLICIT':
+        converter = pyjet.SphPointsToImplicit3(
+            domain.jet_fluid.radius,
+            domain.jet_fluid.is_output_sdf
+        )
+    elif domain.jet_fluid.converter_type == 'ZHUBRIDSONPOINTSTOIMPLICIT':
+        converter = pyjet.ZhuBridsonPointsToImplicit3(
+            domain.jet_fluid.kernel_radius * solv.gridSpacing.x,
+            domain.jet_fluid.cut_off_threshold,
+            domain.jet_fluid.is_output_sdf
+        )
     print_mesh_info('Create converter end')
     print_mesh_info('Convert start')
     converter.convert(points, grid)
@@ -164,12 +186,12 @@ def bake_mesh(domain, solv, grid, frame_index):
     con_flag = bake.set_closed_domain_boundary_flag(domain, 'mesh_connectivity_boundary')
     close_flag = bake.set_closed_domain_boundary_flag(domain, 'mesh_closed_boundary')
     surface_mesh = pyjet.marchingCubes(
-        grid,
-        (solv.gridSpacing.x, solv.gridSpacing.y, solv.gridSpacing.z),
-        (0, 0, 0),
-        0.0,
-        close_flag,
-        con_flag
+        grid,    # grid
+        (solv.gridSpacing.x, solv.gridSpacing.y, solv.gridSpacing.z),    # gridSize
+        (0, 0, 0),    # origin
+        domain.jet_fluid.iso_value,    # isoValue
+        close_flag,    # bndClose
+        con_flag    # bndConnectivity
     )
     print_mesh_info('Meshing end')
     return surface_mesh, points, colors

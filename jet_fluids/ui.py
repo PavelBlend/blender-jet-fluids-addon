@@ -279,7 +279,25 @@ class JET_FLUID_PT_MeshPanel(JET_FLUID_PT_DomainPanel):
         split.alert = True
         split.operator('jet_fluid.reset_mesh', text="Reset")
         lay.prop(jet, 'resolution_mesh')
-        lay.prop(jet, 'kernel_radius')
+        lay.prop(jet, 'iso_value')
+        lay.prop(jet, 'converter_type')
+        if jet.converter_type == 'ANISOTROPICPOINTSTOIMPLICIT':
+            lay.prop(jet, 'kernel_radius')
+            lay.prop(jet, 'cut_off_density')
+            lay.prop(jet, 'position_smoothing_factor')
+            lay.prop(jet, 'min_num_neighbors')
+            lay.prop(jet, 'is_output_sdf')
+        elif jet.converter_type == 'SPHPOINTSTOIMPLICIT':
+            lay.prop(jet, 'kernel_radius')
+            lay.prop(jet, 'cut_off_density')
+            lay.prop(jet, 'is_output_sdf')
+        elif jet.converter_type == 'SPHERICALPOINTSTOIMPLICIT':
+            lay.prop(jet, 'radius')
+            lay.prop(jet, 'is_output_sdf')
+        elif jet.converter_type == 'ZHUBRIDSONPOINTSTOIMPLICIT':
+            lay.prop(jet, 'kernel_radius')
+            lay.prop(jet, 'cut_off_threshold')
+            lay.prop(jet, 'is_output_sdf')
 
         # frame range
         lay.prop(jet, 'frame_range_mesh')

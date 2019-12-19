@@ -101,9 +101,44 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
 
     # mesh generator properties
     resolution_mesh: bpy.props.IntProperty(default=30, name='Mesh Resolution')
-    # SphPointsToImplicit3 properties
+    items = [
+        ('ANISOTROPICPOINTSTOIMPLICIT', 'Anisotropic Points to Implicit', ''),
+        ('SPHPOINTSTOIMPLICIT', 'SPH Points to Implicit', ''),
+        ('SPHERICALPOINTSTOIMPLICIT', 'Spherical Points to Implicit', ''),
+        ('ZHUBRIDSONPOINTSTOIMPLICIT', 'Zhu Bridson Points to Implicit', '')
+    ]
+    converter_type: bpy.props.EnumProperty(
+        items=items,
+        name='Converter Type',
+        default='ANISOTROPICPOINTSTOIMPLICIT'
+    )
+    # Anisotropic Points to Implicit Properties
     kernel_radius: bpy.props.FloatProperty(
-        default=2.0, name='Kernel Radius', min=0.1, max=10.0
+        default=1.0, name='Kernel Radius', min=0.1, max=10.0
+    )
+    cut_off_density: bpy.props.FloatProperty(
+        default=0.5, name='Cut Off Density'
+    )
+    position_smoothing_factor: bpy.props.FloatProperty(
+        default=0.5, name='Position Smoothing Factor'
+    )
+    min_num_neighbors: bpy.props.IntProperty(
+        default=25,
+        name='Min Num Neighbors'
+    )
+    is_output_sdf: bpy.props.BoolProperty(
+        default=True, name='Is Out SDF'
+    )
+    radius: bpy.props.FloatProperty(
+        default=1.0, name='Radius'
+    )
+    cut_off_threshold: bpy.props.FloatProperty(
+        default=0.25, name='Cut Off Threshold'
+    )
+    # SphPointsToImplicit3 properties
+
+    iso_value: bpy.props.FloatProperty(
+        default=0.0, name='Iso Value'
     )
     items = [
         ('TIMELINE', 'Timeline', ''),
