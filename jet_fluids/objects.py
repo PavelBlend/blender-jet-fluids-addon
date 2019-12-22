@@ -35,11 +35,19 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
 
     # simulate props
     items = [
+        ('LEVEL_SET', 'Level Set', ''),
+        ('SPH', 'SPH', ''),
+        ('HYBRID', 'Hybrid', '')
+    ]
+    simulation_method: bpy.props.EnumProperty(
+        items=items, name='Simulation Method', default='HYBRID'
+    )
+    items = [
         ('APIC', 'APIC', ''),
         ('PIC', 'PIC', ''),
         ('FLIP', 'FLIP', '')
     ]
-    solver_type: bpy.props.EnumProperty(
+    hybrid_solver_type: bpy.props.EnumProperty(
         items=items, name='Fluid Solver', default='PIC'
     )
     items = [

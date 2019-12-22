@@ -28,7 +28,7 @@ def create_solver(self, domain):
     res_x, res_y, res_z, orig_x, orig_y, orig_z, size_x, _ = bake.calc_res(
         self, domain
     )
-    solv = bake.solvers[domain.jet_fluid.solver_type](
+    solv = bake.solvers[domain.jet_fluid.hybrid_solver_type](
         resolution=(res_x, res_z, res_y),
         gridOrigin=(orig_x, orig_z, orig_y),
         domainSizeX=size_x
@@ -53,7 +53,7 @@ def save_mesh(operator, surface_mesh, frame_index, particles, colors):
     points_count = surface_mesh.numberOfPoints()
     bin_mesh_data.extend(struct.pack('I', points_count))
 
-    if domain.jet_fluid.use_colors:
+    if domain.jet_fluid.use_colors and domain.jet_fluid.simulation_method == 'HYBRID':
         kdtree = mathutils.kdtree.KDTree(len(particles))
         for index, par in enumerate(particles):
             kdtree.insert((par[0], par[2], par[1]), index)
@@ -70,7 +70,7 @@ def save_mesh(operator, surface_mesh, frame_index, particles, colors):
         bin_mesh_data.extend(struct.pack(
             '3f', point.x * coef, point.y * coef, point.z * coef
         ))
-        if domain.jet_fluid.use_colors:
+        if domain.jet_fluid.use_colors and domain.jet_fluid.simulation_method == 'HYBRID':
             _, index, _ = kdtree.find((
                 point[0] * coef + offset[0],
                 point[2] * coef + offset[1],

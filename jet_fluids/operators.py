@@ -110,6 +110,15 @@ class JET_FLUID_OT_ResetParticles(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class JET_FLUID_OT_ResetFluid(bpy.types.Operator):
+    bl_idname = "jet_fluid.reset_fluid"
+    bl_label = "Reset Jet Fluid Cache"
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+        return {'FINISHED'}
+
+
 class JET_FLUID_OT_ResetPhysicCache(bpy.types.Operator):
     bl_idname = "jet_fluid.reset_physic_cache"
     bl_label = "Reset Physic Cache"
@@ -155,6 +164,7 @@ __CLASSES__ = [
     JET_FLUID_OT_Add,
     JET_FLUID_OT_Remove,
     JET_FLUID_OT_ResetParticles,
+    JET_FLUID_OT_ResetFluid,
     JET_FLUID_OT_ResetMesh,
     JET_FLUID_OT_CreateStandartParticleSystem,
     JET_FLUID_OT_ResetPhysicCache,

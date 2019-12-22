@@ -74,21 +74,23 @@ class JET_FLUID_PT_SolversPanel(JET_FLUID_PT_DomainPanel):
         row = lay.row()
 
         # solvers
-        lay.prop(jet, 'solver_type')
-        lay.prop(jet, 'advection_solver_type')
-        lay.prop(jet, 'diffusion_solver_type')
-        lay.prop(jet, 'pressure_solver_type')
+        lay.prop(jet, 'simulation_method')
+        if jet.simulation_method == 'HYBRID':
+            lay.prop(jet, 'hybrid_solver_type')
+            lay.prop(jet, 'advection_solver_type')
+            lay.prop(jet, 'diffusion_solver_type')
+            lay.prop(jet, 'pressure_solver_type')
 
-        # settings
-        lay.prop(jet, 'max_cfl')
-        lay.prop(jet, 'compressed_linear_system')
+            # settings
+            lay.prop(jet, 'max_cfl')
+            lay.prop(jet, 'compressed_linear_system')
 
-        # substeps
-        lay.prop(jet, 'fixed_substeps')
-        row = lay.row()
-        if not jet.fixed_substeps:
-            row.active = False
-        row.prop(jet, 'fixed_substeps_count')
+            # substeps
+            lay.prop(jet, 'fixed_substeps')
+            row = lay.row()
+            if not jet.fixed_substeps:
+                row.active = False
+            row.prop(jet, 'fixed_substeps_count')
 
 
 class JET_FLUID_PT_BoundaryPanel(JET_FLUID_PT_DomainPanel):
@@ -161,6 +163,11 @@ class JET_FLUID_PT_WorldPanel(JET_FLUID_PT_DomainPanel):
 class JET_FLUID_PT_ColorPanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid Color"
 
+    @classmethod
+    def poll(cls, context):
+        solver_object = context.object
+        return solver_object.jet_fluid.simulation_method == 'HYBRID'
+
     def draw(self, context):
         obj = context.object
         jet = obj.jet_fluid
@@ -190,13 +197,19 @@ class JET_FLUID_PT_CreatePanel(JET_FLUID_PT_DomainPanel):
             lay.prop_search(jet, 'mesh_object', bpy.data, 'objects')
 
         # particles properties
-        lay.prop(jet, 'create_particles')
-        if jet.create_particles:
-            lay.prop_search(jet, 'particles_object', bpy.data, 'objects')
+        if obj.jet_fluid.simulation_method == 'HYBRID':
+            lay.prop(jet, 'create_particles')
+            if jet.create_particles:
+                lay.prop_search(jet, 'particles_object', bpy.data, 'objects')
 
 
 class JET_FLUID_PT_ConvertPanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid Convert"
+
+    @classmethod
+    def poll(cls, context):
+        solver_object = context.object
+        return solver_object.jet_fluid.simulation_method == 'HYBRID'
 
     def draw(self, context):
         obj = context.object
@@ -228,6 +241,11 @@ class JET_FLUID_PT_ConvertPanel(JET_FLUID_PT_DomainPanel):
 
 class JET_FLUID_PT_DebugPanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid Debug"
+
+    @classmethod
+    def poll(cls, context):
+        solver_object = context.object
+        return solver_object.jet_fluid.simulation_method == 'HYBRID'
 
     def draw(self, context):
         obj = context.object
@@ -264,6 +282,11 @@ class JET_FLUID_PT_CachePanel(JET_FLUID_PT_DomainPanel):
 
 class JET_FLUID_PT_MeshPanel(JET_FLUID_PT_DomainPanel):
     bl_label = "Jet Fluid Mesh"
+
+    @classmethod
+    def poll(cls, context):
+        solver_object = context.object
+        return solver_object.jet_fluid.simulation_method == 'HYBRID'
 
     def draw(self, context):
         obj = context.object
@@ -324,9 +347,14 @@ class JET_FLUID_PT_SimulatePanel(JET_FLUID_PT_DomainPanel):
 
         # bake particles
         split = lay.split(factor=0.75, align=True)
-        split.operator('jet_fluid.bake_particles')
-        split.alert = True
-        split.operator('jet_fluid.reset_particles', text="Reset")
+        if jet.simulation_method == 'HYBRID':
+            split.operator('jet_fluid.bake_particles')
+            split.alert = True
+            split.operator('jet_fluid.reset_particles', text="Reset")
+        else:
+            split.operator('jet_fluid.bake_fluid')
+            split.alert = True
+            split.operator('jet_fluid.reset_fluid', text="Reset")
 
         lay.prop(jet, 'resolution')
 

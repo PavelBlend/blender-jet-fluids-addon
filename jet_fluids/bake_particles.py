@@ -175,7 +175,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
             return {'FINISHED'}
         print_info('Create solver start')
         resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, _ = bake.calc_res(self, obj)
-        solver = bake.solvers[obj.jet_fluid.solver_type](
+        solver = bake.solvers[obj.jet_fluid.hybrid_solver_type](
             resolution=(resolution_x, resolution_z, resolution_y),
             gridOrigin=(origin_x, origin_z, origin_y),
             domainSizeX=domain_size_x

@@ -13,5 +13,7 @@ bl_info = {
 
 try:
     from .addon import register, unregister
-except:
-    pass    # used in make_release.py
+except BaseException as error:    # used in make_release.py
+    print('\n' * 2)
+    print(error)
+    print('\n' * 2)

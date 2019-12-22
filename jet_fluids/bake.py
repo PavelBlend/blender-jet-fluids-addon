@@ -154,17 +154,11 @@ def calc_res(self, obj, type='FLUID'):
         domain_size_y,
         domain_size_z
     ]
-    self.domain_size_x = domain_size_x
     if type == 'FLUID':
         resolution = obj.jet_fluid.resolution
-        grid_spacing = (0, 0, 0)
     elif type == 'MESH':
         resolution = obj.jet_fluid.resolution_mesh
-        fluid_res = obj.jet_fluid.resolution
-        grid_spacing_x = resolution
-        grid_spacing_y = resolution
-        grid_spacing_z = resolution
-        grid_spacing = (grid_spacing_x, grid_spacing_z, grid_spacing_y)
+    self.domain_size_x = domain_size_x
     self.domain_max_size = max(domain_sizes)
     resolution_x = int(round((domain_size_x / self.domain_max_size) * resolution, 1))
     resolution_y = int(round((domain_size_y / self.domain_max_size) * resolution, 1))
@@ -172,4 +166,15 @@ def calc_res(self, obj, type='FLUID'):
     origin_x = obj.bound_box[0][0] * obj.scale[0] + obj.location[0]
     origin_y = obj.bound_box[0][1] * obj.scale[1] + obj.location[1]
     origin_z = obj.bound_box[0][2] * obj.scale[2] + obj.location[2]
+    if type == 'FLUID':
+        grid_spacing = (
+            domain_size_x / resolution_x,
+            domain_size_z / resolution_z,
+            domain_size_y / resolution_y
+        )
+    elif type == 'MESH':
+        grid_spacing_x = resolution
+        grid_spacing_y = resolution
+        grid_spacing_z = resolution
+        grid_spacing = (grid_spacing_x, grid_spacing_z, grid_spacing_y)
     return resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, grid_spacing

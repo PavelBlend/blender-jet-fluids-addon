@@ -1,5 +1,6 @@
 from . import bake_mesh
 from . import bake_particles
+from . import bake_fluid
 from . import objects
 from . import operators
 from . import ui
@@ -12,6 +13,7 @@ modules = [
     operators,
     bake_mesh,
     bake_particles,
+    bake_fluid,
     ui,
     render,
     create
