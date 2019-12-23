@@ -116,6 +116,13 @@ class JET_FLUID_OT_ResetFluid(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def execute(self, context):
+        solver_object = context.object
+        file_path = bpy.path.abspath(solver_object.jet_fluid.cache_folder)
+        if not os.path.exists(file_path):
+            return {'FINISHED'}
+        for file_ in os.listdir(file_path):
+            if re.search('mesh_[0-9]*.bin', file_):
+                os.remove(file_path + file_)
         return {'FINISHED'}
 
 
