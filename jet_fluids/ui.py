@@ -166,7 +166,8 @@ class JET_FLUID_PT_ColorPanel(JET_FLUID_PT_DomainPanel):
     @classmethod
     def poll(cls, context):
         solver_object = context.object
-        return solver_object.jet_fluid.simulation_method == 'HYBRID'
+        jet = solver_object.jet_fluid
+        return jet.is_active and jet.object_type == 'DOMAIN' and jet.simulation_method == 'HYBRID'
 
     def draw(self, context):
         obj = context.object
@@ -209,7 +210,8 @@ class JET_FLUID_PT_ConvertPanel(JET_FLUID_PT_DomainPanel):
     @classmethod
     def poll(cls, context):
         solver_object = context.object
-        return solver_object.jet_fluid.simulation_method == 'HYBRID'
+        jet = solver_object.jet_fluid
+        return jet.is_active and jet.object_type == 'DOMAIN' and jet.simulation_method == 'HYBRID'
 
     def draw(self, context):
         obj = context.object
@@ -245,7 +247,8 @@ class JET_FLUID_PT_DebugPanel(JET_FLUID_PT_DomainPanel):
     @classmethod
     def poll(cls, context):
         solver_object = context.object
-        return solver_object.jet_fluid.simulation_method == 'HYBRID'
+        jet = solver_object.jet_fluid
+        return jet.is_active and jet.object_type == 'DOMAIN' and jet.simulation_method == 'HYBRID'
 
     def draw(self, context):
         obj = context.object
@@ -286,7 +289,8 @@ class JET_FLUID_PT_MeshPanel(JET_FLUID_PT_DomainPanel):
     @classmethod
     def poll(cls, context):
         solver_object = context.object
-        return solver_object.jet_fluid.simulation_method == 'HYBRID'
+        jet = solver_object.jet_fluid
+        return jet.is_active and jet.object_type == 'DOMAIN' and jet.simulation_method == 'HYBRID'
 
     def draw(self, context):
         obj = context.object

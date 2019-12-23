@@ -48,7 +48,10 @@ def save_mesh(operator, surface_mesh, frame_index, particles, colors):
     start_time = time.time()
     print_mesh_info('Save mesh verts start')
     domain = operator.domain
-    coef = domain.jet_fluid.resolution / domain.jet_fluid.resolution_mesh
+    if domain.jet_fluid.simulation_method == 'HYBRID':
+        coef = domain.jet_fluid.resolution / domain.jet_fluid.resolution_mesh
+    else:
+        coef = 1.0
     bin_mesh_data = bytearray()
     points_count = surface_mesh.numberOfPoints()
     bin_mesh_data.extend(struct.pack('I', points_count))
