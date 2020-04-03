@@ -5,7 +5,7 @@ import time
 import bpy
 
 from . import convert
-from .utils import print_info
+from .utils import print_info, convert_time_to_string
 
 
 LOGS_FILE_NAMES = (
@@ -40,7 +40,7 @@ class JET_FLUID_OT_ReloadStandartParticleSystem(bpy.types.Operator):
         obj = context.object
         start_time = time.time()
         convert.create_standart_particles_system(obj)
-        print_info('total time:', time.time() - start_time)
+        print_info('total time:', convert_time_to_string(start_time))
         return {'FINISHED'}
 
 
@@ -55,7 +55,7 @@ class JET_FLUID_OT_ConvertDataToJetFluidParticles(bpy.types.Operator):
             domain = context.object
             start_time = time.time()
             convert.convert_data_to_jet_particles(context, domain)
-            print_info('total time:', time.time() - start_time)
+            print_info('total time:', convert_time_to_string(start_time))
         finally:
             context.window.cursor_set('DEFAULT')
         return {'FINISHED'}
@@ -72,7 +72,7 @@ class JET_FLUID_OT_CreateStandartParticleSystem(bpy.types.Operator):
             obj = context.object
             start_time = time.time()
             convert.convert_particles_to_standart_particle_system(context, obj)
-            print_info('total time:', time.time() - start_time)
+            print_info('total time:', convert_time_to_string(start_time))
         finally:
             context.window.cursor_set('DEFAULT')
         return {'FINISHED'}

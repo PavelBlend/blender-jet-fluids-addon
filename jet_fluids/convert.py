@@ -4,7 +4,7 @@ import time
 
 import bpy
 
-from .utils import get_log_path
+from .utils import get_log_path, convert_time_to_string
 
 
 domain = None
@@ -41,7 +41,7 @@ def save_blender_particles_cache_times(folder, times, frame_end):
 
     particles_count = indices[-1]
     print_convert_info('Save patricles times end')
-    print_convert_info('Save time: {0:.3}s'.format(time.time() - start_time))
+    print_convert_info('Save time: {0}'.format(convert_time_to_string(start_time)))
     print_convert_info('-' * 79)
     return particles_count
 
@@ -83,7 +83,7 @@ def save_blender_particles_cache(frame_index, folder, par_file, times):
 
     file.close()
     print_convert_info('Convert patricles end:   frame {0:0>6}'.format(frame_index))
-    print_convert_info('Convert time: {0:.3}s'.format(time.time() - start_time))
+    print_convert_info('Convert time: {0}'.format(convert_time_to_string(start_time)))
     print_convert_info('-' * 79)
 
     return times

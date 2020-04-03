@@ -8,7 +8,7 @@ import mathutils
 
 from . import pyjet
 from . import bake
-from .utils import print_info, get_log_path
+from .utils import print_info, get_log_path, convert_time_to_string
 
 
 def get_transforms(obj):
@@ -349,7 +349,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
         print_info('Create others objects end')
         print_info('-' * 79)
         print_info('SIMULATION END')
-        print_info('Total time: {0:.3}s'.format(time.time() - start_time))
+        print_info('Total time: {0}'.format(convert_time_to_string(start_time)))
         return {'FINISHED'}
 
     def invoke(self, context, event):

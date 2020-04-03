@@ -8,7 +8,7 @@ import mathutils
 
 from . import pyjet
 from . import bake
-from .utils import get_log_path
+from .utils import get_log_path, convert_time_to_string
 
 
 domain = None
@@ -103,7 +103,9 @@ def save_mesh(operator, surface_mesh, frame_index, particles, colors):
     file.write(bin_mesh_data)
     file.close()
     print_mesh_info('Write mesh file end')
-    print_mesh_info('Save mesh time: {0:.3}s'.format(time.time() - start_time))
+    print_mesh_info('Save mesh time: {0}'.format(
+        convert_time_to_string(start_time)
+    ))
 
 
 def check_cache_file(domain, frame_index):
@@ -237,9 +239,9 @@ class JetFluidBakeMesh(bpy.types.Operator):
                 if surface_mesh:
                     save_mesh(self, surface_mesh, frame_index, particles, colors)
                 print_mesh_info('Generate mesh end:   frame {0:0>6}'.format(frame_index))
-                print_mesh_info('Generate mesh time: {0:.3}s'.format(time.time() - frame_start_time))
+                print_mesh_info('Generate mesh time: {0}'.format(convert_time_to_string(frame_start_time)))
                 print_mesh_info('-' * 79)
-        print_mesh_info('Total time: {0:.3}s'.format(time.time() - start_time))
+        print_mesh_info('Total time: {0}'.format(convert_time_to_string(start_time)))
         return {'FINISHED'}
 
     def invoke(self, context, event):
