@@ -354,10 +354,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        print('\n' * 5)
         context.scene.jet_fluid_domain_object = context.object.name
-        print('*****', context.scene.jet_fluid_domain_object, context.object.name)
-        print('\n' * 5)
         context.window.cursor_set('WAIT')
         try:
             self.execute(context)
