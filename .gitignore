@@ -1,3 +1,4 @@
 __pycache__
+tests_cache
 *.pyd
 *.zip

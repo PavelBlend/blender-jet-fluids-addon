@@ -14,7 +14,7 @@ for solver in solvers:
     domain_object.jet_fluid.resolution = 20
     domain_object.jet_fluid.solver_type = solver
     cache_folder = os.path.join(
-        os.path.abspath(os.curdir), 'pic_solver_tests_cache'
+        os.path.abspath(os.curdir), 'tests_cache'
     )
     cache_folder += os.sep
     if not os.path.exists(cache_folder):

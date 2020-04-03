@@ -161,6 +161,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
         return {'FINISHED'}
 
     def execute(self, context):
+        context.scene.jet_fluid_domain_object = context.object.name
         obj = context.object
         log_path = get_log_path(obj, '_jet_fluids_simulate.log')
         with open(log_path, 'w') as log_file:
@@ -353,6 +354,10 @@ class JetFluidBakeParticles(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
+        print('\n' * 5)
+        context.scene.jet_fluid_domain_object = context.object.name
+        print('*****', context.scene.jet_fluid_domain_object, context.object.name)
+        print('\n' * 5)
         context.window.cursor_set('WAIT')
         try:
             self.execute(context)

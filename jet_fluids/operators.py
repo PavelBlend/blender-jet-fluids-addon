@@ -50,6 +50,7 @@ class JET_FLUID_OT_ConvertDataToJetFluidParticles(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def execute(self, context):
+        context.scene.jet_fluid_domain_object = context.object.name
         context.window.cursor_set('WAIT')
         try:
             domain = context.object
@@ -67,6 +68,7 @@ class JET_FLUID_OT_CreateStandartParticleSystem(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def execute(self, context):
+        context.scene.jet_fluid_domain_object = context.object.name
         context.window.cursor_set('WAIT')
         try:
             obj = context.object

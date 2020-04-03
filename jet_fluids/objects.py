@@ -368,6 +368,7 @@ __CLASSES__ = [
 ]
 
 def register():
+    bpy.types.Scene.jet_fluid_domain_object = bpy.props.StringProperty()
     for class_ in __CLASSES__:
         bpy.utils.register_class(class_)
         class_.bpy_type.jet_fluid = bpy.props.PointerProperty(type=class_)
@@ -377,3 +378,4 @@ def unregister():
     for class_ in reversed(__CLASSES__):
         del class_.bpy_type.jet_fluid
         bpy.utils.unregister_class(class_)
+    del bpy.types.Scene.jet_fluid_domain_object

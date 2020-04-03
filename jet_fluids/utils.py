@@ -33,7 +33,8 @@ def get_log_path(domain, log_file_name):
 
 
 def print_info(*print_params):
-    domain = bpy.context.object
+    deps_graph = bpy.context.evaluated_depsgraph_get()
+    domain = deps_graph.objects.get(bpy.context.scene.jet_fluid_domain_object)
     if domain.jet_fluid.print_debug_info:
         print(*print_params)
     if domain.jet_fluid.write_log:
