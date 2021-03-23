@@ -163,6 +163,19 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     overwrite_mesh: bpy.props.BoolProperty(
         default=False, name='Overwrite'
     )
+    color_particles_search_radius: bpy.props.FloatProperty(
+        default=0.1,
+        name='Particles Search Radius',
+        min=0.0
+    )
+    vertex_default_color: bpy.props.FloatVectorProperty(
+        default=(1.0, 1.0, 1.0, 1.0),
+        name='Default Vertex Color',
+        subtype='COLOR',
+        size=4,
+        max=1.0,
+        min=0.0
+    )
 
     # boundary
     bound_right: bpy.props.BoolProperty(default=True, name='Right')
@@ -243,7 +256,8 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
     items = [
         ('VERTEX_COLOR', 'Emitter Vertex Color', ''),
-        ('SINGLE_COLOR', 'Domain Single Color', '')
+        ('SINGLE_COLOR', 'Domain Single Color', ''),
+        ('TEXTURE', 'Texture', '')
     ]
     simmulate_color_type: bpy.props.EnumProperty(
         items=items,
@@ -257,6 +271,23 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         size=4,
         max=1.0,
         min=0.0
+    )
+    color_vertex_search_radius: bpy.props.FloatProperty(
+        default=0.1,
+        name='Vertex Search Radius',
+        min=0.0
+    )
+    particles_default_color: bpy.props.FloatVectorProperty(
+        default=(1.0, 1.0, 1.0, 1.0),
+        name='Default Particles Color',
+        subtype='COLOR',
+        size=4,
+        max=1.0,
+        min=0.0
+    )
+    particles_texture: bpy.props.StringProperty(
+        default='',
+        name='Particles Texture'
     )
 
     # collider props

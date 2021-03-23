@@ -71,14 +71,35 @@ def save_mesh(operator, surface_mesh, frame_index, particles, colors):
             '3f', point.x * coef, point.y * coef, point.z * coef
         ))
         if domain.jet_fluid.use_colors:
-            _, index, _ = kdtree.find((
-                point[0] * coef + offset[0],
-                point[2] * coef + offset[1],
-                point[1] * coef + offset[2]
-            ))
-            color = colors[index]
+            color_data = kdtree.find_range(
+                (
+                    point[0] * coef + offset[0],
+                    point[2] * coef + offset[1],
+                    point[1] * coef + offset[2]
+                ),
+                domain.jet_fluid.color_particles_search_radius
+            )
+            red = 0.0
+            green = 0.0
+            blue = 0.0
+            alpha = 0.0
+            for vert_coord, index, distance in color_data:
+                factor = distance / domain.jet_fluid.color_particles_search_radius
+                r, g, b, a = colors[index]
+                red += r * factor
+                green += g * factor
+                blue += b * factor
+                alpha += a * factor
+            colors_count = len(color_data)
+            if colors_count != 0:
+                red /= colors_count
+                green /= colors_count
+                blue /= colors_count
+                alpha /= colors_count
+            else:
+                red, green, blue, alpha = domain.jet_fluid.vertex_default_color
             bin_mesh_data.extend(struct.pack(
-                '4f', *color
+                '4f', red, green, blue, alpha
             ))
         else:
             bin_mesh_data.extend(struct.pack(

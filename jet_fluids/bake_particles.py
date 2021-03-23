@@ -128,12 +128,41 @@ class JetFluidBakeParticles(bpy.types.Operator):
                 if jet.simmulate_color_type == 'VERTEX_COLOR':
                     for vert_index in range(colors_count, vertices_count):
                         pos = positions[vert_index]
-                        vertex, index, _ = kd_tree.find((pos[0], pos[2], pos[1]))
-                        color = vertices[index][1]
-                        particles_colors.append(color)
+                        color_data = kd_tree.find_range((pos[0], pos[2], pos[1]), jet.color_vertex_search_radius)
+                        red = 0.0
+                        green = 0.0
+                        blue = 0.0
+                        alpha = 0.0
+                        for vert_coord, index, distance in color_data:
+                            factor = distance / jet.color_vertex_search_radius
+                            r, g, b, a = vertices[index][1]    # color
+                            red += r * factor
+                            green += g * factor
+                            blue += b * factor
+                            alpha += a * factor
+                        colors_count = len(color_data)
+                        if colors_count != 0:
+                            red /= colors_count
+                            green /= colors_count
+                            blue /= colors_count
+                            alpha /= colors_count
+                        else:
+                            red, green, blue, alpha = jet.particles_default_color
+                        particles_colors.append((red, green, blue, alpha))
                 elif jet.simmulate_color_type == 'SINGLE_COLOR':
                     for i in range(vertices_count - colors_count):
                         particles_colors.append(par_color)
+                elif jet.simmulate_color_type == 'TEXTURE':
+                    texture = bpy.data.textures.get(jet.particles_texture, None)
+                    if texture:
+                        for particle_index in range(colors_count, vertices_count):
+                            pos = positions[particle_index]
+                            value = texture.evaluate(pos)
+                            if value[0] == 0 and value[1] == 0 and value[2] == 0:
+                                par_color = (value[3], value[3], value[3], 1.0)
+                            else:
+                                par_color = value
+                            particles_colors.append(par_color)
             print_info('    Save particles color end')
             print_info('    Save position and velocity start')
             for vert_index in range(vertices_count):

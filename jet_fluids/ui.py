@@ -172,6 +172,11 @@ class JET_FLUID_PT_ColorPanel(JET_FLUID_PT_DomainPanel):
             lay.prop(jet, 'simmulate_color_type')
             if jet.simmulate_color_type == 'SINGLE_COLOR':
                 lay.prop(jet, 'particles_color')
+            elif jet.simmulate_color_type == 'VERTEX_COLOR':
+                lay.prop(jet, 'color_vertex_search_radius')
+                lay.prop(jet, 'particles_default_color')
+            elif jet.simmulate_color_type == 'TEXTURE':
+                lay.prop_search(jet, 'particles_texture', bpy.data, 'textures')
 
 
 class JET_FLUID_PT_CreatePanel(JET_FLUID_PT_DomainPanel):
@@ -306,6 +311,8 @@ class JET_FLUID_PT_MeshPanel(JET_FLUID_PT_DomainPanel):
             lay.prop(jet, 'frame_range_mesh_end')
 
         lay.prop(jet, 'overwrite_mesh')
+        lay.prop(jet, 'color_particles_search_radius')
+        lay.prop(jet, 'vertex_default_color')
 
 
 class JET_FLUID_PT_SimulatePanel(JET_FLUID_PT_DomainPanel):
