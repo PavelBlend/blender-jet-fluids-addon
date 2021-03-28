@@ -134,12 +134,11 @@ class JetFluidBakeParticles(bpy.types.Operator):
                         blue = 0.0
                         alpha = 0.0
                         for vert_coord, index, distance in color_data:
-                            factor = distance / jet.color_vertex_search_radius
                             r, g, b, a = vertices[index][1]    # color
-                            red += r * factor
-                            green += g * factor
-                            blue += b * factor
-                            alpha += a * factor
+                            red += r
+                            green += g
+                            blue += b
+                            alpha += a
                         colors_count = len(color_data)
                         if colors_count != 0:
                             red /= colors_count
@@ -147,7 +146,8 @@ class JetFluidBakeParticles(bpy.types.Operator):
                             blue /= colors_count
                             alpha /= colors_count
                         else:
-                            red, green, blue, alpha = jet.particles_default_color
+                            vert_coord, index, distance = kd_tree.find((pos[0], pos[2], pos[1]))
+                            red, green, blue, alpha = vertices[index][1]
                         particles_colors.append((red, green, blue, alpha))
                 elif jet.simmulate_color_type == 'SINGLE_COLOR':
                     for i in range(vertices_count - colors_count):

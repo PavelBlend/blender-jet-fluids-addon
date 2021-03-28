@@ -168,14 +168,6 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         name='Particles Search Radius',
         min=0.0
     )
-    vertex_default_color: bpy.props.FloatVectorProperty(
-        default=(1.0, 1.0, 1.0, 1.0),
-        name='Default Vertex Color',
-        subtype='COLOR',
-        size=4,
-        max=1.0,
-        min=0.0
-    )
 
     # boundary
     bound_right: bpy.props.BoolProperty(default=True, name='Right')
@@ -275,14 +267,6 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     color_vertex_search_radius: bpy.props.FloatProperty(
         default=0.1,
         name='Vertex Search Radius',
-        min=0.0
-    )
-    particles_default_color: bpy.props.FloatVectorProperty(
-        default=(1.0, 1.0, 1.0, 1.0),
-        name='Default Particles Color',
-        subtype='COLOR',
-        size=4,
-        max=1.0,
         min=0.0
     )
     particles_texture: bpy.props.StringProperty(
