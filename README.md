@@ -1,17 +1,17 @@
 # Jet-Fluids
 
-**Jet-Fluids** is a blender add-on designed to simulate fluid.
+`Jet-Fluids` is a [Blender](https://www.blender.org/) add-on designed to simulate fluid.
 
-The author of the fluid engine is Doyub Kim.
+The author of the fluid engine: [Doyub Kim](https://github.com/doyubkim).
 
-Fluid engine framework page: [github.com/doyubkim/fluid-engine-dev](https://github.com/doyubkim/fluid-engine-dev)
+Fluid engine framework repository: [fluid-engine-dev](https://github.com/doyubkim/fluid-engine-dev)
 
+Documentation is here (work in progress): [Wiki](https://github.com/PavelBlend/blender_jet_fluids_addon/wiki)
 
-## Software
+Platform: `Windows 10` `64 bit`
 
-This addon is supported only for **Windows 64 bit** and only for **Blender 2.8**.
+Blender version: `3.2`
 
-[Blender Site](https://www.blender.org/)
 
 ## Gallery
 
@@ -24,5 +24,3 @@ This addon is supported only for **Windows 64 bit** and only for **Blender 2.8**
 ![bunny](https://user-images.githubusercontent.com/7983249/50449997-05b5d080-093c-11e9-8c10-417458fba850.gif)
 
 ![jet_fluid_surface](https://user-images.githubusercontent.com/7983249/50455216-ac5e9900-095d-11e9-92ae-ffa497b34bba.jpg)
-
-## [Wiki](https://github.com/PavelBlend/blender_jet_fluids_addon/wiki)
