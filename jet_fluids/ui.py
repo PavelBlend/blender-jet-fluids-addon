@@ -1,7 +1,7 @@
 import bpy
 
 
-class JET_FLUID_PT_DomainPanel(bpy.types.Panel):
+class DomainBasePanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "physics"
@@ -13,7 +13,7 @@ class JET_FLUID_PT_DomainPanel(bpy.types.Panel):
         return jet.is_active and jet.object_type == 'DOMAIN'
 
 
-class JET_FLUID_PT_ColliderPanel(bpy.types.Panel):
+class JET_PT_Collider(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "physics"
@@ -34,7 +34,7 @@ class JET_FLUID_PT_ColliderPanel(bpy.types.Panel):
         lay.prop(jet, 'friction_coefficient')
 
 
-class JET_FLUID_PT_EmitterPanel(bpy.types.Panel):
+class JET_PT_Emitter(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "physics"
@@ -62,7 +62,7 @@ class JET_FLUID_PT_EmitterPanel(bpy.types.Panel):
         lay.prop(jet, 'velocity')
 
 
-class JET_FLUID_PT_SolversPanel(JET_FLUID_PT_DomainPanel):
+class JET_PT_Solvers(DomainBasePanel):
     bl_label = "Jet Fluid Solvers"
 
     def draw(self, context):
@@ -91,7 +91,7 @@ class JET_FLUID_PT_SolversPanel(JET_FLUID_PT_DomainPanel):
         row.prop(jet, 'fixed_substeps_count')
 
 
-class JET_FLUID_PT_BoundaryPanel(JET_FLUID_PT_DomainPanel):
+class JET_PT_Boundary(DomainBasePanel):
     bl_label = "Jet Fluid Boundary"
 
     def draw(self, context):
@@ -145,7 +145,7 @@ class JET_FLUID_PT_BoundaryPanel(JET_FLUID_PT_DomainPanel):
         row.prop(jet, 'con_down')
 
 
-class JET_FLUID_PT_WorldPanel(JET_FLUID_PT_DomainPanel):
+class JET_PT_World(DomainBasePanel):
     bl_label = "Jet Fluid World"
 
     def draw(self, context):
@@ -158,7 +158,7 @@ class JET_FLUID_PT_WorldPanel(JET_FLUID_PT_DomainPanel):
         lay.prop(jet, 'gravity')
 
 
-class JET_FLUID_PT_ColorPanel(JET_FLUID_PT_DomainPanel):
+class JET_PT_Color(DomainBasePanel):
     bl_label = "Jet Fluid Color"
 
     def draw(self, context):
@@ -178,7 +178,7 @@ class JET_FLUID_PT_ColorPanel(JET_FLUID_PT_DomainPanel):
                 lay.prop_search(jet, 'particles_texture', bpy.data, 'textures')
 
 
-class JET_FLUID_PT_CreatePanel(JET_FLUID_PT_DomainPanel):
+class JET_PT_Create(DomainBasePanel):
     bl_label = "Jet Fluid Create"
 
     def draw(self, context):
@@ -199,7 +199,7 @@ class JET_FLUID_PT_CreatePanel(JET_FLUID_PT_DomainPanel):
             lay.prop_search(jet, 'particles_object', bpy.data, 'objects')
 
 
-class JET_FLUID_PT_ConvertPanel(JET_FLUID_PT_DomainPanel):
+class JET_PT_Convert(DomainBasePanel):
     bl_label = "Jet Fluid Convert"
 
     def draw(self, context):
@@ -230,7 +230,7 @@ class JET_FLUID_PT_ConvertPanel(JET_FLUID_PT_DomainPanel):
         lay.prop(jet, 'overwrite_convert')
 
 
-class JET_FLUID_PT_DebugPanel(JET_FLUID_PT_DomainPanel):
+class JET_PT_Debug(DomainBasePanel):
     bl_label = "Jet Fluid Debug"
 
     def draw(self, context):
@@ -254,7 +254,7 @@ class JET_FLUID_PT_DebugPanel(JET_FLUID_PT_DomainPanel):
         lay.operator('jet_fluid.remove_logs')
 
 
-class JET_FLUID_PT_CachePanel(JET_FLUID_PT_DomainPanel):
+class JET_PT_Cache(DomainBasePanel):
     bl_label = "Jet Fluid Cache"
 
     def draw(self, context):
@@ -266,7 +266,7 @@ class JET_FLUID_PT_CachePanel(JET_FLUID_PT_DomainPanel):
         lay.prop(jet, 'cache_folder')
 
 
-class JET_FLUID_PT_MeshPanel(JET_FLUID_PT_DomainPanel):
+class JET_PT_Mesh(DomainBasePanel):
     bl_label = "Jet Fluid Mesh"
 
     def draw(self, context):
@@ -313,7 +313,7 @@ class JET_FLUID_PT_MeshPanel(JET_FLUID_PT_DomainPanel):
         lay.prop(jet, 'color_particles_search_radius')
 
 
-class JET_FLUID_PT_SimulatePanel(JET_FLUID_PT_DomainPanel):
+class JET_PT_Simulate(DomainBasePanel):
     bl_label = "Jet Fluid Simulate"
     bl_options = set()
 
@@ -354,7 +354,7 @@ class JET_FLUID_PT_SimulatePanel(JET_FLUID_PT_DomainPanel):
         lay.prop(jet, 'overwrite_simulation')
 
 
-class JET_FLUID_PT_Panel(bpy.types.Panel):
+class JET_PT_Init(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "physics"
@@ -399,19 +399,19 @@ def add_jet_fluid_button(self, context):
 
 
 __CLASSES__ = [
-    JET_FLUID_PT_Panel,
-    JET_FLUID_PT_SimulatePanel,
-    JET_FLUID_PT_MeshPanel,
-    JET_FLUID_PT_SolversPanel,
-    JET_FLUID_PT_BoundaryPanel,
-    JET_FLUID_PT_CachePanel,
-    JET_FLUID_PT_CreatePanel,
-    JET_FLUID_PT_ConvertPanel,
-    JET_FLUID_PT_WorldPanel,
-    JET_FLUID_PT_ColorPanel,
-    JET_FLUID_PT_DebugPanel,
-    JET_FLUID_PT_EmitterPanel,
-    JET_FLUID_PT_ColliderPanel
+    JET_PT_Init,
+    JET_PT_Simulate,
+    JET_PT_Mesh,
+    JET_PT_Solvers,
+    JET_PT_Boundary,
+    JET_PT_Cache,
+    JET_PT_Create,
+    JET_PT_Convert,
+    JET_PT_World,
+    JET_PT_Color,
+    JET_PT_Debug,
+    JET_PT_Emitter,
+    JET_PT_Collider
 ]
 
 
