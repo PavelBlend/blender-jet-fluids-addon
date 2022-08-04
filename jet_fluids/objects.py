@@ -35,9 +35,9 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
 
     # simulate props
     items = [
-        ('APIC', 'APIC', ''),
         ('PIC', 'PIC', ''),
-        ('FLIP', 'FLIP', '')
+        ('FLIP', 'FLIP', ''),
+        ('APIC', 'APIC', '')
     ]
     solver_type: bpy.props.EnumProperty(
         items=items, name='Fluid Solver', default='PIC'
@@ -74,25 +74,29 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     fixed_substeps_count: bpy.props.IntProperty(
         default=1, name='Substeps Count'
     )
-    use_scene_fps: bpy.props.BoolProperty(default=True, name='Use Scene FPS')
-    fps: bpy.props.FloatProperty(default=30.0, name='FPS')
     items = [
-        ('TIMELINE', 'Timeline', ''),
+        ('SCENE', 'Scene', ''),
         ('CUSTOM', 'Custom', '')
     ]
+    fps_mode: bpy.props.EnumProperty(
+        items=items,
+        name='FPS Mode',
+        default='SCENE'
+    )
+    fps: bpy.props.FloatProperty(default=30.0, name='FPS')
     frame_range_simulation: bpy.props.EnumProperty(
         items=items,
         name='Frame Range',
-        default='TIMELINE'
+        default='SCENE'
     )
     frame_range_simulation_start: bpy.props.IntProperty(
         default=0,
-        name='Start Frame',
+        name='Frame Start',
         min=0
     )
     frame_range_simulation_end: bpy.props.IntProperty(
         default=50,
-        name='End Frame',
+        name='Frame End',
         min=0
     )
     overwrite_simulation: bpy.props.BoolProperty(
@@ -350,41 +354,6 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     write_log: bpy.props.BoolProperty(
         default=True, name='Write Log File'
     )
-
-    # convert props
-    items = [
-        ('TIMELINE', 'Timeline', ''),
-        ('CUSTOM', 'Custom', ''),
-        ('CURRENT_FRAME', 'Current Frame', '')
-    ]
-    frame_range_convert: bpy.props.EnumProperty(
-        items=items,
-        name='Frame Range',
-        default='TIMELINE'
-    )
-    frame_range_convert_start: bpy.props.IntProperty(
-        default=0,
-        name='Start Frame',
-        min=0
-    )
-    frame_range_convert_end: bpy.props.IntProperty(
-        default=50,
-        name='End Frame',
-        min=0
-    )
-    overwrite_convert: bpy.props.BoolProperty(
-        default=False, name='Overwrite'
-    )
-    items = [
-        ('VERTICES', 'Vertices', ''),
-        ('PARTICLES', 'Particles', '')
-    ]
-    input_data_type: bpy.props.EnumProperty(
-        items=items,
-        name='Input Data Type',
-        default='VERTICES'
-    )
-    input_vertices_object: bpy.props.StringProperty(default='', name='Input Object')
 
 
 __CLASSES__ = [

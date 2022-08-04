@@ -8,9 +8,13 @@ def draw_prop(
         prop_label,
         expand=False,
         use_column=False,
-        boolean=False
+        boolean=False,
+        prop_search=None,
+        active=True
     ):
     row = layout.row(align=True)
+    if not active:
+        row.active = False
     row.label(text=prop_label + ':')
     if use_column:
         value_layout = row.column(align=True)
@@ -25,6 +29,8 @@ def draw_prop(
                 value_layout.prop(prop_owner, prop_name, text='Yes', toggle=True)
             else:
                 value_layout.prop(prop_owner, prop_name, text='No', toggle=True)
+        elif prop_search:
+            value_layout.prop_search(prop_owner, prop_name, bpy.data, prop_search, text='')
         else:
             value_layout.prop(prop_owner, prop_name, text='')
 
@@ -109,7 +115,7 @@ class JET_PT_Emitter(bpy.types.Panel):
 
 
 class JET_PT_Solvers(DomainBasePanel):
-    bl_label = "Jet Fluid Solvers"
+    bl_label = "Jet Fluid: Solvers"
 
     def draw(self, context):
         obj = context.object
@@ -120,25 +126,20 @@ class JET_PT_Solvers(DomainBasePanel):
         row = lay.row()
 
         # solvers
-        lay.prop(jet, 'solver_type')
-        lay.prop(jet, 'advection_solver_type')
-        lay.prop(jet, 'diffusion_solver_type')
-        lay.prop(jet, 'pressure_solver_type')
+        draw_prop(lay, jet, 'solver_type', 'Solver', expand=True, use_column=True)
+        draw_prop(lay, jet, 'advection_solver_type', 'Advection Solver', expand=True, use_column=True)
+        draw_prop(lay, jet, 'diffusion_solver_type', 'Diffusion Solver', expand=True, use_column=True)
+        draw_prop(lay, jet, 'pressure_solver_type', 'Pressure Solver', expand=True, use_column=True)
 
         # settings
-        lay.prop(jet, 'max_cfl')
-        lay.prop(jet, 'compressed_linear_system')
-
-        # substeps
-        lay.prop(jet, 'fixed_substeps')
-        row = lay.row()
-        if not jet.fixed_substeps:
-            row.active = False
-        row.prop(jet, 'fixed_substeps_count')
+        draw_prop(lay, jet, 'compressed_linear_system', 'Compressed Linear System', boolean=True)
+        draw_prop(lay, jet, 'fixed_substeps', 'Fixed Substeps', boolean=True)
+        draw_prop(lay, jet, 'fixed_substeps_count', 'Substeps Count', active=jet.fixed_substeps)
+        draw_prop(lay, jet, 'max_cfl', 'Max CFL')
 
 
 class JET_PT_Boundary(DomainBasePanel):
-    bl_label = "Jet Fluid Boundary"
+    bl_label = "Jet Fluid: Boundary"
 
     def draw(self, context):
         obj = context.object
@@ -192,7 +193,7 @@ class JET_PT_Boundary(DomainBasePanel):
 
 
 class JET_PT_World(DomainBasePanel):
-    bl_label = "Jet Fluid World"
+    bl_label = "Jet Fluid: World"
 
     def draw(self, context):
         obj = context.object
@@ -205,7 +206,7 @@ class JET_PT_World(DomainBasePanel):
 
 
 class JET_PT_Color(DomainBasePanel):
-    bl_label = "Jet Fluid Color"
+    bl_label = "Jet Fluid: Color"
 
     def draw(self, context):
         obj = context.object
@@ -221,13 +222,11 @@ class JET_PT_Color(DomainBasePanel):
             elif jet.simmulate_color_type == 'VERTEX_COLOR':
                 draw_prop(lay, jet, 'color_vertex_search_radius', 'Vertex Search Radius')
             elif jet.simmulate_color_type == 'TEXTURE':
-                row = lay.row(align=True)
-                row.label(text='Texture:')
-                row.prop_search(jet, 'particles_texture', bpy.data, 'textures', text='')
+                draw_prop(lay, jet, 'particles_texture', 'Texture', prop_search='textures')
 
 
 class JET_PT_Create(DomainBasePanel):
-    bl_label = "Jet Fluid Create"
+    bl_label = "Jet Fluid: Create"
 
     def draw(self, context):
         obj = context.object
@@ -237,49 +236,16 @@ class JET_PT_Create(DomainBasePanel):
         # create ui elements
 
         # mesh properties
-        lay.prop(jet, 'create_mesh')
-        if jet.create_mesh:
-            lay.prop_search(jet, 'mesh_object', bpy.data, 'objects')
+        draw_prop(lay, jet, 'create_mesh', 'Create Mesh', boolean=True)
+        draw_prop(lay, jet, 'mesh_object', 'Mesh Object', prop_search='objects', active=jet.create_mesh)
 
         # particles properties
-        lay.prop(jet, 'create_particles')
-        if jet.create_particles:
-            lay.prop_search(jet, 'particles_object', bpy.data, 'objects')
-
-
-class JET_PT_Convert(DomainBasePanel):
-    bl_label = "Jet Fluid Convert"
-
-    def draw(self, context):
-        obj = context.object
-        jet = obj.jet_fluid
-        lay = self.layout
-
-        # create ui elements
-
-        # standart particle system
-        split = lay.split(factor=0.75, align=True)
-        split.operator('jet_fluid.create_particle_system')
-        split.alert = True
-        split.operator('jet_fluid.reset_physic_cache', text='Clear')
-
-        lay.operator('jet_fluid.reload_particle_system')
-
-        # frame range
-        lay.prop(jet, 'frame_range_convert')
-        if jet.frame_range_convert == 'CUSTOM':
-            lay.prop(jet, 'frame_range_convert_start')
-            lay.prop(jet, 'frame_range_convert_end')
-
-        lay.operator('jet_fluid.convert_to_jet_particles')
-        lay.prop(jet, 'input_data_type')
-        lay.prop_search(jet, 'input_vertices_object', bpy.data, 'objects')
-
-        lay.prop(jet, 'overwrite_convert')
+        draw_prop(lay, jet, 'create_particles', 'Create Particles', boolean=True)
+        draw_prop(lay, jet, 'particles_object', 'Particles Object', prop_search='objects', active=jet.create_particles)
 
 
 class JET_PT_Debug(DomainBasePanel):
-    bl_label = "Jet Fluid Debug"
+    bl_label = "Jet Fluid: Debug"
 
     def draw(self, context):
         obj = context.object
@@ -302,20 +268,8 @@ class JET_PT_Debug(DomainBasePanel):
         lay.operator('jet_fluid.remove_logs')
 
 
-class JET_PT_Cache(DomainBasePanel):
-    bl_label = "Jet Fluid Cache"
-
-    def draw(self, context):
-        obj = context.object
-        jet = obj.jet_fluid
-        lay = self.layout
-
-        # create ui elements
-        draw_prop(lay, jet, 'cache_folder', 'Cache Folder')
-
-
 class JET_PT_Mesh(DomainBasePanel):
-    bl_label = "Jet Fluid Mesh"
+    bl_label = "Jet Fluid: Mesh"
 
     def draw(self, context):
         obj = context.object
@@ -362,7 +316,7 @@ class JET_PT_Mesh(DomainBasePanel):
 
 
 class JET_PT_Simulate(DomainBasePanel):
-    bl_label = "Jet Fluid Simulate"
+    bl_label = "Jet Fluid: Simulate"
     bl_options = set()
 
     def draw(self, context):
@@ -380,25 +334,25 @@ class JET_PT_Simulate(DomainBasePanel):
         split.alert = True
         split.operator('jet_fluid.reset_particles', text="Reset")
 
-        lay.prop(jet, 'resolution')
+        draw_prop(lay, jet, 'cache_folder', 'Cache Folder')
+        draw_prop(lay, jet, 'resolution', 'Resolution')
 
         # fps
-        lay.label(text='Time:')
-        lay.prop(jet, 'use_scene_fps')
-        row = lay.row()
-        if jet.use_scene_fps:
-            row.active = False
-            row.prop(context.scene.render, 'fps')
+        draw_prop(lay, jet, 'overwrite_simulation', 'Overwrite', boolean=True)
+        draw_prop(lay, jet, 'fps_mode', 'FPS Mode', expand=True, use_column=True)
+        if jet.fps_mode == 'SCENE':
+            draw_prop(lay, context.scene.render, 'fps', 'FPS', active=False)
         else:
-            row.prop(jet, 'fps')
+            draw_prop(lay, jet, 'fps', 'FPS', active=True)
 
         # frame range
-        lay.prop(jet, 'frame_range_simulation')
+        draw_prop(lay, jet, 'frame_range_simulation', 'Frame Range', expand=True, use_column=True)
         if jet.frame_range_simulation == 'CUSTOM':
-            lay.prop(jet, 'frame_range_simulation_start')
-            lay.prop(jet, 'frame_range_simulation_end')
-
-        lay.prop(jet, 'overwrite_simulation')
+            draw_prop(lay, jet, 'frame_range_simulation_start', 'Frame Start')
+            draw_prop(lay, jet, 'frame_range_simulation_end', 'Frame End')
+        else:
+            draw_prop(lay, context.scene, 'frame_start', 'Frame Start', active=False)
+            draw_prop(lay, context.scene, 'frame_end', 'Frame End', active=False)
 
 
 def add_jet_fluid_button(self, context):
@@ -431,9 +385,7 @@ __CLASSES__ = [
     JET_PT_Mesh,
     JET_PT_Solvers,
     JET_PT_Boundary,
-    JET_PT_Cache,
     JET_PT_Create,
-    JET_PT_Convert,
     JET_PT_World,
     JET_PT_Color,
     JET_PT_Debug,

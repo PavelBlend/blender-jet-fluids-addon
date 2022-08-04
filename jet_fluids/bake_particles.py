@@ -224,7 +224,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
         solver.viscosityCoefficient = obj.jet_fluid.viscosity
         grav = obj.jet_fluid.gravity
         solver.gravity = grav[0], grav[2], grav[1]
-        if obj.jet_fluid.use_scene_fps:
+        if obj.jet_fluid.fps_mode == 'SCENE':
             frame = pyjet.Frame(0, 1.0 / context.scene.render.fps)
         else:
             frame = pyjet.Frame(0, 1.0 / obj.jet_fluid.fps)
@@ -236,12 +236,9 @@ class JetFluidBakeParticles(bpy.types.Operator):
         if obj.jet_fluid.frame_range_simulation == 'CUSTOM':
             frame_start = obj.jet_fluid.frame_range_simulation_start
             frame_end = obj.jet_fluid.frame_range_simulation_end
-        elif obj.jet_fluid.frame_range_simulation == 'TIMELINE':
+        else:
             frame_start = context.scene.frame_start
             frame_end = context.scene.frame_end
-        else:
-            frame_start = context.scene.frame_current
-            frame_end = context.scene.frame_current
 
         self.frame_end = frame_end
 
