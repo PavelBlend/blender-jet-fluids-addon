@@ -207,7 +207,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
 
     # world props
-    viscosity: bpy.props.FloatProperty(default=0.0, name='Viscosity')
+    viscosity: bpy.props.FloatProperty(default=0.0, name='Viscosity', min=0.0)
     gravity: bpy.props.FloatVectorProperty(
         default=(0.0, 0.0, -9.8),
         name='Gravity'
@@ -226,7 +226,11 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
     emitter_jitter: bpy.props.FloatProperty(
         default=0.0,
-        name='Jitter'
+        name='Jitter',
+        min=0.0,
+        max=1.0,
+        precision=3,
+        subtype='FACTOR'
     )
     allow_overlapping: bpy.props.BoolProperty(
         default=False,
@@ -234,10 +238,12 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
     emitter_seed: bpy.props.IntProperty(
         default=0,
+        min=0,
         name='Seed'
     )
     max_number_of_particles: bpy.props.IntProperty(
         default=12000000,
+        min=0,
         name='Max Number of Particles'
     )
 
@@ -278,7 +284,10 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     friction_coefficient: bpy.props.FloatProperty(
         default=0.0,
         name='Friction Coefficient',
-        min=0.0
+        min=0.0,
+        max=1.0,
+        precision=3,
+        subtype='FACTOR'
     )
 
     # create props

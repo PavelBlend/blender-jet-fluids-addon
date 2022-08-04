@@ -11,7 +11,11 @@ bl_info = {
 }
 
 
-try:
-    from .addon import register, unregister
-except:
-    pass    # used in make_release.py
+def register():
+    from . import addon
+    addon.register()
+
+
+def unregister():
+    from . import addon
+    addon.unregister()

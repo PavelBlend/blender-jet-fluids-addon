@@ -1,6 +1,34 @@
 import bpy
 
 
+def draw_prop(
+        layout,
+        prop_owner,
+        prop_name,
+        prop_label,
+        expand=False,
+        use_column=False,
+        boolean=False
+    ):
+    row = layout.row(align=True)
+    row.label(text=prop_label + ':')
+    if use_column:
+        value_layout = row.column(align=True)
+    else:
+        value_layout = row
+    if expand:
+        value_layout.prop(prop_owner, prop_name, expand=True)
+    else:
+        if boolean:
+            prop_value = getattr(prop_owner, prop_name)
+            if prop_value:
+                value_layout.prop(prop_owner, prop_name, text='Yes', toggle=True)
+            else:
+                value_layout.prop(prop_owner, prop_name, text='No', toggle=True)
+        else:
+            value_layout.prop(prop_owner, prop_name, text='')
+
+
 class DomainBasePanel(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -13,11 +41,31 @@ class DomainBasePanel(bpy.types.Panel):
         return jet.is_active and jet.object_type == 'DOMAIN'
 
 
+class JET_PT_Type(bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "physics"
+    bl_label = "Jet Fluid: Type"
+
+    @classmethod
+    def poll(cls, context):
+        jet = context.object.jet_fluid
+        return jet.is_active
+
+    def draw(self, context):
+        obj = context.object
+        jet = obj.jet_fluid
+        lay = self.layout
+
+        # create ui elements
+        draw_prop(lay, jet, 'object_type', 'Fluid Type', expand=True, use_column=True)
+
+
 class JET_PT_Collider(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "physics"
-    bl_label = "Jet Fluid"
+    bl_label = "Jet Fluid: Collider"
 
     @classmethod
     def poll(cls, context):
@@ -30,15 +78,14 @@ class JET_PT_Collider(bpy.types.Panel):
         lay = self.layout
 
         # create ui elements
-        lay.prop(jet, 'object_type')
-        lay.prop(jet, 'friction_coefficient')
+        draw_prop(lay, jet, 'friction_coefficient', 'Friction Coefficient')
 
 
 class JET_PT_Emitter(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "physics"
-    bl_label = "Jet Fluid"
+    bl_label = "Jet Fluid: Emitter"
 
     @classmethod
     def poll(cls, context):
@@ -51,15 +98,14 @@ class JET_PT_Emitter(bpy.types.Panel):
         lay = self.layout
 
         # create ui elements
-        lay.prop(jet, 'object_type')
-        lay.prop(jet, 'is_enable')
-        lay.prop(jet, 'one_shot')
-        lay.prop(jet, 'particles_count')
-        lay.prop(jet, 'max_number_of_particles')
-        lay.prop(jet, 'emitter_jitter')
-        lay.prop(jet, 'emitter_seed')
-        lay.prop(jet, 'allow_overlapping')
-        lay.prop(jet, 'velocity')
+        draw_prop(lay, jet, 'is_enable', 'Enable', boolean=True)
+        draw_prop(lay, jet, 'one_shot', 'One Shot', boolean=True)
+        draw_prop(lay, jet, 'allow_overlapping', 'Allow Overlapping', boolean=True)
+        draw_prop(lay, jet, 'particles_count', 'Particles Sampling')
+        draw_prop(lay, jet, 'emitter_jitter', 'Particles Jitter')
+        draw_prop(lay, jet, 'emitter_seed', 'Particles Jitter Seed')
+        draw_prop(lay, jet, 'max_number_of_particles', 'Particles Max Count')
+        draw_prop(lay, jet, 'velocity', 'Initial Velocity', use_column=True)
 
 
 class JET_PT_Solvers(DomainBasePanel):
@@ -154,8 +200,8 @@ class JET_PT_World(DomainBasePanel):
         lay = self.layout
 
         # create ui elements
-        lay.prop(jet, 'viscosity')
-        lay.prop(jet, 'gravity')
+        draw_prop(lay, jet, 'viscosity', 'Viscosity')
+        draw_prop(lay, jet, 'gravity', 'Gravity', use_column=True)
 
 
 class JET_PT_Color(DomainBasePanel):
@@ -167,15 +213,17 @@ class JET_PT_Color(DomainBasePanel):
         lay = self.layout
 
         # create ui elements
-        lay.prop(jet, 'use_colors')
+        draw_prop(lay, jet, 'use_colors', 'Use Colors', boolean=True)
         if jet.use_colors:
-            lay.prop(jet, 'simmulate_color_type')
+            draw_prop(lay, jet, 'simmulate_color_type', 'Type', use_column=True, expand=True)
             if jet.simmulate_color_type == 'SINGLE_COLOR':
-                lay.prop(jet, 'particles_color')
+                draw_prop(lay, jet, 'particles_color', 'Particles Color')
             elif jet.simmulate_color_type == 'VERTEX_COLOR':
-                lay.prop(jet, 'color_vertex_search_radius')
+                draw_prop(lay, jet, 'color_vertex_search_radius', 'Vertex Search Radius')
             elif jet.simmulate_color_type == 'TEXTURE':
-                lay.prop_search(jet, 'particles_texture', bpy.data, 'textures')
+                row = lay.row(align=True)
+                row.label(text='Texture:')
+                row.prop_search(jet, 'particles_texture', bpy.data, 'textures', text='')
 
 
 class JET_PT_Create(DomainBasePanel):
@@ -263,7 +311,7 @@ class JET_PT_Cache(DomainBasePanel):
         lay = self.layout
 
         # create ui elements
-        lay.prop(jet, 'cache_folder')
+        draw_prop(lay, jet, 'cache_folder', 'Cache Folder')
 
 
 class JET_PT_Mesh(DomainBasePanel):
@@ -325,7 +373,6 @@ class JET_PT_Simulate(DomainBasePanel):
         # create ui elements
 
         # object type
-        lay.prop(jet, 'object_type')
 
         # bake particles
         split = lay.split(factor=0.75, align=True)
@@ -354,26 +401,6 @@ class JET_PT_Simulate(DomainBasePanel):
         lay.prop(jet, 'overwrite_simulation')
 
 
-class JET_PT_Init(bpy.types.Panel):
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "physics"
-    bl_label = "Jet Fluid"
-
-    @classmethod
-    def poll(cls, context):
-        jet = context.object.jet_fluid
-        return jet.is_active and jet.object_type == 'NONE'
-
-    def draw(self, context):
-        obj = context.object
-        jet = obj.jet_fluid
-        lay = self.layout
-
-        # create ui elements
-        lay.prop(jet, 'object_type')
-
-
 def add_jet_fluid_button(self, context):
     obj = context.object
     if not obj.type == 'MESH':
@@ -399,7 +426,7 @@ def add_jet_fluid_button(self, context):
 
 
 __CLASSES__ = [
-    JET_PT_Init,
+    JET_PT_Type,
     JET_PT_Simulate,
     JET_PT_Mesh,
     JET_PT_Solvers,
