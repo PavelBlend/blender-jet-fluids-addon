@@ -237,8 +237,8 @@ class JetFluidBakeParticles(bpy.types.Operator):
             frame_start = context.scene.frame_start
             frame_end = context.scene.frame_end
 
-        if not os.path.exists(self.domain.jet_fluid.cache_folder):
-            cache_folder = bpy.path.abspath(self.domain.jet_fluid.cache_folder)
+        cache_folder = bpy.path.abspath(self.domain.jet_fluid.cache_folder)
+        if not os.path.exists(cache_folder):
             os.makedirs(cache_folder)
 
         self.frame_end = frame_end
