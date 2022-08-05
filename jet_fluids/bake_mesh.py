@@ -15,13 +15,7 @@ domain = None
 
 
 def print_mesh_info(*print_params):
-    global domain
-    if domain.jet_fluid.print_debug_info:
-        print(*print_params)
-    if domain.jet_fluid.write_log:
-        log_file_path = get_log_path(domain, '_jet_fluids_mesh.log')
-        with open(log_file_path, 'a') as log_file:
-            print(*print_params, file=log_file)
+    print(*print_params)
 
 
 def create_solver(self, domain):

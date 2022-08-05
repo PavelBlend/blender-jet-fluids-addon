@@ -33,11 +33,4 @@ def get_log_path(domain, log_file_name):
 
 
 def print_info(*print_params):
-    deps_graph = bpy.context.evaluated_depsgraph_get()
-    domain = deps_graph.objects.get(bpy.context.scene.jet_fluid_domain_object)
-    if domain.jet_fluid.print_debug_info:
-        print(*print_params)
-    if domain.jet_fluid.write_log:
-        log_file_path = get_log_path(domain, '_jet_fluids_simulate.log')
-        with open(log_file_path, 'a') as log_file:
-            print(*print_params, file=log_file)
+    print(*print_params)

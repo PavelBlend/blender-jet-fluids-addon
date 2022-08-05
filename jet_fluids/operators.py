@@ -7,29 +7,6 @@ import bpy
 from .utils import print_info, convert_time_to_string
 
 
-LOGS_FILE_NAMES = (
-    '_jet_fluids_convert.log',
-    '_jet_fluids_mesh.log',
-    '_jet_fluids_simulate.log'
-)
-
-
-class JET_FLUID_OT_RemoveLogs(bpy.types.Operator):
-    bl_idname = "jet_fluid.remove_logs"
-    bl_label = "Remove Logs"
-    bl_options = {'REGISTER'}
-
-    def execute(self, context):
-        domain = context.object
-        cache_folder = bpy.path.abspath(domain.jet_fluid.cache_folder)
-        if not os.path.exists(cache_folder):
-            return {'FINISHED'}
-        for file in os.listdir(cache_folder):
-            if file in LOGS_FILE_NAMES:
-                os.remove(cache_folder + file)
-        return {'FINISHED'}
-
-
 class JET_FLUID_OT_ResetMesh(bpy.types.Operator):
     bl_idname = "jet_fluid.reset_mesh"
     bl_label = "Reset Jet Fluid Cache"
@@ -89,8 +66,7 @@ __CLASSES__ = [
     JET_FLUID_OT_Add,
     JET_FLUID_OT_Remove,
     JET_FLUID_OT_ResetParticles,
-    JET_FLUID_OT_ResetMesh,
-    JET_FLUID_OT_RemoveLogs
+    JET_FLUID_OT_ResetMesh
 ]
 
 

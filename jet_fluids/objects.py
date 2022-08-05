@@ -348,12 +348,6 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         name='Max Velocity',
         min=0.001
     )
-    print_debug_info: bpy.props.BoolProperty(
-        default=True, name='Print Information to the Console'
-    )
-    write_log: bpy.props.BoolProperty(
-        default=True, name='Write Log File'
-    )
 
 
 __CLASSES__ = [

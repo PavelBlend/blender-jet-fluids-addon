@@ -253,8 +253,6 @@ class JET_PT_Debug(DomainBasePanel):
         lay = self.layout
 
         # create ui elements
-        lay.prop(jet, 'print_debug_info')
-        lay.prop(jet, 'write_log')
         lay.prop(jet, 'show_particles')
         if jet.show_particles:
             lay.prop(jet, 'particle_size')
@@ -265,7 +263,6 @@ class JET_PT_Debug(DomainBasePanel):
                 if jet.color_type == 'VELOCITY':
                     row.prop(jet, 'color_2', text='')
                     lay.prop(jet, 'max_velocity')
-        lay.operator('jet_fluid.remove_logs')
 
 
 class JET_PT_Mesh(DomainBasePanel):
