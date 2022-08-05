@@ -253,16 +253,17 @@ class JET_PT_Debug(DomainBasePanel):
         lay = self.layout
 
         # create ui elements
-        lay.prop(jet, 'show_particles')
-        if jet.show_particles:
-            lay.prop(jet, 'particle_size')
-            lay.prop(jet, 'color_type')
-            row = lay.row()
-            if jet.color_type != 'PARTICLE_COLOR':
-                row.prop(jet, 'color_1', text='')
-                if jet.color_type == 'VELOCITY':
-                    row.prop(jet, 'color_2', text='')
-                    lay.prop(jet, 'max_velocity')
+        draw_prop(lay, jet, 'show_particles', 'Show Particles', boolean=True)
+        draw_prop(lay, jet, 'particle_size', 'Particle Size', active=jet.show_particles)
+        draw_prop(lay, jet, 'color_type', 'Color Mode', active=jet.show_particles, use_column=True, expand=True)
+
+        if jet.color_type != 'PARTICLE_COLOR':
+            if jet.color_type == 'VELOCITY':
+                draw_prop(lay, jet, 'max_velocity', 'Max Velocity', active=jet.show_particles)
+                draw_prop(lay, jet, 'color_1', 'Min Velocity Color', active=jet.show_particles)
+                draw_prop(lay, jet, 'color_2', 'Max Velocity Color', active=jet.show_particles)
+            else:
+                draw_prop(lay, jet, 'color_1', 'Particle Color', active=jet.show_particles)
 
 
 class JET_PT_Mesh(DomainBasePanel):
