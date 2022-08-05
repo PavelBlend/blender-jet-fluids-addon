@@ -64,7 +64,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         items=items, name='Pressure Solver', default='SINGLE_PHASE'
     )
     resolution: bpy.props.IntProperty(default=30, name='Simulate Resolution')
-    max_cfl: bpy.props.FloatProperty(default=5.0, name='Max CFL')
+    max_cfl: bpy.props.FloatProperty(default=5.0, name='Max CFL', min=0.001)
     compressed_linear_system: bpy.props.BoolProperty(
         default=False, name='Compressed Linear System'
     )

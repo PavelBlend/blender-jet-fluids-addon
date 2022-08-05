@@ -215,14 +215,13 @@ class JET_PT_Color(DomainBasePanel):
 
         # create ui elements
         draw_prop(lay, jet, 'use_colors', 'Use Colors', boolean=True)
-        if jet.use_colors:
-            draw_prop(lay, jet, 'simmulate_color_type', 'Type', use_column=True, expand=True)
-            if jet.simmulate_color_type == 'SINGLE_COLOR':
-                draw_prop(lay, jet, 'particles_color', 'Particles Color')
-            elif jet.simmulate_color_type == 'VERTEX_COLOR':
-                draw_prop(lay, jet, 'color_vertex_search_radius', 'Vertex Search Radius')
-            elif jet.simmulate_color_type == 'TEXTURE':
-                draw_prop(lay, jet, 'particles_texture', 'Texture', prop_search='textures')
+        draw_prop(lay, jet, 'simmulate_color_type', 'Type', use_column=True, expand=True, active=jet.use_colors)
+        if jet.simmulate_color_type == 'SINGLE_COLOR':
+            draw_prop(lay, jet, 'particles_color', 'Particles Color', active=jet.use_colors)
+        elif jet.simmulate_color_type == 'VERTEX_COLOR':
+            draw_prop(lay, jet, 'color_vertex_search_radius', 'Vertex Search Radius', active=jet.use_colors)
+        elif jet.simmulate_color_type == 'TEXTURE':
+            draw_prop(lay, jet, 'particles_texture', 'Texture', prop_search='textures', active=jet.use_colors)
 
 
 class JET_PT_Create(DomainBasePanel):
