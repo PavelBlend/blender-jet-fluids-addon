@@ -8,7 +8,7 @@ import mathutils
 
 from . import pyjet
 from . import bake
-from .utils import print_info, get_log_path, convert_time_to_string
+from .utils import print_info, convert_time_to_string
 
 
 def get_transforms(obj):
@@ -192,9 +192,6 @@ class JetFluidBakeParticles(bpy.types.Operator):
     def execute(self, context):
         context.scene.jet_fluid_domain_object = context.object.name
         obj = context.object
-        log_path = get_log_path(obj, '_jet_fluids_simulate.log')
-        with open(log_path, 'w') as log_file:
-            pass
         print_info('-' * 79)
         print_info('SIMULATION START')
         start_time = time.time()
@@ -239,6 +236,10 @@ class JetFluidBakeParticles(bpy.types.Operator):
         else:
             frame_start = context.scene.frame_start
             frame_end = context.scene.frame_end
+
+        if not os.path.exists(self.domain.jet_fluid.cache_folder):
+            cache_folder = bpy.path.abspath(self.domain.jet_fluid.cache_folder)
+            os.makedirs(cache_folder)
 
         self.frame_end = frame_end
 

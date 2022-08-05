@@ -8,7 +8,7 @@ import mathutils
 
 from . import pyjet
 from . import bake
-from .utils import get_log_path, convert_time_to_string
+from .utils import convert_time_to_string
 
 
 domain = None
@@ -228,9 +228,6 @@ class JetFluidBakeMesh(bpy.types.Operator):
     def execute(self, context):
         global domain
         domain = bpy.context.view_layer.objects.active
-        log_path = get_log_path(domain, '_jet_fluids_mesh.log')
-        with open(log_path, 'w') as log_file:
-            pass
         start_time = time.time()
         pyjet.Logging.mute()
         scn = context.scene

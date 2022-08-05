@@ -26,11 +26,5 @@ def convert_time_to_string(start_time):
     return time_string
 
 
-def get_log_path(domain, log_file_name):
-    cache_folder = bpy.path.abspath(domain.jet_fluid.cache_folder)
-    log_file_path = os.path.join(cache_folder, log_file_name)
-    return log_file_path
-
-
 def print_info(*print_params):
     print(*print_params)
