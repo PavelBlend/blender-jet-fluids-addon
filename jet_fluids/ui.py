@@ -281,35 +281,39 @@ class JET_PT_Mesh(DomainBasePanel):
         split.operator('jet_fluid.bake_mesh')
         split.alert = True
         split.operator('jet_fluid.reset_mesh', text="Reset")
-        lay.prop(jet, 'resolution_mesh')
-        lay.prop(jet, 'iso_value')
-        lay.prop(jet, 'converter_type')
-        if jet.converter_type == 'ANISOTROPICPOINTSTOIMPLICIT':
-            lay.prop(jet, 'kernel_radius')
-            lay.prop(jet, 'cut_off_density')
-            lay.prop(jet, 'position_smoothing_factor')
-            lay.prop(jet, 'min_num_neighbors')
-            lay.prop(jet, 'is_output_sdf')
-        elif jet.converter_type == 'SPHPOINTSTOIMPLICIT':
-            lay.prop(jet, 'kernel_radius')
-            lay.prop(jet, 'cut_off_density')
-            lay.prop(jet, 'is_output_sdf')
-        elif jet.converter_type == 'SPHERICALPOINTSTOIMPLICIT':
-            lay.prop(jet, 'radius')
-            lay.prop(jet, 'is_output_sdf')
-        elif jet.converter_type == 'ZHUBRIDSONPOINTSTOIMPLICIT':
-            lay.prop(jet, 'kernel_radius')
-            lay.prop(jet, 'cut_off_threshold')
-            lay.prop(jet, 'is_output_sdf')
+        draw_prop(lay, jet, 'resolution_mesh', 'Resolution')
+        draw_prop(lay, jet, 'overwrite_mesh', 'Overwrite', boolean=True)
+        draw_prop(lay, jet, 'is_output_sdf', 'Out SDF', boolean=True)
+        draw_prop(lay, jet, 'iso_value', 'Iso Value')
+        draw_prop(lay, jet, 'color_particles_search_radius', 'Particles Color Search Radius')
 
         # frame range
-        lay.prop(jet, 'frame_range_mesh')
-        if jet.frame_range_mesh == 'CUSTOM':
-            lay.prop(jet, 'frame_range_mesh_start')
-            lay.prop(jet, 'frame_range_mesh_end')
+        scene = context.scene
+        draw_prop(lay, jet, 'frame_range_mesh', 'Frame Range', expand=True, use_column=True)
+        if jet.frame_range_mesh == 'TIMELINE':
+            draw_prop(lay, scene, 'frame_start', 'Frame Start', active=False)
+            draw_prop(lay, scene, 'frame_end', 'Frame End', active=False)
+        elif jet.frame_range_mesh == 'CURRENT_FRAME':
+            draw_prop(lay, scene, 'frame_current', 'Frame Start', active=False)
+            draw_prop(lay, scene, 'frame_current', 'Frame End', active=False)
+        else:
+            draw_prop(lay, jet, 'frame_range_mesh_start', 'Frame Start')
+            draw_prop(lay, jet, 'frame_range_mesh_end', 'Frame End')
 
-        lay.prop(jet, 'overwrite_mesh')
-        lay.prop(jet, 'color_particles_search_radius')
+        draw_prop(lay, jet, 'converter_type', 'Method', expand=True, use_column=True)
+        if jet.converter_type == 'ANISOTROPICPOINTSTOIMPLICIT':
+            draw_prop(lay, jet, 'kernel_radius', 'Kernel Radius')
+            draw_prop(lay, jet, 'cut_off_density', 'Cut Off Density')
+            draw_prop(lay, jet, 'position_smoothing_factor', 'Position Smoothing')
+            draw_prop(lay, jet, 'min_num_neighbors', 'Min Neighbors Count')
+        elif jet.converter_type == 'SPHPOINTSTOIMPLICIT':
+            draw_prop(lay, jet, 'kernel_radius', 'Kernel Radius')
+            draw_prop(lay, jet, 'cut_off_density', 'Cut Off Density')
+        elif jet.converter_type == 'SPHERICALPOINTSTOIMPLICIT':
+            draw_prop(lay, jet, 'radius', 'Radius')
+        elif jet.converter_type == 'ZHUBRIDSONPOINTSTOIMPLICIT':
+            draw_prop(lay, jet, 'kernel_radius', 'Kernel Radius')
+            draw_prop(lay, jet, 'cut_off_threshold', 'Cut Off Threshold')
 
 
 class JET_PT_Simulate(DomainBasePanel):

@@ -146,8 +146,8 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
     items = [
         ('TIMELINE', 'Timeline', ''),
-        ('CUSTOM', 'Custom', ''),
-        ('CURRENT_FRAME', 'Current Frame', '')
+        ('CURRENT_FRAME', 'Current Frame', ''),
+        ('CUSTOM', 'Custom', '')
     ]
     frame_range_mesh: bpy.props.EnumProperty(
         items=items,
