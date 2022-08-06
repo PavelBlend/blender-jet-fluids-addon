@@ -40,7 +40,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         ('APIC', 'APIC', '')
     ]
     solver_type: bpy.props.EnumProperty(
-        items=items, name='Fluid Solver', default='PIC'
+        items=items, name='Fluid Solver', default='APIC'
     )
     items = [
         ('SEMI_LAGRANGIAN', 'Semi-Lagrangian', ''),
@@ -61,18 +61,18 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         ('FRACTIONAL_SINGLE_PHASE', 'Fractional Single Phase', '')
     ]
     pressure_solver_type: bpy.props.EnumProperty(
-        items=items, name='Pressure Solver', default='SINGLE_PHASE'
+        items=items, name='Pressure Solver', default='FRACTIONAL_SINGLE_PHASE'
     )
     resolution: bpy.props.IntProperty(default=30, name='Simulate Resolution')
-    max_cfl: bpy.props.FloatProperty(default=5.0, name='Max CFL', min=0.001)
+    max_cfl: bpy.props.FloatProperty(default=5.0, name='Max CFL', min=1.0)
     compressed_linear_system: bpy.props.BoolProperty(
-        default=False, name='Compressed Linear System'
+        default=True, name='Compressed Linear System'
     )
     fixed_substeps: bpy.props.BoolProperty(
         default=False, name='Fixed Substeps'
     )
     fixed_substeps_count: bpy.props.IntProperty(
-        default=1, name='Substeps Count'
+        default=1, name='Substeps Count', min=1
     )
     items = [
         ('SCENE', 'Scene', ''),
@@ -118,10 +118,10 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
     # Anisotropic Points to Implicit Properties
     kernel_radius: bpy.props.FloatProperty(
-        default=1.0, name='Kernel Radius', min=0.1, max=10.0
+        default=1.25, name='Kernel Radius', min=0.1, max=10.0
     )
     cut_off_density: bpy.props.FloatProperty(
-        default=0.5, name='Cut Off Density'
+        default=0.05, name='Cut Off Density'
     )
     position_smoothing_factor: bpy.props.FloatProperty(
         default=0.5, name='Position Smoothing Factor'
@@ -145,14 +145,14 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         default=0.0, name='Iso Value'
     )
     items = [
-        ('TIMELINE', 'Timeline', ''),
+        ('SCENE', 'Scene', ''),
         ('CURRENT_FRAME', 'Current Frame', ''),
         ('CUSTOM', 'Custom', '')
     ]
     frame_range_mesh: bpy.props.EnumProperty(
         items=items,
         name='Frame Range',
-        default='TIMELINE'
+        default='SCENE'
     )
     frame_range_mesh_start: bpy.props.IntProperty(
         default=0,
@@ -302,7 +302,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
     mesh_object: bpy.props.StringProperty(default='', name='Mesh')
     create_particles: bpy.props.BoolProperty(
-        default=False,
+        default=True,
         name='Create Particles',
         update=create.update_par_object
     )

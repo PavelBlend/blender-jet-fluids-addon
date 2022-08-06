@@ -290,7 +290,7 @@ class JET_PT_Mesh(DomainBasePanel):
         # frame range
         scene = context.scene
         draw_prop(lay, jet, 'frame_range_mesh', 'Frame Range', expand=True, use_column=True)
-        if jet.frame_range_mesh == 'TIMELINE':
+        if jet.frame_range_mesh == 'SCENE':
             draw_prop(lay, scene, 'frame_start', 'Frame Start', active=False)
             draw_prop(lay, scene, 'frame_end', 'Frame End', active=False)
         elif jet.frame_range_mesh == 'CURRENT_FRAME':

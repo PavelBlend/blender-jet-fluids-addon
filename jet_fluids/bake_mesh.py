@@ -239,7 +239,7 @@ class JetFluidBakeMesh(bpy.types.Operator):
         if domain.jet_fluid.frame_range_mesh == 'CUSTOM':
             frame_start = domain.jet_fluid.frame_range_mesh_start
             frame_end = domain.jet_fluid.frame_range_mesh_end
-        elif domain.jet_fluid.frame_range_mesh == 'TIMELINE':
+        elif domain.jet_fluid.frame_range_mesh == 'SCENE':
             frame_start = context.scene.frame_start
             frame_end = context.scene.frame_end
         else:
