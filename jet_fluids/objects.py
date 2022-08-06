@@ -229,12 +229,11 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         min=0.001
     )
     emitter_jitter: bpy.props.FloatProperty(
-        default=0.0,
+        default=10.0,
         name='Jitter',
         min=0.0,
-        max=1.0,
-        precision=3,
-        subtype='FACTOR'
+        max=10.0,
+        precision=3
     )
     allow_overlapping: bpy.props.BoolProperty(
         default=False,
