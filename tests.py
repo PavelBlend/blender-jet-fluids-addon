@@ -4,6 +4,11 @@ import bpy
 
 
 solvers = ['FLIP', 'PIC', 'APIC']
+cache_folder = os.path.join(os.path.abspath(os.curdir), 'tests_cache')
+cache_folder += os.sep
+if not os.path.exists(cache_folder):
+    os.makedirs(cache_folder)
+
 for solver in solvers:
     bpy.ops.mesh.primitive_cube_add(
         size=2, enter_editmode=False, location=(0, 0, 0)
@@ -13,12 +18,6 @@ for solver in solvers:
     domain_object.jet_fluid.object_type = 'DOMAIN'
     domain_object.jet_fluid.resolution = 20
     domain_object.jet_fluid.solver_type = solver
-    cache_folder = os.path.join(
-        os.path.abspath(os.curdir), 'tests_cache'
-    )
-    cache_folder += os.sep
-    if not os.path.exists(cache_folder):
-        os.makedirs(cache_folder)
     domain_object.jet_fluid.cache_folder = cache_folder
     
     bpy.context.scene.frame_start = 0
@@ -35,10 +34,10 @@ for solver in solvers:
     bpy.context.view_layer.objects.active = domain_object
     bpy.ops.jet_fluid.bake_particles()
     bpy.ops.jet_fluid.bake_mesh()
-    bpy.ops.jet_fluid.create_particle_system()
     bpy.ops.jet_fluid.reset_particles()
     bpy.ops.jet_fluid.reset_mesh()
-    bpy.ops.jet_fluid.reset_physic_cache()
+
+os.removedirs(cache_folder)
 
 print('\n' * 5)
 print('=' * 79)
