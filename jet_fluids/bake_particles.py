@@ -98,7 +98,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                 kd_tree.balance()
 
             for collider, collider_object in self.jet_colliders:
-                collider.frictionCoefficient = collider_object.jet_fluid.friction_coefficient
+                collider.frictionCoefficient = collider_object.jet_fluid.collider_friction
                 pos, rot = get_transforms(collider_object)
                 collider.surface.transform = pyjet.Transform3(
                     translation=(pos[0], pos[2], pos[1]),
@@ -296,7 +296,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                             orientation=(-rot[0], rot[1], rot[3], rot[2])
                         )
                         collider = pyjet.RigidBodyCollider3(surface=triangle_mesh)
-                        collider.frictionCoefficient = collider_object.jet_fluid.friction_coefficient
+                        collider.frictionCoefficient = collider_object.jet_fluid.collider_friction
                         self.jet_colliders.append((collider, collider_object))
                         print_info('        Create collider mesh end:   "{0}"'.format(collider_object.name))
                     if self.jet_colliders:
@@ -356,7 +356,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                             orientation=(-rot[0], rot[1], rot[3], rot[2])
                         )
                         collider = pyjet.RigidBodyCollider3(surface=triangle_mesh)
-                        collider.frictionCoefficient = collider_object.jet_fluid.friction_coefficient
+                        collider.frictionCoefficient = collider_object.jet_fluid.collider_friction
                         self.jet_colliders.append((collider, collider_object))
                         print_info('        Create collider mesh end:   "{0}"'.format(collider_object.name))
                     if self.jet_colliders:

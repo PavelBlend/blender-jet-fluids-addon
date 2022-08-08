@@ -84,7 +84,7 @@ class JET_PT_Collider(bpy.types.Panel):
         lay = self.layout
 
         # create ui elements
-        draw_prop(lay, jet, 'friction_coefficient', 'Friction Coefficient')
+        draw_prop(lay, jet, 'collider_friction', 'Friction')
 
 
 class JET_PT_Emitter(bpy.types.Panel):
@@ -278,7 +278,7 @@ class JET_PT_Mesh(DomainBasePanel):
 
         # bake mesh
         split = lay.split(factor=0.75, align=True)
-        split.operator('jet_fluid.bake_mesh')
+        split.operator('jet_fluid.bake_mesh', text='Bake')
         split.alert = True
         split.operator('jet_fluid.reset_mesh', text="Reset")
         draw_prop(lay, jet, 'resolution_mesh', 'Resolution')
@@ -331,7 +331,7 @@ class JET_PT_Simulate(DomainBasePanel):
 
         # bake particles
         split = lay.split(factor=0.75, align=True)
-        split.operator('jet_fluid.bake_particles')
+        split.operator('jet_fluid.bake_particles', text='Bake')
         split.alert = True
         split.operator('jet_fluid.reset_particles', text="Reset")
 

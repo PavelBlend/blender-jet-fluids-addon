@@ -47,7 +47,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         ('CUBIC_SEMI_LAGRANGIAN', 'Cubic Semi-Lagrangian', '')
     ]
     advection_solver_type: bpy.props.EnumProperty(
-        items=items, name='Advection Solver', default='SEMI_LAGRANGIAN'
+        items=items, name='Advection Solver', default='CUBIC_SEMI_LAGRANGIAN'
     )
     items = [
         ('FORWARD_EULER', 'Forward Euler', ''),
@@ -63,7 +63,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     pressure_solver_type: bpy.props.EnumProperty(
         items=items, name='Pressure Solver', default='FRACTIONAL_SINGLE_PHASE'
     )
-    resolution: bpy.props.IntProperty(default=30, name='Simulate Resolution')
+    resolution: bpy.props.IntProperty(default=30, name='Simulate Resolution', min=1)
     max_cfl: bpy.props.FloatProperty(default=5.0, name='Max CFL', min=1.0)
     compressed_linear_system: bpy.props.BoolProperty(
         default=True, name='Compressed Linear System'
@@ -104,7 +104,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
 
     # mesh generator properties
-    resolution_mesh: bpy.props.IntProperty(default=30, name='Mesh Resolution')
+    resolution_mesh: bpy.props.IntProperty(default=30, name='Mesh Resolution', min=1)
     items = [
         ('ANISOTROPICPOINTSTOIMPLICIT', 'Anisotropic Points to Implicit', ''),
         ('SPHPOINTSTOIMPLICIT', 'SPH Points to Implicit', ''),
@@ -128,6 +128,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
     min_num_neighbors: bpy.props.IntProperty(
         default=25,
+        min=0,
         name='Min Num Neighbors'
     )
     is_output_sdf: bpy.props.BoolProperty(
@@ -284,7 +285,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
 
     # collider props
-    friction_coefficient: bpy.props.FloatProperty(
+    collider_friction: bpy.props.FloatProperty(
         default=0.0,
         name='Friction Coefficient',
         min=0.0,
