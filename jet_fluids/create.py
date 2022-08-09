@@ -9,32 +9,18 @@ from . import render
 GL_PARTICLES_CACHE = {}
 
 
-def remove_par_object(domain):
-    if domain.jet_fluid.particles_object:
-        par_object = bpy.data.objects[domain.jet_fluid.particles_object]
-        old_mesh = par_object.data
-        materials = [m for m in old_mesh.materials]
-        mesh = bpy.data.meshes.new('temp_name')
-        for mat in materials:
-            mesh.materials.append(mat)
-        par_object.data = mesh
-        bpy.data.meshes.remove(old_mesh)
-        mesh.name = 'jet_fluid_particles'
-
-
-def remove_mesh_object(domain):
-    if domain.jet_fluid.mesh_object:
-        mesh_object = bpy.data.objects.get(domain.jet_fluid.mesh_object, None)
-        if not mesh_object:
-            return
-        old_mesh = mesh_object.data
-        materials = [m for m in old_mesh.materials]
-        mesh = bpy.data.meshes.new('temp_name')
-        for mat in materials:
-            mesh.materials.append(mat)
-        mesh_object.data = mesh
-        bpy.data.meshes.remove(old_mesh)
-        mesh.name = 'jet_fluid_mesh'
+def clear_fluid_geometry(domain, mode='PART'):
+    if mode == 'PART':
+        # particles mode
+        obj_name = domain.jet_fluid.particles_object
+    else:
+        # mesh mode
+        obj_name = domain.jet_fluid.mesh_object
+    if obj_name:
+        mesh_object = bpy.data.objects.get(obj_name)
+        if mesh_object:
+            if mesh_object.type == 'MESH':
+                mesh_object.data.clear_geometry()
 
 
 def update_mesh_object(self, context):
@@ -47,7 +33,7 @@ def update_mesh_object(self, context):
             if obj.jet_fluid.create_mesh:
                 create_mesh(obj)
             else:
-                remove_mesh_object(obj)
+                clear_fluid_geometry(obj)
 
 
 def update_par_object(self, context):
@@ -60,7 +46,7 @@ def update_par_object(self, context):
             if obj.jet_fluid.create_particles:
                 create_particles(obj)
             else:
-                remove_par_object(obj)
+                clear_fluid_geometry(obj, mode='PART')
 
 
 def create_particles(domain):
@@ -69,7 +55,7 @@ def create_particles(domain):
         bpy.context.scene.frame_current
     )
     if not os.path.exists(file_path):
-        remove_par_object(domain)
+        clear_fluid_geometry(domain, mode='PART')
         return
     particles_file = open(file_path, 'rb')
     particles_data = particles_file.read()
@@ -110,7 +96,7 @@ def create_mesh(domain):
         bpy.context.scene.frame_current
     )
     if not os.path.exists(file_path):
-        remove_mesh_object(domain)
+        clear_fluid_geometry(domain)
         return
     mesh_file = open(file_path, 'rb')
     mesh_data = mesh_file.read()
@@ -253,10 +239,11 @@ def import_geometry(scene):
         if not obj:
             continue
         if obj.jet_fluid.is_active:
-            if obj.jet_fluid.create_particles:
-                create_particles(obj)
-            if obj.jet_fluid.create_mesh:
-                create_mesh(obj)
+            if obj.jet_fluid.object_type == 'DOMAIN':
+                if obj.jet_fluid.create_particles:
+                    create_particles(obj)
+                if obj.jet_fluid.create_mesh:
+                    create_mesh(obj)
     global GL_PARTICLES_CACHE
     GL_PARTICLES_CACHE = {}
     update_particles_cache(None, bpy.context)
