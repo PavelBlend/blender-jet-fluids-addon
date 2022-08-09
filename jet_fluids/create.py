@@ -17,26 +17,28 @@ def clear_fluid_geometry(domain, mode):
         # mesh mode
         obj_name = domain.jet_fluid.mesh_object
     if obj_name:
-        mesh_object = bpy.data.objects.get(obj_name)
-        if mesh_object:
-            if mesh_object.type == 'MESH':
-                mesh_object.data.clear_geometry()
+        obj = bpy.data.objects.get(obj_name)
+        if obj:
+            if obj.type == 'MESH':
+                obj.data.clear_geometry()
 
 
-def get_domain_object():
+def get_domain_objects():
     obj_names = {obj.name for obj in bpy.data.objects}
+    domain_objs = set()
     for obj_name in obj_names:
         obj = bpy.data.objects.get(obj_name)
         if not obj:
             continue
         if obj.jet_fluid.is_active:
             if obj.jet_fluid.object_type == 'DOMAIN':
-                return obj
+                domain_objs.add(obj)
+    return domain_objs
 
 
 def update_geom_object(mode):
-    domain = get_domain_object()
-    if domain:
+    domains = get_domain_objects()
+    for domain in domains:
         if mode == 'MESH':
             # mesh mode
             if domain.jet_fluid.create_mesh:
@@ -104,7 +106,7 @@ def get_array(file_path, array_type, swap=False):
     return array
 
 
-def write_array(array, file_path, array_type, swap=True):
+def write_array(array, file_path, array_type, swap=True, offset=None):
     if array_type == 'FLOAT':
         data_type = numpy.float32
     elif array_type == 'INT':
@@ -114,6 +116,15 @@ def write_array(array, file_path, array_type, swap=True):
         for element in array:
             swaped.append((element[0], element[2], element[1]))
         array = swaped
+    if offset:
+        offset_array = []
+        for element in array:
+            offset_array.append((
+                element[0] - offset[0],
+                element[1] - offset[1],
+                element[2] - offset[2]
+            ))
+        array = offset_array
     np_array = numpy.array(array, data_type)
     np_array.tofile(file_path)
 
@@ -131,6 +142,18 @@ def get_geom_object(domain, attr_name, base_name):
     return obj
 
 
+def set_mesh_location(domain, obj):
+    obj.location = (
+        domain.bound_box[0][0] * domain.scale[0] + domain.location[0],
+        domain.bound_box[0][1] * domain.scale[1] + domain.location[1],
+        domain.bound_box[0][2] * domain.scale[2] + domain.location[2]
+    )
+
+
+def set_par_location(domain, obj):
+    obj.location = domain.location
+
+
 def create_particles(domain):
     file_path = get_file_path(domain, 'POS')
     vertices = get_array(file_path, 'FLOAT')
@@ -141,6 +164,7 @@ def create_particles(domain):
 
     par_object = get_geom_object(domain, 'particles_object', 'particles')
     par_object.data.from_pydata(vertices, (), ())
+    set_par_location(domain, par_object)
 
 
 def create_mesh(domain):
@@ -151,6 +175,7 @@ def create_mesh(domain):
     triangles = get_array(tris_file, 'INT')
 
     if vertices is None or triangles is None:
+        clear_fluid_geometry(domain, 'MESH')
         return
 
     mesh_object = get_geom_object(domain, 'mesh_object', 'mesh')
@@ -159,11 +184,7 @@ def create_mesh(domain):
     for polygon in mesh_object.data.polygons:
         polygon.use_smooth = True
 
-    mesh_object.location = (
-        domain.bound_box[0][0] * domain.scale[0] + domain.location[0],
-        domain.bound_box[0][1] * domain.scale[1] + domain.location[1],
-        domain.bound_box[0][2] * domain.scale[2] + domain.location[2]
-    )
+    set_mesh_location(domain, mesh_object)
 
 
 def get_gl_particles_cache():
@@ -173,8 +194,8 @@ def get_gl_particles_cache():
 
 def update_particles_cache(self, context):
     global GL_PARTICLES_CACHE
-    domain = get_domain_object()
-    if domain:
+    domains = get_domain_objects()
+    for domain in domains:
         if domain.jet_fluid.show_particles:
             pos_file = get_file_path(domain, 'POS')
             if os.path.exists(pos_file):
@@ -195,11 +216,12 @@ def update_particles_cache(self, context):
 
 @bpy.app.handlers.persistent
 def import_geometry(scene):
-    domain = get_domain_object()
-    if domain.jet_fluid.create_particles:
-        create_particles(domain)
-    if domain.jet_fluid.create_mesh:
-        create_mesh(domain)
+    domains = get_domain_objects()
+    for domain in domains:
+        if domain.jet_fluid.create_particles:
+            create_particles(domain)
+        if domain.jet_fluid.create_mesh:
+            create_mesh(domain)
     global GL_PARTICLES_CACHE
     GL_PARTICLES_CACHE = {}
     update_particles_cache(None, bpy.context)

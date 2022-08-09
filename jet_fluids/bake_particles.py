@@ -116,7 +116,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
             vertices_count = len(positions)
 
             pos_path = create.get_file_path(self.domain, 'POS', frame=frame)
-            create.write_array(positions, pos_path, 'FLOAT')
+            create.write_array(positions, pos_path, 'FLOAT', offset=self.domain.location)
 
             vel_path = create.get_file_path(self.domain, 'VEL', frame=frame)
             create.write_array(velocities, vel_path, 'FLOAT')

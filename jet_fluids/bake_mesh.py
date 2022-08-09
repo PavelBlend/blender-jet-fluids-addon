@@ -92,8 +92,15 @@ def read_particles(domain, frame_index):
         return points
     print_mesh_info('Read particles start')
     points = create.get_array(file_path, 'FLOAT', swap=True)
+    offset_points = [
+        (
+            point[0] + domain.location[0],
+            point[1] + domain.location[2],
+            point[2] + domain.location[1]
+        ) for point in points
+    ]
     print_mesh_info('Read particles end')
-    return points
+    return offset_points
 
 
 def bake_mesh(domain, solv, grid, frame_index):
