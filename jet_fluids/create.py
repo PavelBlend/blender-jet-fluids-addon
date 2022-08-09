@@ -63,9 +63,7 @@ def get_file_path(domain, mode, frame=None):
     cache_folder = bpy.path.abspath(domain.jet_fluid.cache_folder)
     if frame is None:
         frame = bpy.context.scene.frame_current
-    if mode == 'PART':
-        base_name = 'particles'
-    elif mode == 'POS':
+    if mode == 'POS':
         base_name = 'pos'
     elif mode == 'VEL':
         base_name = 'vel'
@@ -90,6 +88,8 @@ def create_geom_object(domain, base_name, attr_name):
 
 
 def get_array(file_path, array_type, swap=False):
+    if not os.path.exists(file_path):
+        return
     if array_type == 'FLOAT':
         data_type = numpy.float32
     elif array_type == 'INT':
@@ -118,45 +118,42 @@ def write_array(array, file_path, array_type, swap=True):
     np_array.tofile(file_path)
 
 
+def get_geom_object(domain, attr_name, base_name):
+    attr_value = getattr(domain.jet_fluid, attr_name)
+    if not attr_value:
+        obj = create_geom_object(domain, base_name, attr_name)
+    else:
+        obj = bpy.data.objects.get(attr_value)
+        if obj:
+            obj.data.clear_geometry()
+        else:
+            obj = create_geom_object(domain, base_name, attr_name)
+    return obj
+
+
 def create_particles(domain):
     file_path = get_file_path(domain, 'POS')
-    if not os.path.exists(file_path):
+    vertices = get_array(file_path, 'FLOAT')
+
+    if vertices is None:
         clear_fluid_geometry(domain, 'PART')
         return
-    vertices = get_array(file_path, 'FLOAT')
-    if not domain.jet_fluid.particles_object:
-        par_object = create_geom_object(domain, 'particles', 'particles_object')
-    else:
-        par_object = bpy.data.objects.get(domain.jet_fluid.particles_object)
-        if par_object:
-            par_object.data.clear_geometry()
-        else:
-            par_object = create_geom_object(domain, 'particles', 'particles_object')
+
+    par_object = get_geom_object(domain, 'particles_object', 'particles')
     par_object.data.from_pydata(vertices, (), ())
 
 
 def create_mesh(domain):
     vert_file = get_file_path(domain, 'VERT')
-    if not os.path.exists(vert_file):
-        clear_fluid_geometry(domain, 'MESH')
-        return
     vertices = get_array(vert_file, 'FLOAT')
 
     tris_file = get_file_path(domain, 'TRIS')
-    if not os.path.exists(tris_file):
-        clear_fluid_geometry(domain, 'MESH')
-        return
     triangles = get_array(tris_file, 'INT')
 
-    if not domain.jet_fluid.mesh_object:
-        mesh_object = create_geom_object(domain, 'mesh', 'mesh_object')
-    else:
-        mesh_object = bpy.data.objects.get(domain.jet_fluid.mesh_object)
-        if not mesh_object:
-            mesh_object = create_geom_object(domain, 'mesh', 'mesh_object')
-        else:
-            mesh_object.data.clear_geometry()
+    if vertices is None or triangles is None:
+        return
 
+    mesh_object = get_geom_object(domain, 'mesh_object', 'mesh')
     mesh_object.data.from_pydata(vertices, (), triangles)
 
     for polygon in mesh_object.data.polygons:
