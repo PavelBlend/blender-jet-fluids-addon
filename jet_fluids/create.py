@@ -1,5 +1,5 @@
 import os
-import struct
+import numpy
 
 import bpy
 
@@ -59,120 +59,114 @@ def update_par_object(self, context):
     update_geom_object('PART')
 
 
-def get_file_path(domain, mode):
+def get_file_path(domain, mode, frame=None):
     cache_folder = bpy.path.abspath(domain.jet_fluid.cache_folder)
-    frame = bpy.context.scene.frame_current
+    if frame is None:
+        frame = bpy.context.scene.frame_current
     if mode == 'PART':
         base_name = 'particles'
-    elif mode == 'MESH':
-        base_name = 'mesh'
+    elif mode == 'POS':
+        base_name = 'pos'
+    elif mode == 'VEL':
+        base_name = 'vel'
+    elif mode == 'FORCE':
+        base_name = 'force'
+    elif mode == 'COL':
+        base_name = 'col'
+    elif mode == 'VERT':
+        base_name = 'vert'
+    elif mode == 'TRIS':
+        base_name = 'tris'
     file_path = '{0}{1}_{2:0>6}.bin'.format(cache_folder, base_name, frame)
     return file_path
 
 
+def create_geom_object(domain, base_name, attr_name):
+    mesh = bpy.data.meshes.new('jet_fluid_' + base_name)
+    obj = bpy.data.objects.new('jet_fluid_' + base_name, mesh)
+    setattr(domain.jet_fluid, attr_name, obj.name)
+    bpy.context.scene.collection.objects.link(obj)
+    return obj
+
+
+def get_array(file_path, array_type, swap=False):
+    if array_type == 'FLOAT':
+        data_type = numpy.float32
+    elif array_type == 'INT':
+        data_type = numpy.int32
+    array = numpy.fromfile(file_path, dtype=data_type)
+    array.shape = (array.shape[0] // 3, 3)
+    if swap:
+        swaped = []
+        for element in array:
+            swaped.append((element[0], element[2], element[1]))
+        array = swaped
+    return array
+
+
+def write_array(array, file_path, array_type, swap=True):
+    if array_type == 'FLOAT':
+        data_type = numpy.float32
+    elif array_type == 'INT':
+        data_type = numpy.int32
+    if swap:
+        swaped = []
+        for element in array:
+            swaped.append((element[0], element[2], element[1]))
+        array = swaped
+    np_array = numpy.array(array, data_type)
+    np_array.tofile(file_path)
+
+
 def create_particles(domain):
-    file_path = get_file_path(domain, 'PART')
+    file_path = get_file_path(domain, 'POS')
     if not os.path.exists(file_path):
         clear_fluid_geometry(domain, 'PART')
         return
-    particles_file = open(file_path, 'rb')
-    particles_data = particles_file.read()
-    particles_file.close()
-    p = 0
-    particles_count = struct.unpack('I', particles_data[p : p + 4])[0]
-    p += 4
-    vertices = []
-    for particle_index in range(particles_count):
-        pos = struct.unpack('3f', particles_data[p : p + 12])
-        p += 52    # skip velocities, forces and colors
-        vertices.append((pos[0], pos[2], pos[1]))
-
-    par_mesh = bpy.data.meshes.new('temp_name')
+    vertices = get_array(file_path, 'FLOAT')
     if not domain.jet_fluid.particles_object:
-        par_object = bpy.data.objects.new('jet_fluid_particles', par_mesh)
-        domain.jet_fluid.particles_object = par_object.name
-        bpy.context.scene.collection.objects.link(par_object)
+        par_object = create_geom_object(domain, 'particles', 'particles_object')
     else:
-        if bpy.data.objects.get(domain.jet_fluid.particles_object):
-            par_object = bpy.data.objects[domain.jet_fluid.particles_object]
-            old_par_mesh = par_object.data
-            par_object.data = par_mesh
-            materials = [m for m in old_par_mesh.materials]
-            for mat in materials:
-                par_mesh.materials.append(mat)
-            bpy.data.meshes.remove(old_par_mesh)
+        par_object = bpy.data.objects.get(domain.jet_fluid.particles_object)
+        if par_object:
+            par_object.data.clear_geometry()
         else:
-            par_object = bpy.data.objects.new(domain.jet_fluid.particles_object, par_mesh)
-            bpy.context.scene.collection.objects.link(par_object)
-    par_mesh.from_pydata(vertices, (), ())
-    par_mesh.name = 'jet_fluid_particles'
+            par_object = create_geom_object(domain, 'particles', 'particles_object')
+    par_object.data.from_pydata(vertices, (), ())
 
 
 def create_mesh(domain):
-    file_path = get_file_path(domain, 'MESH')
-    if not os.path.exists(file_path):
+    vert_file = get_file_path(domain, 'VERT')
+    if not os.path.exists(vert_file):
         clear_fluid_geometry(domain, 'MESH')
         return
-    mesh_file = open(file_path, 'rb')
-    mesh_data = mesh_file.read()
-    mesh_file.close()
-    p = 0
-    vertices_count = struct.unpack('I', mesh_data[p : p + 4])[0]
-    p += 4
-    vertices = []
-    colors = []
-    for vertex_index in range(vertices_count):
-        pos = struct.unpack('3f', mesh_data[p : p + 12])
-        p += 12
-        col = struct.unpack('4f', mesh_data[p : p + 16])
-        p += 16
-        vertices.append((pos[0], pos[2], pos[1]))
-        colors.append(col)
+    vertices = get_array(vert_file, 'FLOAT')
 
-    triangles_count = struct.unpack('I', mesh_data[p : p + 4])[0]
-    p += 4
-    triangles = []
-    for tris_index in range(triangles_count):
-        tris = struct.unpack('3I', mesh_data[p : p + 12])
-        p += 12
-        triangles.append((tris[0], tris[2], tris[1]))
+    tris_file = get_file_path(domain, 'TRIS')
+    if not os.path.exists(tris_file):
+        clear_fluid_geometry(domain, 'MESH')
+        return
+    triangles = get_array(tris_file, 'INT')
 
-    mesh = bpy.data.meshes.new('temp_name')
     if not domain.jet_fluid.mesh_object:
-        mesh_object = bpy.data.objects.new('jet_fluid_mesh', mesh)
-        domain.jet_fluid.mesh_object = mesh_object.name
-        bpy.context.scene.collection.objects.link(mesh_object)
+        mesh_object = create_geom_object(domain, 'mesh', 'mesh_object')
     else:
-        if not bpy.data.objects.get(domain.jet_fluid.mesh_object):
-            mesh_object = bpy.data.objects.new(domain.jet_fluid.mesh_object, mesh)
-            bpy.context.scene.collection.objects.link(mesh_object)
+        mesh_object = bpy.data.objects.get(domain.jet_fluid.mesh_object)
+        if not mesh_object:
+            mesh_object = create_geom_object(domain, 'mesh', 'mesh_object')
         else:
-            mesh_object = bpy.data.objects[domain.jet_fluid.mesh_object]
-            old_mesh = mesh_object.data
-            mesh_object.data = mesh
-            materials = [m for m in old_mesh.materials]
-            for mat in materials:
-                mesh.materials.append(mat)
-            bpy.data.meshes.remove(old_mesh)
+            mesh_object.data.clear_geometry()
 
-    mesh.from_pydata(vertices, (), triangles)
-    for polygon in mesh.polygons:
+    mesh_object.data.from_pydata(vertices, (), triangles)
+
+    for polygon in mesh_object.data.polygons:
         polygon.use_smooth = True
-    mesh.name = 'jet_fluid_mesh'
+
     mesh_object.location = (
         domain.bound_box[0][0] * domain.scale[0] + domain.location[0],
         domain.bound_box[0][1] * domain.scale[1] + domain.location[1],
         domain.bound_box[0][2] * domain.scale[2] + domain.location[2]
     )
-    vertex_colors = mesh.vertex_colors.new(name='jet_fluid_color')
-    i = 0
-    for face in mesh.polygons:
-        for loop_index in face.loop_indices:
-            loop = mesh.loops[loop_index]
-            vertex_index = mesh.vertices[loop.vertex_index].index
-            color = colors[vertex_index]
-            vertex_colors.data[i].color = color
-            i += 1
 
 
 def get_gl_particles_cache():
@@ -185,59 +179,21 @@ def update_particles_cache(self, context):
     domain = get_domain_object()
     if domain:
         if domain.jet_fluid.show_particles:
-            file_path = get_file_path(domain, 'PART')
-            if os.path.exists(file_path):
-                particles_file = open(file_path, 'rb')
-                particles_data = particles_file.read()
-                particles_file.close()
-                p = 0
-                particles_count = struct.unpack('I', particles_data[p : p + 4])[0]
-                p += 4
+            pos_file = get_file_path(domain, 'POS')
+            if os.path.exists(pos_file):
+                positions = get_array(pos_file, 'FLOAT')
                 if domain.jet_fluid.color_type == 'VELOCITY':
-                    positions = []
+                    vel_file = get_file_path(domain, 'VEL')
                     colors = []
-                    for particle_index in range(particles_count):
-                        particle_position = struct.unpack('3f', particles_data[p : p + 12])
-                        p += 12
-                        positions.append((
-                            particle_position[0],
-                            particle_position[2],
-                            particle_position[1]
-                        ))
-                        vel = struct.unpack('3f', particles_data[p : p + 12])
-                        p += 40    # skip forces and colors
-                        color_factor = (vel[0]**2 + vel[1]**2 + vel[2]**2) ** (1/2) / domain.jet_fluid.max_velocity
-                        color = render.generate_particle_color(color_factor, domain.jet_fluid)
-                        colors.append((*color, 1.0))
+                    if os.path.exists(vel_file):
+                        velocity = get_array(vel_file, 'FLOAT')
+                        for vel in velocity:
+                            color_factor = (vel[0]**2 + vel[1]**2 + vel[2]**2) ** (1/2) / domain.jet_fluid.max_velocity
+                            color = render.generate_particle_color(color_factor, domain.jet_fluid)
+                            colors.append((*color, 1.0))
                     GL_PARTICLES_CACHE[domain.name] = [positions, colors]
                 elif domain.jet_fluid.color_type == 'SINGLE_COLOR':
-                    positions = []
-                    for particle_index in range(particles_count):
-                        particle_position = struct.unpack('3f', particles_data[p : p + 12])
-                        p += 52    # skip velocities, forces and colors
-                        positions.append((
-                            particle_position[0],
-                            particle_position[2],
-                            particle_position[1]
-                        ))
                     GL_PARTICLES_CACHE[domain.name] = positions
-                elif domain.jet_fluid.color_type == 'PARTICLE_COLOR':
-                    positions = []
-                    colors = []
-                    for particle_index in range(particles_count):
-                        particle_position = struct.unpack('3f', particles_data[p : p + 12])
-                        p += 12
-                        positions.append((
-                            particle_position[0],
-                            particle_position[2],
-                            particle_position[1]
-                        ))
-                        vel = struct.unpack('3f', particles_data[p : p + 12])
-                        p += 24    # skip forces
-                        color = struct.unpack('4f', particles_data[p : p + 16])
-                        p += 16
-                        colors.append(color)
-                    GL_PARTICLES_CACHE[domain.name] = [positions, colors]
 
 
 @bpy.app.handlers.persistent

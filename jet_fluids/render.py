@@ -1,4 +1,3 @@
-import struct
 import os
 
 import bpy
@@ -24,7 +23,7 @@ def draw_scene_particles():
         if obj.jet_fluid.is_active:
             if obj.jet_fluid.show_particles:
                 particles = create.get_gl_particles_cache().get(obj.name, None)
-                if particles:
+                if not particles is None:
                     draw_particles(obj, particles)
 
 
@@ -40,10 +39,6 @@ def draw_particles(domain, particles):
         for i in range(len(particles)):
             colors.append((*color, 1.0))
         batch = batch_for_shader(shader, 'POINTS', {"pos": particles, "color": colors})
-    elif domain.jet_fluid.color_type == 'PARTICLE_COLOR':
-        positions = particles[0]
-        colors = particles[1]
-        batch = batch_for_shader(shader, 'POINTS', {"pos": positions, "color": colors})
     shader.bind()
     bgl.glPointSize(domain.jet_fluid.particle_size)
     batch.draw(shader)

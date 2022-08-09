@@ -1,6 +1,5 @@
 import os
 import threading
-import struct
 import time
 
 import bpy
@@ -8,6 +7,7 @@ import mathutils
 
 from . import pyjet
 from . import bake
+from . import create
 from .utils import convert_time_to_string
 
 
@@ -38,91 +38,35 @@ def create_solver(self, domain):
     return solv, grid
 
 
-def save_mesh(operator, surface_mesh, frame_index, particles, colors):
+def save_mesh(operator, surface_mesh, frame_index, particles):
     start_time = time.time()
     print_mesh_info('Save mesh verts start')
     domain = operator.domain
     coef = domain.jet_fluid.resolution / domain.jet_fluid.resolution_mesh
-    bin_mesh_data = bytearray()
     points_count = surface_mesh.numberOfPoints()
-    bin_mesh_data.extend(struct.pack('I', points_count))
-
-    if domain.jet_fluid.use_colors:
-        kdtree = mathutils.kdtree.KDTree(len(particles))
-        for index, par in enumerate(particles):
-            kdtree.insert((par[0], par[2], par[1]), index)
-        kdtree.balance()
-
     offset = (
         domain.bound_box[0][0] * domain.scale[0] + domain.location[0],
         domain.bound_box[0][1] * domain.scale[1] + domain.location[1],
         domain.bound_box[0][2] * domain.scale[2] + domain.location[2]
     )
-
+    points = []
     for point_index in range(points_count):
         point = surface_mesh.point(point_index)
-        bin_mesh_data.extend(struct.pack(
-            '3f', point.x * coef, point.y * coef, point.z * coef
-        ))
-        if domain.jet_fluid.use_colors:
-            color_data = kdtree.find_range(
-                (
-                    point[0] * coef + offset[0],
-                    point[2] * coef + offset[1],
-                    point[1] * coef + offset[2]
-                ),
-                domain.jet_fluid.color_particles_search_radius
-            )
-            red = 0.0
-            green = 0.0
-            blue = 0.0
-            alpha = 0.0
-            for vert_coord, index, distance in color_data:
-                r, g, b, a = colors[index]
-                red += r
-                green += g
-                blue += b
-                alpha += a
-            colors_count = len(color_data)
-            if colors_count != 0:
-                red /= colors_count
-                green /= colors_count
-                blue /= colors_count
-                alpha /= colors_count
-            else:
-                vert_coord, index, distance = kd_tree.find(
-                    (
-                        point[0] * coef + offset[0],
-                        point[2] * coef + offset[1],
-                        point[1] * coef + offset[2]
-                    )
-                )
-                red, green, blue, alpha = colors[index]
-            bin_mesh_data.extend(struct.pack(
-                '4f', red, green, blue, alpha
-            ))
-        else:
-            bin_mesh_data.extend(struct.pack(
-                '4f', 0.0, 0.0, 0.0, 0.0
-            ))
+        points.extend((point.x * coef, point.z * coef, point.y * coef))
+    verts_file_path = create.get_file_path(domain, 'VERT', frame=frame_index)
+    create.write_array(points, verts_file_path, 'FLOAT', swap=False)
     print_mesh_info('Save mesh verts end')
 
     print_mesh_info('Save mesh tris start')
     triangles_count = surface_mesh.numberOfTriangles()
-    bin_mesh_data.extend(struct.pack('I', triangles_count))
+    faces = []
     for triangle_index in range(triangles_count):
         tris = surface_mesh.pointIndex(triangle_index)
-        bin_mesh_data.extend(struct.pack('3I', tris.x, tris.y, tris.z))
+        faces.extend((tris.x, tris.z, tris.y))
+    faces_file_path = create.get_file_path(domain, 'TRIS', frame=frame_index)
+    create.write_array(faces, faces_file_path, 'INT', swap=False)
     print_mesh_info('Save mesh tris end')
 
-    print_mesh_info('Write mesh file start')
-    file_path = '{0}mesh_{1:0>6}.bin'.format(
-        bpy.path.abspath(domain.jet_fluid.cache_folder),
-        frame_index
-    )
-    file = open(file_path, 'wb')
-    file.write(bin_mesh_data)
-    file.close()
     print_mesh_info('Write mesh file end')
     print_mesh_info('Save mesh time: {0}'.format(
         convert_time_to_string(start_time)
@@ -142,39 +86,20 @@ def check_cache_file(domain, frame_index):
 
 def read_particles(domain, frame_index):
     points = []
-    colors = []
-    file_path = '{0}particles_{1:0>6}.bin'.format(
-        bpy.path.abspath(domain.jet_fluid.cache_folder),
-        frame_index
-    )
+    file_path = create.get_file_path(domain, 'POS', frame_index)
     if not os.path.exists(file_path):
         print_mesh_info('Can\'t find particles file in {} frame'.format(frame_index))
-        return points, colors
-    print_mesh_info('Open particles file start')
-    particles_file = open(file_path, 'rb')
-    particles_data = particles_file.read()
-    particles_file.close()
-    print_mesh_info('Open particles file end')
+        return points
     print_mesh_info('Read particles start')
-    p = 0
-    particles_count = struct.unpack('I', particles_data[p : p + 4])[0]
-    p += 4
-    for particle_index in range(particles_count):
-        particle_position = struct.unpack('3f', particles_data[p : p + 12])
-        p += 36    # skip velocities, forces
-        color = struct.unpack('4f', particles_data[p : p + 16])
-        p += 16
-        points.append(particle_position)
-        if domain.jet_fluid.use_colors:
-            colors.append(color)
+    points = create.get_array(file_path, 'FLOAT', swap=True)
     print_mesh_info('Read particles end')
-    return points, colors
+    return points
 
 
 def bake_mesh(domain, solv, grid, frame_index):
-    points, colors = read_particles(domain, frame_index)
+    points = read_particles(domain, frame_index)
     if not points:
-        return None, points, colors
+        return None, points
     print_mesh_info('Create converter start')
     if domain.jet_fluid.converter_type == 'ANISOTROPICPOINTSTOIMPLICIT':
         converter = pyjet.AnisotropicPointsToImplicit3(
@@ -217,7 +142,7 @@ def bake_mesh(domain, solv, grid, frame_index):
         con_flag    # bndConnectivity
     )
     print_mesh_info('Meshing end')
-    return surface_mesh, points, colors
+    return surface_mesh, points
 
 
 class JetFluidBakeMesh(bpy.types.Operator):
@@ -253,9 +178,9 @@ class JetFluidBakeMesh(bpy.types.Operator):
             else:
                 frame_start_time = time.time()
                 print_mesh_info('Generate mesh start: frame {0:0>6}'.format(frame_index))
-                surface_mesh, particles, colors = bake_mesh(domain, solv, grid, frame_index)
+                surface_mesh, particles = bake_mesh(domain, solv, grid, frame_index)
                 if surface_mesh:
-                    save_mesh(self, surface_mesh, frame_index, particles, colors)
+                    save_mesh(self, surface_mesh, frame_index, particles)
                 print_mesh_info('Generate mesh end:   frame {0:0>6}'.format(frame_index))
                 print_mesh_info('Generate mesh time: {0}'.format(convert_time_to_string(frame_start_time)))
                 print_mesh_info('-' * 79)

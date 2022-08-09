@@ -168,11 +168,6 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     overwrite_mesh: bpy.props.BoolProperty(
         default=False, name='Overwrite'
     )
-    color_particles_search_radius: bpy.props.FloatProperty(
-        default=0.1,
-        name='Particles Search Radius',
-        min=0.0
-    )
 
     # boundary
     bound_right: bpy.props.BoolProperty(default=True, name='Right')
@@ -251,39 +246,6 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         name='Max Number of Particles'
     )
 
-    # colors
-    use_colors: bpy.props.BoolProperty(
-        default=False,
-        name='Use Colors'
-    )
-    items = [
-        ('VERTEX_COLOR', 'Emitter Vertex Color', ''),
-        ('SINGLE_COLOR', 'Domain Single Color', ''),
-        ('TEXTURE', 'Texture', '')
-    ]
-    simmulate_color_type: bpy.props.EnumProperty(
-        items=items,
-        name='Color Type',
-        default='VERTEX_COLOR'
-    )
-    particles_color: bpy.props.FloatVectorProperty(
-        default=(1.0, 1.0, 1.0, 1.0),
-        name='Particles Color',
-        subtype='COLOR',
-        size=4,
-        max=1.0,
-        min=0.0
-    )
-    color_vertex_search_radius: bpy.props.FloatProperty(
-        default=0.1,
-        name='Vertex Search Radius',
-        min=0.0
-    )
-    particles_texture: bpy.props.StringProperty(
-        default='',
-        name='Particles Texture'
-    )
-
     # collider props
     collider_friction: bpy.props.FloatProperty(
         default=0.0,
@@ -320,8 +282,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
     items = [
         ('VELOCITY', 'Velocity', ''),
-        ('SINGLE_COLOR', 'Single Color', ''),
-        ('PARTICLE_COLOR', 'Particle Color', '')
+        ('SINGLE_COLOR', 'Single Color', '')
     ]
     color_type: bpy.props.EnumProperty(
         items=items,

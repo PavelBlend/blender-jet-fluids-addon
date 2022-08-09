@@ -1,6 +1,5 @@
 import os
 import numpy
-import struct
 import time
 
 import bpy
@@ -8,6 +7,7 @@ import mathutils
 
 from . import pyjet
 from . import bake
+from . import create
 from .utils import print_info, convert_time_to_string
 
 
@@ -15,6 +15,19 @@ def get_transforms(obj):
     pos = obj.matrix_world.to_translation()
     rot = obj.matrix_world.to_quaternion()
     return pos, rot
+
+
+def read_particles(file_path):
+    data = []
+    for data_type in ('POS', 'VEL', 'FORCE'):
+        array = []
+        file_path = get_file_path(domain, data_type, frame_index)
+        if not os.path.exists(file_path):
+            print_mesh_info('Can\'t find file for {} frame'.format(frame_index))
+            return array
+        array = get_array(file_path, 'FLOAT')
+        data.append(array)
+    return data
 
 
 class JetFluidBakeParticles(bpy.types.Operator):
@@ -37,7 +50,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     colliders.append(obj)
         return emitters, colliders
 
-    def simulate(self, offset=0, particles_colors=[]):
+    def simulate(self, offset=0):
         solv = self.solver
         resolution_x, resolution_y, resolution_z, origin_x, origin_y, origin_z, domain_size_x, grid_spacing = bake.calc_res(self, self.domain, type='MESH')
         jet = self.domain.jet_fluid
@@ -57,18 +70,6 @@ class JetFluidBakeParticles(bpy.types.Operator):
             for emitter in self.emitters:
                 jet_emmiter = self.jet_emitters_dict.get(emitter.name, None)
                 if jet_emmiter:
-                    if jet.use_colors:
-                        if jet.simmulate_color_type == 'VERTEX_COLOR' and jet.use_colors:
-                            colors = {}
-                            for face in emitter.data.polygons:
-                                for loop_index in face.loop_indices:
-                                    loop = emitter.data.loops[loop_index]
-                                    color = emitter.data.vertex_colors[0].data[loop_index].color
-                                    colors[loop.vertex_index] = color
-                            for vertex in emitter.data.vertices:
-                                mat = mathutils.Matrix.Translation(vertex.co) + emitter.matrix_world
-                                coord = emitter.matrix_world @ vertex.co
-                                vertices.append((coord, colors[vertex.index]))
                     vel = emitter.jet_fluid.velocity
                     jet_emmiter.initialVelocity = vel[0], vel[2], vel[1]
                     jet_emmiter.isOneShot = emitter.jet_fluid.one_shot
@@ -90,13 +91,6 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     )
                     jet_emmiter.linearVelocity = (0, 0, 0)
 
-            # KD Tree
-            if jet.simmulate_color_type == 'VERTEX_COLOR' and jet.use_colors:
-                kd_tree = mathutils.kdtree.KDTree(len(vertices))
-                for index, (coord, color) in enumerate(vertices):
-                    kd_tree.insert(coord, index)
-                kd_tree.balance()
-
             for collider, collider_object in self.jet_colliders:
                 collider.frictionCoefficient = collider_object.jet_fluid.collider_friction
                 pos, rot = get_transforms(collider_object)
@@ -104,6 +98,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     translation=(pos[0], pos[2], pos[1]),
                     orientation=(-rot[0], rot[1], rot[3], rot[2])
                 )
+            frame = self.frame.index + offset
             file_path = '{0}particles_{1:0>6}.bin'.format(
                 bpy.path.abspath(self.domain.jet_fluid.cache_folder),
                 self.frame.index + offset
@@ -118,68 +113,17 @@ class JetFluidBakeParticles(bpy.types.Operator):
             velocities = numpy.array(solv.particleSystemData.velocities, copy=False)
             forces = numpy.array(solv.particleSystemData.forces, copy=False)
             print_info('    Convert particles to numpy array end')
-            bin_data = bytearray()
             vertices_count = len(positions)
-            bin_data += struct.pack('I', vertices_count)
-            print_info('    Save particles color start')
-            par_color = tuple(self.domain.jet_fluid.particles_color)
-            colors_count = len(particles_colors)
-            if jet.use_colors:
-                if jet.simmulate_color_type == 'VERTEX_COLOR':
-                    for vert_index in range(colors_count, vertices_count):
-                        pos = positions[vert_index]
-                        color_data = kd_tree.find_range((pos[0], pos[2], pos[1]), jet.color_vertex_search_radius)
-                        red = 0.0
-                        green = 0.0
-                        blue = 0.0
-                        alpha = 0.0
-                        for vert_coord, index, distance in color_data:
-                            r, g, b, a = vertices[index][1]    # color
-                            red += r
-                            green += g
-                            blue += b
-                            alpha += a
-                        colors_count = len(color_data)
-                        if colors_count != 0:
-                            red /= colors_count
-                            green /= colors_count
-                            blue /= colors_count
-                            alpha /= colors_count
-                        else:
-                            vert_coord, index, distance = kd_tree.find((pos[0], pos[2], pos[1]))
-                            red, green, blue, alpha = vertices[index][1]
-                        particles_colors.append((red, green, blue, alpha))
-                elif jet.simmulate_color_type == 'SINGLE_COLOR':
-                    for i in range(vertices_count - colors_count):
-                        particles_colors.append(par_color)
-                elif jet.simmulate_color_type == 'TEXTURE':
-                    texture = bpy.data.textures.get(jet.particles_texture, None)
-                    if texture:
-                        for particle_index in range(colors_count, vertices_count):
-                            pos = positions[particle_index]
-                            value = texture.evaluate(pos)
-                            if value[0] == 0 and value[1] == 0 and value[2] == 0:
-                                par_color = (value[3], value[3], value[3], 1.0)
-                            else:
-                                par_color = value
-                            particles_colors.append(par_color)
-            print_info('    Save particles color end')
-            print_info('    Save position and velocity start')
-            for vert_index in range(vertices_count):
-                pos = positions[vert_index]
-                bin_data.extend(struct.pack('3f', *pos))
-                bin_data.extend(struct.pack('3f', *velocities[vert_index]))
-                bin_data.extend(struct.pack('3f', *forces[vert_index]))
-                if jet.use_colors:
-                    bin_data.extend(struct.pack('4f', *particles_colors[vert_index]))
-                else:
-                    bin_data.extend(struct.pack('4f', 0.0, 0.0, 0.0, 0.0))
-            print_info('    Save position and velocity end')
-            print_info('    Write particles file start')
-            file = open(file_path, 'wb')
-            file.write(bin_data)
-            file.close()
-            print_info('    Write particles file end')
+
+            pos_path = create.get_file_path(self.domain, 'POS', frame=frame)
+            create.write_array(positions, pos_path, 'FLOAT')
+
+            vel_path = create.get_file_path(self.domain, 'VEL', frame=frame)
+            create.write_array(velocities, vel_path, 'FLOAT')
+
+            force_path = create.get_file_path(self.domain, 'FORCE', frame=frame)
+            create.write_array(forces, force_path, 'FLOAT')
+
             print_info('Save particles end')
             print_info('Frame end', self.frame.index + offset)
             self.frame.advance()
@@ -308,7 +252,7 @@ class JetFluidBakeParticles(bpy.types.Operator):
                         print_info('    Create collider set end')
                     print_info('    Create colliders end')
                     # simulate
-                    self.simulate(offset=frame_start, particles_colors=[])
+                    self.simulate(offset=frame_start)
                     break
                 else:
                     last_frame = frame_index - 1
@@ -369,10 +313,10 @@ class JetFluidBakeParticles(bpy.types.Operator):
                     print_info('    Create colliders end')
                     # resume particles
                     print_info('Resume simulation start')
-                    pos, vel, forc, colors = bake.read_particles(file_path)
+                    pos, vel, forc = read_particles(file_path)
                     solver.particleSystemData.addParticles(pos, vel, forc)
                     print_info('Resume simulation end')
-                    self.simulate(offset=last_frame, particles_colors=colors)
+                    self.simulate(offset=last_frame)
                     break
         print_info('Create others objects end')
         print_info('-' * 79)

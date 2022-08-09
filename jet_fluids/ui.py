@@ -205,25 +205,6 @@ class JET_PT_World(DomainBasePanel):
         draw_prop(lay, jet, 'gravity', 'Gravity', use_column=True)
 
 
-class JET_PT_Color(DomainBasePanel):
-    bl_label = "Jet Fluid: Color"
-
-    def draw(self, context):
-        obj = context.object
-        jet = obj.jet_fluid
-        lay = self.layout
-
-        # create ui elements
-        draw_prop(lay, jet, 'use_colors', 'Use Colors', boolean=True)
-        draw_prop(lay, jet, 'simmulate_color_type', 'Type', use_column=True, expand=True, active=jet.use_colors)
-        if jet.simmulate_color_type == 'SINGLE_COLOR':
-            draw_prop(lay, jet, 'particles_color', 'Particles Color', active=jet.use_colors)
-        elif jet.simmulate_color_type == 'VERTEX_COLOR':
-            draw_prop(lay, jet, 'color_vertex_search_radius', 'Vertex Search Radius', active=jet.use_colors)
-        elif jet.simmulate_color_type == 'TEXTURE':
-            draw_prop(lay, jet, 'particles_texture', 'Texture', prop_search='textures', active=jet.use_colors)
-
-
 class JET_PT_Create(DomainBasePanel):
     bl_label = "Jet Fluid: Create"
 
@@ -256,13 +237,12 @@ class JET_PT_Debug(DomainBasePanel):
         draw_prop(lay, jet, 'particle_size', 'Particle Size', active=jet.show_particles)
         draw_prop(lay, jet, 'color_type', 'Color Mode', active=jet.show_particles, use_column=True, expand=True)
 
-        if jet.color_type != 'PARTICLE_COLOR':
-            if jet.color_type == 'VELOCITY':
-                draw_prop(lay, jet, 'max_velocity', 'Max Velocity', active=jet.show_particles)
-                draw_prop(lay, jet, 'color_1', 'Min Velocity Color', active=jet.show_particles)
-                draw_prop(lay, jet, 'color_2', 'Max Velocity Color', active=jet.show_particles)
-            else:
-                draw_prop(lay, jet, 'color_1', 'Particle Color', active=jet.show_particles)
+        if jet.color_type == 'VELOCITY':
+            draw_prop(lay, jet, 'max_velocity', 'Max Velocity', active=jet.show_particles)
+            draw_prop(lay, jet, 'color_1', 'Min Velocity Color', active=jet.show_particles)
+            draw_prop(lay, jet, 'color_2', 'Max Velocity Color', active=jet.show_particles)
+        else:
+            draw_prop(lay, jet, 'color_1', 'Particle Color', active=jet.show_particles)
 
 
 class JET_PT_Mesh(DomainBasePanel):
@@ -285,7 +265,6 @@ class JET_PT_Mesh(DomainBasePanel):
         draw_prop(lay, jet, 'overwrite_mesh', 'Overwrite', boolean=True)
         draw_prop(lay, jet, 'is_output_sdf', 'Out SDF', boolean=True)
         draw_prop(lay, jet, 'iso_value', 'Iso Value')
-        draw_prop(lay, jet, 'color_particles_search_radius', 'Particles Color Search Radius')
 
         # frame range
         scene = context.scene
@@ -388,7 +367,6 @@ __CLASSES__ = [
     JET_PT_Boundary,
     JET_PT_Create,
     JET_PT_World,
-    JET_PT_Color,
     JET_PT_Debug,
     JET_PT_Emitter,
     JET_PT_Collider

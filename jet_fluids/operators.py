@@ -4,10 +4,8 @@ import time
 
 import bpy
 
-from .utils import print_info, convert_time_to_string
 
-
-class JET_FLUID_OT_ResetMesh(bpy.types.Operator):
+class JET_OT_ResetMesh(bpy.types.Operator):
     bl_idname = "jet_fluid.reset_mesh"
     bl_label = "Reset Jet Fluid Cache"
     bl_options = {'REGISTER'}
@@ -17,13 +15,13 @@ class JET_FLUID_OT_ResetMesh(bpy.types.Operator):
         file_path = bpy.path.abspath(obj.jet_fluid.cache_folder)
         if not os.path.exists(file_path):
             return {'FINISHED'}
-        for file_ in os.listdir(file_path):
-            if re.search('mesh_[0-9]*.bin', file_):
-                os.remove(file_path + file_)
+        for file in os.listdir(file_path):
+            if re.search('(vert|tris)_[0-9]*.bin', file):
+                os.remove(file_path + file)
         return {'FINISHED'}
 
 
-class JET_FLUID_OT_ResetParticles(bpy.types.Operator):
+class JET_OT_ResetParticles(bpy.types.Operator):
     bl_idname = "jet_fluid.reset_particles"
     bl_label = "Reset Jet Fluid Cache"
     bl_options = {'REGISTER'}
@@ -33,13 +31,13 @@ class JET_FLUID_OT_ResetParticles(bpy.types.Operator):
         file_path = bpy.path.abspath(obj.jet_fluid.cache_folder)
         if not os.path.exists(file_path):
             return {'FINISHED'}
-        for file_ in os.listdir(file_path):
-            if re.search('particles_[0-9]*.bin', file_) or re.search('fluid_[0-9]*_00.bphys', file_):
-                os.remove(file_path + file_)
+        for file in os.listdir(file_path):
+            if re.search('(pos|vel|force)_[0-9]*.bin', file):
+                os.remove(file_path + file)
         return {'FINISHED'}
 
 
-class JET_FLUID_OT_Add(bpy.types.Operator):
+class JET_OT_Add(bpy.types.Operator):
     bl_idname = "jet_fluid.add"
     bl_label = "Add Jet fluid object"
     bl_options = {'REGISTER'}
@@ -50,7 +48,7 @@ class JET_FLUID_OT_Add(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class JET_FLUID_OT_Remove(bpy.types.Operator):
+class JET_OT_Remove(bpy.types.Operator):
     bl_idname = "jet_fluid.remove"
     bl_label = "Remove Jet fluid object"
     bl_options = {'REGISTER'}
@@ -63,10 +61,10 @@ class JET_FLUID_OT_Remove(bpy.types.Operator):
 
 
 __CLASSES__ = [
-    JET_FLUID_OT_Add,
-    JET_FLUID_OT_Remove,
-    JET_FLUID_OT_ResetParticles,
-    JET_FLUID_OT_ResetMesh
+    JET_OT_Add,
+    JET_OT_Remove,
+    JET_OT_ResetParticles,
+    JET_OT_ResetMesh
 ]
 
 

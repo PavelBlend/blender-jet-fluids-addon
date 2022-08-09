@@ -1,4 +1,3 @@
-import struct
 import os
 
 import bpy
@@ -24,33 +23,6 @@ pressure_solvers = {
     'FRACTIONAL_SINGLE_PHASE': pyjet.GridFractionalSinglePhasePressureSolver3,
     'SINGLE_PHASE': pyjet.GridSinglePhasePressureSolver3
 }
-
-
-def read_particles(file_path):
-    particles_file = open(file_path, 'rb')
-    particles_data = particles_file.read()
-    particles_file.close()
-    p = 0
-    particles_count = struct.unpack('I', particles_data[p : p + 4])[0]
-    p += 4
-    positions = []
-    velocities = []
-    forces = []
-    colors = []
-    for particle_index in range(particles_count):
-        pos = struct.unpack('3f', particles_data[p : p + 12])
-        p += 12
-        positions.append(pos)
-        vel = struct.unpack('3f', particles_data[p : p + 12])
-        p += 12
-        velocities.append(vel)
-        force = struct.unpack('3f', particles_data[p : p + 12])
-        p += 12
-        forces.append(force)
-        color = struct.unpack('4f', particles_data[p : p + 16])
-        p += 16
-        colors.append(color)
-    return positions, velocities, forces, colors
 
 
 def get_triangle_mesh(context, source, solver, domain_object):
@@ -133,7 +105,6 @@ def set_closed_domain_boundary_flag(obj, flag_type):
         pyjet.DIRECTION_BACK,
         pyjet.DIRECTION_UP,
         pyjet.DIRECTION_DOWN
-        
     ]
 
     bound_flag = 0
