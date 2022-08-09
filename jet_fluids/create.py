@@ -59,11 +59,19 @@ def update_par_object(self, context):
     update_geom_object('PART')
 
 
+def get_file_path(domain, mode):
+    cache_folder = bpy.path.abspath(domain.jet_fluid.cache_folder)
+    frame = bpy.context.scene.frame_current
+    if mode == 'PART':
+        base_name = 'particles'
+    elif mode == 'MESH':
+        base_name = 'mesh'
+    file_path = '{0}{1}_{2:0>6}.bin'.format(cache_folder, base_name, frame)
+    return file_path
+
+
 def create_particles(domain):
-    file_path = '{0}particles_{1:0>6}.bin'.format(
-        bpy.path.abspath(domain.jet_fluid.cache_folder),
-        bpy.context.scene.frame_current
-    )
+    file_path = get_file_path(domain, 'PART')
     if not os.path.exists(file_path):
         clear_fluid_geometry(domain, 'PART')
         return
@@ -101,10 +109,7 @@ def create_particles(domain):
 
 
 def create_mesh(domain):
-    file_path = '{0}mesh_{1:0>6}.bin'.format(
-        bpy.path.abspath(domain.jet_fluid.cache_folder),
-        bpy.context.scene.frame_current
-    )
+    file_path = get_file_path(domain, 'MESH')
     if not os.path.exists(file_path):
         clear_fluid_geometry(domain, 'MESH')
         return
@@ -177,16 +182,10 @@ def get_gl_particles_cache():
 
 def update_particles_cache(self, context):
     global GL_PARTICLES_CACHE
-    obj_names = {obj.name for obj in bpy.data.objects}
-    for obj_name in obj_names:
-        obj = bpy.data.objects.get(obj_name)
-        if not obj:
-            continue
-        if obj.jet_fluid.show_particles:
-            file_path = '{0}particles_{1:0>6}.bin'.format(
-                bpy.path.abspath(obj.jet_fluid.cache_folder),
-                bpy.context.scene.frame_current
-            )
+    domain = get_domain_object()
+    if domain:
+        if domain.jet_fluid.show_particles:
+            file_path = get_file_path(domain, 'PART')
             if os.path.exists(file_path):
                 particles_file = open(file_path, 'rb')
                 particles_data = particles_file.read()
@@ -194,7 +193,7 @@ def update_particles_cache(self, context):
                 p = 0
                 particles_count = struct.unpack('I', particles_data[p : p + 4])[0]
                 p += 4
-                if obj.jet_fluid.color_type == 'VELOCITY':
+                if domain.jet_fluid.color_type == 'VELOCITY':
                     positions = []
                     colors = []
                     for particle_index in range(particles_count):
@@ -207,11 +206,11 @@ def update_particles_cache(self, context):
                         ))
                         vel = struct.unpack('3f', particles_data[p : p + 12])
                         p += 40    # skip forces and colors
-                        color_factor = (vel[0]**2 + vel[1]**2 + vel[2]**2) ** (1/2) / obj.jet_fluid.max_velocity
-                        color = render.generate_particle_color(color_factor, obj.jet_fluid)
+                        color_factor = (vel[0]**2 + vel[1]**2 + vel[2]**2) ** (1/2) / domain.jet_fluid.max_velocity
+                        color = render.generate_particle_color(color_factor, domain.jet_fluid)
                         colors.append((*color, 1.0))
-                    GL_PARTICLES_CACHE[obj.name] = [positions, colors]
-                elif obj.jet_fluid.color_type == 'SINGLE_COLOR':
+                    GL_PARTICLES_CACHE[domain.name] = [positions, colors]
+                elif domain.jet_fluid.color_type == 'SINGLE_COLOR':
                     positions = []
                     for particle_index in range(particles_count):
                         particle_position = struct.unpack('3f', particles_data[p : p + 12])
@@ -221,8 +220,8 @@ def update_particles_cache(self, context):
                             particle_position[2],
                             particle_position[1]
                         ))
-                    GL_PARTICLES_CACHE[obj.name] = positions
-                elif obj.jet_fluid.color_type == 'PARTICLE_COLOR':
+                    GL_PARTICLES_CACHE[domain.name] = positions
+                elif domain.jet_fluid.color_type == 'PARTICLE_COLOR':
                     positions = []
                     colors = []
                     for particle_index in range(particles_count):
@@ -238,7 +237,7 @@ def update_particles_cache(self, context):
                         color = struct.unpack('4f', particles_data[p : p + 16])
                         p += 16
                         colors.append(color)
-                    GL_PARTICLES_CACHE[obj.name] = [positions, colors]
+                    GL_PARTICLES_CACHE[domain.name] = [positions, colors]
 
 
 @bpy.app.handlers.persistent
