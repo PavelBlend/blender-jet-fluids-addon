@@ -3,7 +3,6 @@ import threading
 import time
 
 import bpy
-import mathutils
 
 from . import pyjet
 from . import bake
@@ -195,7 +194,6 @@ class JetFluidBakeMesh(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        context.scene.jet_fluid_domain_object = context.object.name
         thread = threading.Thread(target=self.execute, args=(context, ))
         thread.start()
         return {'FINISHED'}

@@ -3,11 +3,6 @@ import numpy
 
 import bpy
 
-from . import render
-
-
-GL_PARTICLES_CACHE = {}
-
 
 def clear_fluid_geometry(domain, mode):
     if mode == 'PART':
@@ -187,33 +182,6 @@ def create_mesh(domain):
     set_mesh_location(domain, mesh_object)
 
 
-def get_gl_particles_cache():
-    global GL_PARTICLES_CACHE
-    return GL_PARTICLES_CACHE
-
-
-def update_particles_cache(self, context):
-    global GL_PARTICLES_CACHE
-    domains = get_domain_objects()
-    for domain in domains:
-        if domain.jet_fluid.show_particles:
-            pos_file = get_file_path(domain, 'POS')
-            if os.path.exists(pos_file):
-                positions = get_array(pos_file, 'FLOAT')
-                if domain.jet_fluid.color_type == 'VELOCITY':
-                    vel_file = get_file_path(domain, 'VEL')
-                    colors = []
-                    if os.path.exists(vel_file):
-                        velocity = get_array(vel_file, 'FLOAT')
-                        for vel in velocity:
-                            color_factor = (vel[0]**2 + vel[1]**2 + vel[2]**2) ** (1/2) / domain.jet_fluid.max_velocity
-                            color = render.generate_particle_color(color_factor, domain.jet_fluid)
-                            colors.append((*color, 1.0))
-                    GL_PARTICLES_CACHE[domain.name] = [positions, colors]
-                elif domain.jet_fluid.color_type == 'SINGLE_COLOR':
-                    GL_PARTICLES_CACHE[domain.name] = positions
-
-
 @bpy.app.handlers.persistent
 def import_geometry(scene):
     domains = get_domain_objects()
@@ -222,9 +190,6 @@ def import_geometry(scene):
             create_particles(domain)
         if domain.jet_fluid.create_mesh:
             create_mesh(domain)
-    global GL_PARTICLES_CACHE
-    GL_PARTICLES_CACHE = {}
-    update_particles_cache(None, bpy.context)
 
 
 def register():

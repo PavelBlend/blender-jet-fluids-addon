@@ -116,6 +116,7 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
         name='Converter Type',
         default='ANISOTROPICPOINTSTOIMPLICIT'
     )
+
     # Anisotropic Points to Implicit Properties
     kernel_radius: bpy.props.FloatProperty(
         default=1.25, name='Kernel Radius', min=0.1, max=10.0
@@ -140,8 +141,8 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     cut_off_threshold: bpy.props.FloatProperty(
         default=0.25, name='Cut Off Threshold'
     )
-    # SphPointsToImplicit3 properties
 
+    # SphPointsToImplicit3 properties
     iso_value: bpy.props.FloatProperty(
         default=0.0, name='Iso Value'
     )
@@ -270,60 +271,13 @@ class JetFluidsProperties(bpy.types.PropertyGroup):
     )
     particles_object: bpy.props.StringProperty(default='', name='Particles')
 
-    # debug props
-    show_particles: bpy.props.BoolProperty(
-        default=False, name='Show Particles'
-    )
-    particle_size: bpy.props.IntProperty(
-        default=3,
-        name='Particle Size',
-        min=1,
-        max=10
-    )
-    items = [
-        ('VELOCITY', 'Velocity', ''),
-        ('SINGLE_COLOR', 'Single Color', '')
-    ]
-    color_type: bpy.props.EnumProperty(
-        items=items,
-        name='Color',
-        default='VELOCITY',
-        update=create.update_particles_cache
-    )
-    color_1: bpy.props.FloatVectorProperty(
-        default=(0.0, 0.0, 1.0),
-        name='Color 1',
-        subtype='COLOR',
-        max=1.0,
-        min=0.0
-    )
-    color_2: bpy.props.FloatVectorProperty(
-        default=(0.0, 1.0, 1.0),
-        name='Color 2',
-        subtype='COLOR',
-        max=1.0,
-        min=0.0
-    )
-    max_velocity: bpy.props.FloatProperty(
-        default=10.0,
-        name='Max Velocity',
-        min=0.001
-    )
-
-
-__CLASSES__ = [
-    JetFluidsProperties,
-]
 
 def register():
-    bpy.types.Scene.jet_fluid_domain_object = bpy.props.StringProperty()
-    for class_ in __CLASSES__:
-        bpy.utils.register_class(class_)
-        class_.bpy_type.jet_fluid = bpy.props.PointerProperty(type=class_)
+    bpy.utils.register_class(JetFluidsProperties)
+    props = bpy.props.PointerProperty(type=JetFluidsProperties)
+    JetFluidsProperties.bpy_type.jet_fluid = props
 
 
 def unregister():
-    for class_ in reversed(__CLASSES__):
-        del class_.bpy_type.jet_fluid
-        bpy.utils.unregister_class(class_)
-    del bpy.types.Scene.jet_fluid_domain_object
+    del JetFluidsProperties.bpy_type.jet_fluid
+    bpy.utils.unregister_class(JetFluidsProperties)

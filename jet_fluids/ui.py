@@ -224,27 +224,6 @@ class JET_PT_Create(DomainBasePanel):
         draw_prop(lay, jet, 'particles_object', 'Particles Object', prop_search='objects', active=jet.create_particles)
 
 
-class JET_PT_Debug(DomainBasePanel):
-    bl_label = "Jet Fluid: Debug"
-
-    def draw(self, context):
-        obj = context.object
-        jet = obj.jet_fluid
-        lay = self.layout
-
-        # create ui elements
-        draw_prop(lay, jet, 'show_particles', 'Show Particles', boolean=True)
-        draw_prop(lay, jet, 'particle_size', 'Particle Size', active=jet.show_particles)
-        draw_prop(lay, jet, 'color_type', 'Color Mode', active=jet.show_particles, use_column=True, expand=True)
-
-        if jet.color_type == 'VELOCITY':
-            draw_prop(lay, jet, 'max_velocity', 'Max Velocity', active=jet.show_particles)
-            draw_prop(lay, jet, 'color_1', 'Min Velocity Color', active=jet.show_particles)
-            draw_prop(lay, jet, 'color_2', 'Max Velocity Color', active=jet.show_particles)
-        else:
-            draw_prop(lay, jet, 'color_1', 'Particle Color', active=jet.show_particles)
-
-
 class JET_PT_Mesh(DomainBasePanel):
     bl_label = "Jet Fluid: Mesh"
 
@@ -367,7 +346,6 @@ __CLASSES__ = [
     JET_PT_Boundary,
     JET_PT_Create,
     JET_PT_World,
-    JET_PT_Debug,
     JET_PT_Emitter,
     JET_PT_Collider
 ]

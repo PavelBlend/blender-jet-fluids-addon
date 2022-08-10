@@ -3,7 +3,6 @@ import numpy
 import time
 
 import bpy
-import mathutils
 
 from . import pyjet
 from . import bake
@@ -56,10 +55,8 @@ class JetFluidBakeParticles(bpy.types.Operator):
         jet = self.domain.jet_fluid
         create_mesh = jet.create_mesh
         create_particles = jet.create_particles
-        show_particles = jet.show_particles
         jet.create_mesh = False
         jet.create_particles = False
-        jet.show_particles = False
         current_frame = self.context.scene.frame_current
         folder = bpy.path.abspath(self.domain.jet_fluid.cache_folder)
         while self.frame.index + offset <= self.frame_end:
@@ -129,12 +126,10 @@ class JetFluidBakeParticles(bpy.types.Operator):
             self.frame.advance()
         jet.create_mesh = create_mesh
         jet.create_particles = create_particles
-        jet.show_particles = show_particles
         self.context.scene.frame_set(current_frame)
         return {'FINISHED'}
 
     def execute(self, context):
-        context.scene.jet_fluid_domain_object = context.object.name
         obj = context.object
         print_info('-' * 79)
         print_info('SIMULATION START')
@@ -325,7 +320,6 @@ class JetFluidBakeParticles(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        context.scene.jet_fluid_domain_object = context.object.name
         context.window.cursor_set('WAIT')
         try:
             self.execute(context)
