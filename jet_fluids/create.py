@@ -134,17 +134,20 @@ def write_array(array, file_path, array_type, swap=True, offset=None):
 
 
 @utils.time_stats('Get Geom Object')
-def get_geom_object(domain, attr_name, base_name):
+def get_geom_object(domain, attr_name, base_name, verts_count):
     attr_value = getattr(domain.jet_fluid, attr_name)
+    is_clear = False
     if not attr_value:
         obj = create_geom_object(domain, base_name, attr_name)
     else:
         obj = bpy.data.objects.get(attr_value)
         if obj:
-            obj.data.clear_geometry()
+            if verts_count != len(obj.data.vertices):
+                obj.data.clear_geometry()
+                is_clear = True
         else:
             obj = create_geom_object(domain, base_name, attr_name)
-    return obj
+    return obj, is_clear
 
 
 @utils.time_stats('Set Mesh Location')
@@ -170,11 +173,20 @@ def create_particles(domain):
         clear_fluid_geometry(domain, 'PART')
         return
 
-    par_object = get_geom_object(domain, 'particles_object', 'particles')
-    import time
-    s = time.time()
-    par_object.data.from_pydata(vertices, (), ())
-    print('{0:.3f}'.format(time.time() - s))
+    par_object, is_clear = get_geom_object(
+        domain,
+        'particles_object',
+        'particles',
+        len(vertices)
+    )
+
+    if is_clear:
+        par_object.data.from_pydata(vertices, (), ())
+    else:
+        vertices.shape = (vertices.shape[0] * 3)
+        par_object.data.vertices.foreach_set('co', vertices)
+        par_object.data.update()
+
     set_par_location(domain, par_object)
 
 
@@ -190,7 +202,7 @@ def create_mesh(domain):
         clear_fluid_geometry(domain, 'MESH')
         return
 
-    mesh_object = get_geom_object(domain, 'mesh_object', 'mesh')
+    mesh_object, _ = get_geom_object(domain, 'mesh_object', 'mesh', -1)
     mesh_object.data.from_pydata(vertices, (), triangles)
 
     for polygon in mesh_object.data.polygons:
