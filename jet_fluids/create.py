@@ -3,7 +3,10 @@ import numpy
 
 import bpy
 
+from . import utils
 
+
+@utils.time_stats('Clear Fluid Geometry')
 def clear_fluid_geometry(domain, mode):
     if mode == 'PART':
         # particles mode
@@ -18,6 +21,7 @@ def clear_fluid_geometry(domain, mode):
                 obj.data.clear_geometry()
 
 
+@utils.time_stats('Get Domain Objects')
 def get_domain_objects():
     obj_names = {obj.name for obj in bpy.data.objects}
     domain_objs = set()
@@ -31,6 +35,7 @@ def get_domain_objects():
     return domain_objs
 
 
+@utils.time_stats('Update Geom Object')
 def update_geom_object(mode):
     domains = get_domain_objects()
     for domain in domains:
@@ -56,6 +61,7 @@ def update_par_object(self, context):
     update_geom_object('PART')
 
 
+@utils.time_stats('Get File Path')
 def get_file_path(domain, mode, frame=None):
     cache_folder = bpy.path.abspath(domain.jet_fluid.cache_folder)
     if frame is None:
@@ -76,6 +82,7 @@ def get_file_path(domain, mode, frame=None):
     return file_path
 
 
+@utils.time_stats('Create Geom Object')
 def create_geom_object(domain, base_name, attr_name):
     mesh = bpy.data.meshes.new('jet_fluid_' + base_name)
     obj = bpy.data.objects.new('jet_fluid_' + base_name, mesh)
@@ -84,6 +91,7 @@ def create_geom_object(domain, base_name, attr_name):
     return obj
 
 
+@utils.time_stats('Get Array')
 def get_array(file_path, array_type, swap=False):
     if not os.path.exists(file_path):
         return
@@ -101,6 +109,7 @@ def get_array(file_path, array_type, swap=False):
     return array
 
 
+@utils.time_stats('Write Array')
 def write_array(array, file_path, array_type, swap=True, offset=None):
     if array_type == 'FLOAT':
         data_type = numpy.float32
@@ -124,6 +133,7 @@ def write_array(array, file_path, array_type, swap=True, offset=None):
     np_array.tofile(file_path)
 
 
+@utils.time_stats('Get Geom Object')
 def get_geom_object(domain, attr_name, base_name):
     attr_value = getattr(domain.jet_fluid, attr_name)
     if not attr_value:
@@ -137,6 +147,7 @@ def get_geom_object(domain, attr_name, base_name):
     return obj
 
 
+@utils.time_stats('Set Mesh Location')
 def set_mesh_location(domain, obj):
     obj.location = (
         domain.bound_box[0][0] * domain.scale[0] + domain.location[0],
@@ -145,10 +156,12 @@ def set_mesh_location(domain, obj):
     )
 
 
+@utils.time_stats('Set Par Location')
 def set_par_location(domain, obj):
     obj.location = domain.location
 
 
+@utils.time_stats('Create Particles')
 def create_particles(domain):
     file_path = get_file_path(domain, 'POS')
     vertices = get_array(file_path, 'FLOAT')
@@ -158,10 +171,14 @@ def create_particles(domain):
         return
 
     par_object = get_geom_object(domain, 'particles_object', 'particles')
+    import time
+    s = time.time()
     par_object.data.from_pydata(vertices, (), ())
+    print('{0:.3f}'.format(time.time() - s))
     set_par_location(domain, par_object)
 
 
+@utils.time_stats('Create Mesh')
 def create_mesh(domain):
     vert_file = get_file_path(domain, 'VERT')
     vertices = get_array(vert_file, 'FLOAT')
@@ -184,12 +201,14 @@ def create_mesh(domain):
 
 @bpy.app.handlers.persistent
 def import_geometry(scene):
+    print('-' * 79)
     domains = get_domain_objects()
     for domain in domains:
         if domain.jet_fluid.create_particles:
             create_particles(domain)
         if domain.jet_fluid.create_mesh:
             create_mesh(domain)
+    print('-' * 79)
 
 
 def register():

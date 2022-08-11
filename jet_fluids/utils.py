@@ -1,6 +1,4 @@
-import os, time
-
-import bpy
+import time
 
 
 def convert_time_to_string(start_time):
@@ -24,6 +22,20 @@ def convert_time_to_string(start_time):
         seconds = round(total_time, 2)
         time_string = '{0} seconds'.format(seconds)
     return time_string
+
+
+def time_stats(name):
+    def decorator(fun):
+        def wrapper(*args, **kw):
+            import time
+            start_time = time.time()
+            result = fun(*args, **kw)
+            end_time = time.time()
+            total_time = end_time - start_time
+            print('{0}: {1:.3f} sec'.format(name, total_time))
+            return result
+        return wrapper
+    return decorator
 
 
 def print_info(*print_params):
